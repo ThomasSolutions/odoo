@@ -1,0 +1,78 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record model="ir.ui.view" id="thomas_vehicle_view_form">
+      <field name="name">thomas.vehicle.form</field>
+      <field name="model">fleet.vehicle</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"></field>
+      <field name="arch" type="xml">
+          <xpath expr="//label[@for='model_id']" position="before">
+             <label for="unit_no" class="oe_edit_only"/>
+            <h1>
+            <field name="unit_no" string="Unit #"></field>
+            </h1>
+             <label for="vin_id" class="oe_edit_only"/>
+            <h1>
+            <field name="vin_id" string="VIN"></field>
+            </h1>
+          </xpath>
+      </field>
+    </record>
+
+    <!--
+    <record model="ir.ui.view" id="thomasfleet.list">
+      <field name="name">thomasfleet list</field>
+      <field name="model">thomasfleet.thomasfleet</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+    -->
+
+    <!-- actions opening views on models -->
+    <!--
+    <record model="ir.actions.act_window" id="thomasfleet.action_window">
+      <field name="name">thomasfleet window</field>
+      <field name="res_model">thomasfleet.thomasfleet</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    -->
+
+    <!-- server action to the one above -->
+    <!--
+    <record model="ir.actions.server" id="thomasfleet.action_server">
+      <field name="name">thomasfleet server</field>
+      <field name="model_id" ref="model_thomasfleet_thomasfleet"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": self._name,
+        }
+      </field>
+    </record>
+    -->
+
+    <!-- Top menu item -->
+    <!--
+    <menuitem name="thomasfleet" id="thomasfleet.menu_root"/>
+    -->
+    <!-- menu categories -->
+    <!--
+    <menuitem name="Menu 1" id="thomasfleet.menu_1" parent="thomasfleet.menu_root"/>
+    <menuitem name="Menu 2" id="thomasfleet.menu_2" parent="thomasfleet.menu_root"/>
+    -->
+    <!-- actions -->
+    <!--
+    <menuitem name="List" id="thomasfleet.menu_1_list" parent="thomasfleet.menu_1"
+              action="thomasfleet.action_window"/>
+    <menuitem name="Server to list" id="thomasfleet" parent="thomasfleet.menu_2"
+              action="thomasfleet.action_server"/>
+    -->
+  </data>
+</odoo>
