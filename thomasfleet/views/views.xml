@@ -6,18 +6,169 @@
       <field name="model">fleet.vehicle</field>
       <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"></field>
       <field name="arch" type="xml">
-          <xpath expr="//label[@for='model_id']" position="before">
+       <!--   <xpath expr="//label[@for='model_id']" position="before">
              <label for="unit_no" class="oe_edit_only"/>
-            <h1>
+            <h2>
             <field name="unit_no" string="Unit #"></field>
-            </h1>
+            </h2>
              <label for="vin_id" class="oe_edit_only"/>
-            <h1>
+            <h2>
             <field name="vin_id" string="VIN"></field>
-            </h1>
+            </h2>
+          </xpath>-->
+         <xpath expr="//form[1]" position="replace">
+              <form string="Vehicle">
+                <header>
+                    <field name="state_id"  widget="statusbar" clickable="True" />
+                </header>
+              <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="return_action_to_open"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-book"
+                            context="{'xml_id':'fleet_vehicle_log_contract_action', 'search_default_open': 1}"
+                            help="show the contract for this vehicle">
+                            <field name="contract_count" widget="statinfo" string="Contracts"/>
+                        </button>
+                        <button name="act_show_log_cost"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-usd"
+                            help="show all the costs for this vehicle"
+                            groups="fleet.fleet_group_manager">
+                            <field name="cost_count" widget="statinfo" string="Costs"/>
+                        </button>
+                        <button name="return_action_to_open"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-wrench"
+                            context="{'xml_id':'fleet_vehicle_log_services_action'}"
+                            help="show the services logs for this vehicle" >
+                            <field name="service_count" widget="statinfo" string="Services"/>
+                        </button>
+                        <button name="return_action_to_open"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-flask"
+                            context="{'xml_id':'fleet_vehicle_log_fuel_action'}"
+                            help="show the fuel logs for this vehicle" >
+                            <field name="fuel_logs_count" widget="statinfo" string="Fuel"/>
+                        </button>
+                        <button name="return_action_to_open"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-tachometer"
+                            context="{'xml_id':'fleet_vehicle_odometer_action'}"
+                            help="show the odometer logs for this vehicle" >
+                            <field name="odometer_count" widget="statinfo" string="Odometer"/>
+                        </button>
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <field name="image_medium" widget='image' class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h3>
+                            Unit #
+                             <field name="unit_no" string="Unit #"></field>
+                             -
+                             <field name="model_id" class="oe_read_only oe_inline oe_no_button"/><br/>
+                         </h3>
+                        <field name="trim_id" class="oe_read_only"/><br/>
+                        <label for="vin_id"/>
+                        <field name="vin_id" string="VIN"></field><br/>
+                        <label for="license_plate"/>
+                        <field name="license_plate"/>
+                        <label for="tag_ids" class="oe_edit_only"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                    </div>
+                    <group col="3" >
+                        <group string="Model Specs" >
+                            <field name="model_id"/>
+                            <field name="trim_id"/>
+                            <field name="location" />
+                            <field name="model_year"/>
+                        </group>
+                        <group string="History" >
+                            <label for="odometer"/>
+                            <div class="o_row">
+                                <field name="odometer"/>
+                                <field name="odometer_unit"/>
+                            </div>
+                            <field name="acquisition_date" />
+                            <field name="car_value" />
+                            <field name="residual_value"/>
+                        </group>
+                        <group string="Additional Properties">
+                            <field name="seats" />
+                            <field name="doors" />
+                            <field name="color" />
+                        </group>
+                    </group>
+                    <group col="2">
+                        <group string="Engine Options">
+                            <field name="transmission" />
+                            <field name="fuel_type" />
+                            <label for="co2"/>
+                            <div class="o_row" name="co2">
+                                <field name="co2"/><span>g/km</span>
+                            </div>
+                            <field name="horsepower" />
+                            <field name="horsepower_tax" />
+                            <label for="power"/>
+                            <div class="o_row">
+                                <field name="power"/><span>kW</span>
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+              </form>
           </xpath>
       </field>
     </record>
+
+      <record id='thomas_model_trim_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.trim.tree</field>
+        <field name="model">thomasfleet.trim</field>
+        <field name="arch" type="xml">
+            <tree string="Model Trim">
+                <field name="model_id"/>
+                <field name="make_name"/>
+                <field name="model_name"/>
+                <field name="name" />
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id='thomas_model_trim_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.trim.form</field>
+        <field name="model">thomasfleet.trim</field>
+        <field name="arch" type="xml">
+            <form string="Model Trim">
+                <field name="model_id"/>
+                <field name="name"/>
+                <field name="description"/>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomas_model_trims_action' model='ir.actions.act_window'>
+        <field name="name">Model Trims</field>
+        <field name="res_model">thomasfleet.trim</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new trim type for a model.
+          </p><p>
+            Each model can have more than one trim types.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_model_trims_action" parent="fleet.fleet_configuration" id="thomas_model_trims_menu" sequence="3"/>
 
     <!--
     <record model="ir.ui.view" id="thomasfleet.list">
