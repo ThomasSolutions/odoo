@@ -6,16 +6,6 @@
       <field name="model">fleet.vehicle</field>
       <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"></field>
       <field name="arch" type="xml">
-       <!--   <xpath expr="//label[@for='model_id']" position="before">
-             <label for="unit_no" class="oe_edit_only"/>
-            <h2>
-            <field name="unit_no" string="Unit #"></field>
-            </h2>
-             <label for="vin_id" class="oe_edit_only"/>
-            <h2>
-            <field name="vin_id" string="VIN"></field>
-            </h2>
-          </xpath>-->
          <xpath expr="//form[1]" position="replace">
               <form string="Vehicle">
                 <header>
@@ -70,55 +60,58 @@
                     <field name="image_medium" widget='image' class="oe_avatar"/>
                     <div class="oe_title">
                         <h3>
-                            Unit #
-                             <field name="unit_no" string="Unit #"></field>
-                             -
-                             <field name="model_id" class="oe_read_only oe_inline oe_no_button"/><br/>
+                            <field name="unit_slug" class="oe_read_only"/><br/>
                          </h3>
-                        <field name="trim_id" class="oe_read_only"/><br/>
-                        <label for="vin_id"/>
-                        <field name="vin_id" string="VIN"></field><br/>
+                         <label for="vin_id"/>
+                        <field name="vin_id"></field><br/>
                         <label for="license_plate"/>
                         <field name="license_plate"/>
-                        <label for="tag_ids" class="oe_edit_only"/>
-                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                     </div>
-                    <group col="3" >
-                        <group string="Model Specs" >
-                            <field name="model_id"/>
-                            <field name="trim_id"/>
-                            <field name="location" />
+                    <group col="2" >
+                        <group string="Vehicle Specs" >
+                            <field name="model_id" class="oe_no_button" options="{'no_open':True}"/>
+                            <field name="trim_id"  options="{'no_open':True}"/>
                             <field name="model_year"/>
+                            <field name="engine"/>
+                            <field name="transmission"/>
+                            <field name="fuel_type" options="{'no_open':True}"/>
+                            <field name="drive"/>
+                            <field name="body_style"/>
+                            <field name="doors"/>
+                            <field name="seats"/>
+                            <field name="seat_belts"/>
+                            <field name="color"/>
                         </group>
-                        <group string="History" >
+                        <group>
+                            <field name="location" class="oe_no_button" options="{'no_open':True}"/>
+                            <field name="door_access_code"></field>
+                            <field name="wheel_studs"/>
+                            <field name="wheel_base"/>
+                            <field name="box_size"/>
+                            <field name="seat_material" options="{'no_open':True}"/>
+                            <field name="flooring" options="{'no_open':True}"/>
+                            <field name="trailer_hitch"/>
+                            <field name="brake_controller"/>
+                            <field name="tires"/>
+                            <field name="rim"/>
+                            <field name="capless_fuel_filler"/>
+                            <field name="bluetooth"/>
+                            <field name="navigation"/>
+                        </group>
+                    </group>
+                    <group col="2">
+                        <group string="Notes">
+                            <field name="warranty_start_date"/>
+                            <field name="charge_code"/>
+                            <field name="notes"/>
+                            <label for="tag_ids" class="oe_edit_only"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                        </group>
+                        <group>
                             <label for="odometer"/>
                             <div class="o_row">
                                 <field name="odometer"/>
                                 <field name="odometer_unit"/>
-                            </div>
-                            <field name="acquisition_date" />
-                            <field name="car_value" />
-                            <field name="residual_value"/>
-                        </group>
-                        <group string="Additional Properties">
-                            <field name="seats" />
-                            <field name="doors" />
-                            <field name="color" />
-                        </group>
-                    </group>
-                    <group col="2">
-                        <group string="Engine Options">
-                            <field name="transmission" />
-                            <field name="fuel_type" />
-                            <label for="co2"/>
-                            <div class="o_row" name="co2">
-                                <field name="co2"/><span>g/km</span>
-                            </div>
-                            <field name="horsepower" />
-                            <field name="horsepower_tax" />
-                            <label for="power"/>
-                            <div class="o_row">
-                                <field name="power"/><span>kW</span>
                             </div>
                         </group>
                     </group>
@@ -128,11 +121,121 @@
       </field>
     </record>
 
+      <record model="ir.ui.view" id="thomas_vehicle_view_tree">
+      <field name="name">thomas.vehicle.tree</field>
+      <field name="model">fleet.vehicle</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"></field>
+       <field name="arch" type="xml">
+           <xpath expr="//tree[1]" position="replace">
+              <tree>
+                  <field name="unit_no"></field>
+                  <field name="model_id"/>
+                  <field name="trim_id"></field>
+                  <field name="color"></field>
+                  <field name="vin_id"></field>
+                  <field name="license_plate"></field>
+                  <field name="state_id"/>
+                  <field name="location"></field>
+              </tree>
+           </xpath>
+
+          </field>
+
+      </record>
+
+
+       <record id='thomas_location_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.location.form</field>
+        <field name="model">thomasfleet.location</field>
+        <field name="arch" type="xml">
+            <form string="Locations">
+                <field name="name"/>
+            </form>
+        </field>
+    </record>
+
+      <record id='thomas_location_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.location.tree</field>
+        <field name="model">thomasfleet.location</field>
+        <field name="arch" type="xml">
+            <tree string="Locations" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+      
+       <record id='thomas_seatmaterial_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.seatmaterial.form</field>
+        <field name="model">thomasfleet.seatmaterial</field>
+        <field name="arch" type="xml">
+            <form string="Seat Materials">
+                <field name="name"/>
+                <field name="description"/>
+            </form>
+        </field>
+    </record>
+
+      <record id='thomas_seatmaterial_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.seatmaterial.tree</field>
+        <field name="model">thomasfleet.seatmaterial</field>
+        <field name="arch" type="xml">
+            <tree string="Seat Materials" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+      
+     <record id='thomas_floormaterial_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.floormaterial.form</field>
+        <field name="model">thomasfleet.floormaterial</field>
+        <field name="arch" type="xml">
+            <form string="Floor Materials">
+                <field name="name"/>
+                <field name="description"/>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomas_floormaterial_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.floormaterial.tree</field>
+        <field name="model">thomasfleet.floormaterial</field>
+        <field name="arch" type="xml">
+            <tree string="Floor Materials" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id='thomas_fueltype_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.fueltype.form</field>
+        <field name="model">thomasfleet.fueltype</field>
+        <field name="arch" type="xml">
+            <form string="Fuel Type">
+                <field name="name"/>
+            </form>
+        </field>
+    </record>
+
+      <record id='thomas_fueltype_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.fueltype.tree</field>
+        <field name="model">thomasfleet.fueltype</field>
+        <field name="arch" type="xml">
+            <tree string="Fuel Type" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+
       <record id='thomas_model_trim_view_tree' model='ir.ui.view'>
         <field name="name">thomasfleet.trim.tree</field>
         <field name="model">thomasfleet.trim</field>
         <field name="arch" type="xml">
-            <tree string="Model Trim">
+            <tree string="Model Trim" editable="top">
                 <field name="model_id"/>
                 <field name="make_name"/>
                 <field name="model_name"/>
@@ -170,6 +273,69 @@
 
     <menuitem action="thomas_model_trims_action" parent="fleet.fleet_configuration" id="thomas_model_trims_menu" sequence="3"/>
 
+    <record id='thomas_location_action' model='ir.actions.act_window'>
+        <field name="name">Locations</field>
+        <field name="res_model">thomasfleet.location</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new trim type for a model.
+          </p><p>
+            Each model can have more than one trim types.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_location_action" parent="fleet.fleet_configuration" id="thomas_location_menu" sequence="4"/>
+
+   <record id='thomas_seatmaterial_action' model='ir.actions.act_window'>
+        <field name="name">Seat Materials</field>
+        <field name="res_model">thomasfleet.seatmaterial</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new seat material.
+          </p><p>
+            Each vehicle can only have one type of seat material.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_seatmaterial_action" parent="fleet.fleet_configuration" id="thomas_seatmaterial_menu" sequence="5"/>
+      
+      <record id='thomas_floormaterial_action' model='ir.actions.act_window'>
+        <field name="name">Floor Materials</field>
+        <field name="res_model">thomasfleet.floormaterial</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new floor material.
+          </p><p>
+            Each vehicle can only have one type of floor material.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_floormaterial_action" parent="fleet.fleet_configuration" id="thomas_floormaterial_menu" sequence="6"/>
+      
+      <record id='thomas_fueltype_action' model='ir.actions.act_window'>
+        <field name="name">Fuel Types</field>
+        <field name="res_model">thomasfleet.fueltype</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new fuel type.
+          </p><p>
+            Each vehicle can only have one fuel type.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="7"/>
     <!--
     <record model="ir.ui.view" id="thomasfleet.list">
       <field name="name">thomasfleet list</field>

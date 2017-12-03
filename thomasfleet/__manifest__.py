@@ -26,6 +26,10 @@
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        #'data/thomasfleet.location.csv',
+        'data/thomasfleet.floormaterial.csv',
+        'data/thomasfleet.fueltype.csv',
+        'data/thomasfleet.seatmaterial.csv'
     ],
     # only loaded in demonstration mode
     'demo': [
