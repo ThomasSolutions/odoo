@@ -45,6 +45,8 @@ class ThomasFleetVehicle(models.Model):
     doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5)
    # fuel_type = fields.Selection([('gasoline', 'Gasoline'), ('diesel', 'Diesel')],'Fuel Type', default='gasoline')
     charge_code = fields.Char('Charge Code')
+    filed_ad = fields.Char("Filed As")
+    company_acct = fiels.Char("Company Acct")
     rim = fields.Char('Rim')
     engine = fields.Char('Engine')
     fuel_type =  fields.Many2one('thomasfleet.fueltype', 'Fuel Type' )
