@@ -16,7 +16,7 @@ class ThomasFleetVehicle(models.Model):
     log.setLevel(logging.INFO)
 
     #name = fields.Char(compute='_compute_vehicle_name', store=True)
-    unit_no = fields.Char('Unit #', readonly=True)
+    unit_no = fields.Char('Unit #')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
@@ -28,28 +28,43 @@ class ThomasFleetVehicle(models.Model):
     door_access_code= fields.Char('Door Access Code')
     body_style = fields.Char('Body Style')
     drive = fields.Char('Drive')
-    wheel_studs = fields.Integer('Wheel Studs')
-    wheel_base = fields.Float('Wheel Base')
-    box_size = fields.Float('Box Size')
+    wheel_studs = fields.Char('Wheel Studs')
+    wheel_size=fields.Char('Wheel Size')
+    wheel_style =fields.Char('Wheel Style')
+    wheel_base = fields.Char('Wheel Base')
+    box_size = fields.Char('Box Size')
     seat_material= fields.Many2one('thomasfleet.seatmaterial' , 'Seat Material')
     flooring = fields.Many2one('thomasfleet.floormaterial' ,'Floor Material')
     trailer_hitch = fields.Selection([('yes', 'Yes'), ('no', 'No')],'Trailer Hitch', default='yes')
     brake_controller = fields.Selection([('yes', 'Yes'), ('no', 'No')],'Brake Controller', default='yes')
     tires= fields.Char('Tires')
-    capless_fuel_filler =fields.Selection([('yes', 'Yes'), ('no', 'No')],'Capless Fuel Filler', default='no')
+    capless_fuel_filler =fields.Selection([('yes', 'Yes'), ('no', 'No')],'Capless Fuel Filter', default='no')
     bluetooth = fields.Selection([('yes', 'Yes'), ('no', 'No')],'Bluetooth', default='yes')
     navigation = fields.Selection([('yes', 'Yes'), ('no', 'No')],'Navigation', default='no')
-    warranty_start_date = fields.Date('Warranty Start Date')
+    warranty_start_date = fields.Char('Warranty Start Date')
     seat_belts = fields.Integer('# Seat Belts')
     seats = fields.Integer('# Seats', help='Number of seats of the vehicle')
     doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5)
    # fuel_type = fields.Selection([('gasoline', 'Gasoline'), ('diesel', 'Diesel')],'Fuel Type', default='gasoline')
     charge_code = fields.Char('Charge Code')
-    filed_ad = fields.Char("Filed As")
-    company_acct = fiels.Char("Company Acct")
-    rim = fields.Char('Rim')
+    filed_as = fields.Char("File As")
+    company_acct = fields.Char("Company Acct")
+    rim_bolts = fields.Char('Rim Bolts')
     engine = fields.Char('Engine')
     fuel_type =  fields.Many2one('thomasfleet.fueltype', 'Fuel Type' )
+    asset_class = fields.Many2one('thomasfleet.asset_class', 'Asset Class')
+    insurance_class = fields.Many2one('thomasfleet.insurance_class', 'Insurance Class')
+    thomas_purchase_price = fields.Float('Thomas Purchase Price')
+    purchase_date = fields.Char('Purchase Date')
+    usage = fields.Char('Usage')
+    fleet_status=fields.Char('Fleet Status')
+    disposal_year=fields.Char('Disposal Year')
+    disposal_date=fields.Char('Disposal Date')
+    disposal_proceeds=fields.Float('Disposal Proceeds')
+    sold_to=fields.Char('Sold To')
+    air_conditioning=fields.Selection([('yes', 'Yes'), ('no', 'No')],'Air Conditioning',default='yes')
+    transmission = fields.Char("Transmission")
+
     def notes_compute(self):
         self.log.info('Computing Notes')
         for record in self:
@@ -77,25 +92,28 @@ class ThomasFleetVehicle(models.Model):
     @api.model
     def create(self, data):
         self.log.info('CREATING THIS THING')
-        last_vehicle =self.env['fleet.vehicle'].search([], limit=1, order='create_date desc')
+        last_vehicle =self.env['fleet.vehicle'].search([], limit=1, order='unit_no')
         self.log.info('last Vehicle Name %s', last_vehicle.name)
-        #self.log.info('last Vehicle Name %s',  fields.Datetime.to_string(last_vehicle.create_date))
         attr = vars(last_vehicle)
         self.log.info(dump_obj(last_vehicle))
         record = super(ThomasFleetVehicle,self).create(data)
-        #record.notes =dump_obj(last_vehicle)
+        self.log.info('Unit # %s', record.unit_no)
         right_now_yr = int(date.today().strftime('%y'))
-        #self.log.info('Curent Yr %d', right_now_yr)
-        if last_vehicle.unit_no:
-            cur_unit_no_yr=int(last_vehicle.unit_no[0:2])
-            #self.log.info('Unit Yr %d', cur_unit_no_yr)
-            if right_now_yr - cur_unit_no_yr == 0:
-                record.unit_no = str(int(last_vehicle.unit_no)+1)
+        if not record.unit_no:
+            self.log.info("Inside the if")
+            if last_vehicle.unit_no:
+                cur_unit_no_yr=int(last_vehicle.unit_no[0:2])
+                self.log.info('Unit Yr %d', cur_unit_no_yr)
+                if right_now_yr - cur_unit_no_yr == 0:
+                    record.unit_no = str(int(last_vehicle.unit_no)+1)
+                else:
+                    record.unit_no = str(right_now_yr * 100)
             else:
-                record.unit_no = str(right_now_yr * 100 )
-        else:
-            record.unit_no =str(right_now_yr * 100 )
+                record.unit_no =str(right_now_yr * 100)
 
+        self.log.info('-----=-Returning record------------------------')
+        self.log.info(record.unit_no)
+        self.log.info('-----------------------------------------------')
         return record
 
 class ThomasFleetVehicleModel(models.Model):
@@ -135,6 +153,18 @@ class ThomasFleetFuelType(models.Model):
     _name = 'thomasfleet.fueltype'
 
     name = fields.Char('Fuel Type')
+    description = fields.Char('Description')
+
+class ThomasFleetAssetClass(models.Model):
+    _name = 'thomasfleet.asset_class'
+
+    name = fields.Char('Asset Class')
+    description = fields.Char('Description')
+
+class ThomasFleetInsuranceClass(models.Model):
+    _name = 'thomasfleet.insurance_class'
+
+    name = fields.Char('Insurance Class')
     description = fields.Char('Description')
 
     #     name = fields.Char()

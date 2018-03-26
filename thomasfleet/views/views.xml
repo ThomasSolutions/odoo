@@ -81,6 +81,11 @@
                             <field name="seats"/>
                             <field name="seat_belts"/>
                             <field name="color"/>
+                            <label for="odometer"/>
+                            <div class="o_row">
+                                <field name="odometer"/>
+                                <field name="odometer_unit"/>
+                            </div>
                         </group>
                         <group>
                             <field name="location" class="oe_no_button" options="{'no_open':True}"/>
@@ -93,7 +98,7 @@
                             <field name="trailer_hitch"/>
                             <field name="brake_controller"/>
                             <field name="tires"/>
-                            <field name="rim"/>
+                            <field name="rim_bolts"/>
                             <field name="capless_fuel_filler"/>
                             <field name="bluetooth"/>
                             <field name="navigation"/>
@@ -107,12 +112,20 @@
                             <label for="tag_ids" class="oe_edit_only"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         </group>
-                        <group>
-                            <label for="odometer"/>
-                            <div class="o_row">
-                                <field name="odometer"/>
-                                <field name="odometer_unit"/>
-                            </div>
+                        <group string="Financial History">
+                                <field name="thomas_purchase_price"/>
+                                <field name="purchase_date"/>
+                                <field name="asset_class"/>
+                                <field name="insurance_class"/>
+                                <field name="charge_code"/>
+                                <field name="filed_as"/>
+                                <field name="company_acct"/>
+                                <field name="usage"/>
+                                <field name="fleet_status"/>
+                                <field name="disposal_year"/>
+                                <field name="disposal_date"/>
+                                <field name="disposal_proceeds"/>
+                                <field name="sold_to"/>
                         </group>
                     </group>
                 </sheet>
@@ -125,7 +138,7 @@
       <field name="name">thomas.vehicle.tree</field>
       <field name="model">fleet.vehicle</field>
       <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"></field>
-       <field name="arch" type="xml">
+      <field name="arch" type="xml">
            <xpath expr="//tree[1]" position="replace">
               <tree>
                   <field name="unit_no"></field>
@@ -138,11 +151,33 @@
                   <field name="location"></field>
               </tree>
            </xpath>
-
-          </field>
-
+       </field>
       </record>
 
+      <record id="thomas_vehicle_view_search" model="ir.ui.view">
+        <field name="name">thomas.vehicle.search</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_search"></field>
+          <field name="arch" type="xml">
+            <xpath expr="//search[1]" position="replace">
+                <search string="All vehicles">
+                    <field name="unit_no"></field>
+                    <field name="model_id"></field>
+                    <field name="trim_id"></field>
+                    <field name="license_plate"></field>
+                    <field name="tag_ids"/>
+                    <field name="location"/>
+                    <field name="state_id" />
+                        <separator/>
+                        <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                        <group expand="1" string="Group By">
+                            <filter name="groupby_status" context="{'group_by' : 'state_id'}" string="Status"/>
+                            <filter name="groupby_model" context="{'group_by' : 'model_id'}" string="Model"/>
+                        </group>
+               </search>
+            </xpath>
+        </field>
+    </record>
 
        <record id='thomas_location_view_form' model='ir.ui.view'>
         <field name="name">thomasfleet.location.form</field>

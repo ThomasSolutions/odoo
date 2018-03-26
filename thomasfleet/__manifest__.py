@@ -26,10 +26,18 @@
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        #'data/thomasfleet.location.csv',
+        'data/thomasfleet.location.csv',
         'data/thomasfleet.floormaterial.csv',
         'data/thomasfleet.fueltype.csv',
-        'data/thomasfleet.seatmaterial.csv'
+        'data/thomasfleet.seatmaterial.csv',
+        'data/thomasfleet.asset_class.csv',
+        'data/thomasfleet.insurance_class.csv',
+        #'data/thomasfleet.remove_makes.xml',
+        #'data/thomasfleet.remove_brands.xml',
+       'data/fleet.vehicle.model.brand.csv',
+       'data/fleet.vehicle.model.csv',
+       'data/thomasfleet.trim.csv'
+
     ],
     # only loaded in demonstration mode
     'demo': [
