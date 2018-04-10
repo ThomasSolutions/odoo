@@ -11,7 +11,7 @@ def dump_obj(obj):
     return fields_dict
 
 class ThomasFleetVehicle(models.Model):
-    _inherit = 'fleet.vehicle'
+    _inherit = ['fleet.vehicle']
     log = logging.getLogger('thomas')
     log.setLevel(logging.INFO)
 
