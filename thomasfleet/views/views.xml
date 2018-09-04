@@ -1,6 +1,9 @@
 <odoo>
   <data>
     <!-- explicit list view definition -->
+
+
+
     <record model="ir.ui.view" id="thomas_vehicle_view_form">
       <field name="name">thomas.vehicle.form</field>
       <field name="model">fleet.vehicle</field>
@@ -9,7 +12,10 @@
          <xpath expr="//form[1]" position="replace">
               <form string="Vehicle">
                 <header>
-                    <field name="state_id"  widget="statusbar" clickable="True" />
+                    <button name="do_something_with_the_record"
+                    string="Do something" type="object" class="btn-primary" />
+                    <button name="do_something_else" string="Second action" />
+                    <field name="lease_status"  widget="statusbar"/>
                 </header>
               <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -65,7 +71,9 @@
                          <label for="vin_id"/>
                         <field name="vin_id"></field><br/>
                         <label for="license_plate"/>
-                        <field name="license_plate"/>
+                        <field name="license_plate"/><br/>
+                        <label for="lease_status"/>
+                        <field name="lease_status"/>
                     </div>
                     <group col="2" >
                         <group string="Vehicle Specs" >
@@ -106,6 +114,7 @@
                     </group>
                     <group col="2">
                         <group string="Notes">
+                            <field name="protractor_guid"/>
                             <field name="warranty_start_date"/>
                             <field name="charge_code"/>
                             <field name="notes"/>
@@ -114,6 +123,7 @@
                         </group>
                         <group string="Financial History">
                                 <field name="thomas_purchase_price"/>
+                                <field name="betterment_cost"/>
                                 <field name="purchase_date"/>
                                 <field name="asset_class"/>
                                 <field name="insurance_class"/>
@@ -151,7 +161,7 @@
                   <field name="color"></field>
                   <field name="vin_id"></field>
                   <field name="license_plate"></field>
-                  <field name="state_id"/>
+                  <field name="fleet_status"/>
                   <field name="location"></field>
               </tree>
            </xpath>
@@ -188,11 +198,12 @@
                                 <img t-att-src="kanban_image('fleet.vehicle', 'image_small', record.id.raw_value)"/>
                             </div>
                             <div class="oe_kanban_details">
+                                <t t-log="record.fleet_status.value"/>
                                 <strong class="o_kanban_record_title">
-                                    <t t-if="record.fleet_status.raw_value=='IN SERVICE'">
+                                    <t t-if="record.fleet_status.value=='In Service'">
                                     <span t-att-style="'color:green'"><field name="unit_slug"/></span>
                                     </t>
-                                     <t t-if="record.fleet_status.raw_value!='IN SERVICE'">
+                                     <t t-if="record.fleet_status.value!='In Service'">
                                     <span t-att-style="'color:red'"><field name="unit_slug"/></span>
                                     </t>
                                 </strong>
@@ -450,6 +461,11 @@
     </record>
 
     <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="7"/>
+
+
+      <record model="ir.ui.menu" id="fleet.fleet_vehicles">
+      <field name="name">Assets</field>
+    </record>
     <!--
     <record model="ir.ui.view" id="thomasfleet.list">
       <field name="name">thomasfleet list</field>
