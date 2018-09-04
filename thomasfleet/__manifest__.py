@@ -21,8 +21,6 @@
     # any module necessary for this one to work correctly
     'depends': ['base', 'fleet'],
 
-    'external_dependencies': {'python': ['jsonpath']},
-
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
