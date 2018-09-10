@@ -204,7 +204,7 @@
                                     <span t-att-style="'color:green'"><field name="unit_slug"/></span>
                                     </t>
                                     <t t-if="record.fleet_status.raw_value">
-                                    <span>git <field name="unit_slug"/></span>
+                                    <span><field name="unit_slug"/></span>
                                     </t>
                                 </strong>
                                 <div>
