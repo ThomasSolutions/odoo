@@ -220,6 +220,7 @@ class ThomasFleetVehicle(models.Model):
         return ThomasFleetVehicle_write
 
 
+
     @api.model
     def create(self, data):
         self.log.info('CREATING THIS THING')
