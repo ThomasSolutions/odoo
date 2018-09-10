@@ -26,6 +26,7 @@
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        'data/fleet.vehicle.state.csv',
         'data/thomasfleet.location.csv',
         'data/thomasfleet.floormaterial.csv',
         'data/thomasfleet.fueltype.csv',

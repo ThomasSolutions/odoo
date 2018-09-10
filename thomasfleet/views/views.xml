@@ -200,11 +200,11 @@
                             <div class="oe_kanban_details">
                                 <t t-log="record.fleet_status.value"/>
                                 <strong class="o_kanban_record_title">
-                                    <t t-if="record.fleet_status.value=='In Service'">
+                                    <t t-if="!record.fleet_status.raw_value">
                                     <span t-att-style="'color:green'"><field name="unit_slug"/></span>
                                     </t>
-                                     <t t-if="record.fleet_status.value!='In Service'">
-                                    <span t-att-style="'color:red'"><field name="unit_slug"/></span>
+                                    <t t-if="record.fleet_status.raw_value">
+                                    <span>git <field name="unit_slug"/></span>
                                     </t>
                                 </strong>
                                 <div>
