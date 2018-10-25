@@ -23,9 +23,10 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
         'data/thomasfleet.location.csv',
         'data/thomasfleet.floormaterial.csv',

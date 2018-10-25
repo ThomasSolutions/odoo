@@ -1,0 +1,9 @@
+<odoo>
+    <data>
+        <record id="fleet_rule_invoice_visibility_user" model="ir.rule">
+            <field name="name">User has all rights on vehicle invoices</field>
+            <field name="model_id" ref="model_thomasfleet_invoice"/>
+            <field name="groups" eval="[(4, ref('fleet.fleet_group_user'))]"/>
+        </record>
+    </data>
+</odoo>

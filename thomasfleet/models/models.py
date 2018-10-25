@@ -43,7 +43,7 @@ class ThomasFleetVehicle(models.Model):
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
 
     #plate registration?
-
+    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Invoices')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
@@ -95,9 +95,7 @@ class ThomasFleetVehicle(models.Model):
                 record.protractor_guid = guid
             else:
                 record.protractor_guid = record.stored_protractor_guid
-
-
-
+    """
     def get_protractor_guid(self):
         for record in self:
             print('Computing GUID' + str(record.protractor_guid))
@@ -109,7 +107,7 @@ class ThomasFleetVehicle(models.Model):
                 #record.update({'protractor_guid': guid})
                 vals = dict(record._cache)
                 record.onchange({'protractor_guid': guid, 'stored_protractor_guid': guid},['stored_protractor_guid'],record._onchange_spec())
-
+    """
     def notes_compute(self):
         self.log.info('Computing Notes')
         for record in self:
@@ -190,7 +188,7 @@ class ThomasFleetVehicle(models.Model):
         print(response.text)
 
     def get_protractor_id(self):
-
+        print("Getting Protarctor ID for Vehicle: "+ str(self.name))
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
 
         headers = {
@@ -208,9 +206,8 @@ class ThomasFleetVehicle(models.Model):
 
 
         data = response.json()
-        print(data)
+        #print(data)
         return (data['ItemCollection'][0]['ID'])
-
 
     @api.multi
     def write(self, values):
@@ -248,6 +245,158 @@ class ThomasFleetVehicle(models.Model):
         self.log.info(record.protractor_guid)
         self.log.info('-----------------------------------------------')
         return record
+
+    @api.depends('stored_protractor_guid')
+    def _search_protractor_invoices(self):
+        for rec in self:
+            print("SEARCH INVOICES for ::" + rec.stored_protractor_guid)
+            if rec.protractor_invoices:
+                for inv in rec.protractor_invoices:
+                    print("INVOICE:::" + inv.name)
+            if rec.stored_protractor_guid == '2fbce895-e680-4960-a189-5dc233b3bc6a':
+                inv1 = {'vehicle_id': rec.id, 'protractor_guid': rec.stored_protractor_guid, 'name': 'Test 1',
+                        'description': 'Test 1', 'workOrderNumber': 'Test 1', 'invoiceNumber': 'Test 1'}
+                inv2 = {'vehicle_id': rec.id, 'protractor_guid': rec.stored_protractor_guid, 'name': 'Test 2',
+                        'description': 'Test 2', 'workOrderNumber': 'Test 2', 'invoiceNumber': 'Test 2'}
+                rec.protractor_invoices = [(0, 0, inv1), (0, 0, inv2)]
+                for inv in rec.protractor_invoices:
+                    print("SEARCH INVOICE:::" + str(inv.vehicle_id) + "::::" + inv.name)
+
+                inv_model = self.env['thomasfleet']
+
+                rec.onchange({'protractor_invoices': [(0,0,inv1),(0,0,inv2)]},['vin_id'],rec._onchange_spec())
+            else:
+                rec.protractor_invoices = []
+
+    @api.onchange('vin_id')
+    def onchange_vin(self):
+        print('STORED PROTRACTOR GUID CHANGED MF')
+
+    def _get_protractor_invoices(self):
+        #print("Getting Protarctor Invoices for Vehicle: " + str(self.name))
+        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
+
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": "2019-12-30", "%20": ""}
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+
+        print("Invoice details" +response.text)
+
+        data = response.json()
+        invoices=[]
+        for item in data['ItemCollection']:
+            print("===ITEM ===")
+            print(item)
+            print("Invoice Number:"+str(item['InvoiceNumber']))
+            print("WorkOrder Number:" + str(item['WorkOrderNumber']))
+            print("Invoice Time:" + str(item['InvoiceTime']))
+            print("Summary:" + str(item['Summary']))
+            gt = item['Summary']['GrandTotal']
+            nt = item['Summary']['NetTotal']
+            lt = item['Summary']['LaborTotal']
+            pt = item['Summary']['PartsTotal']
+
+            iT = str(item['InvoiceTime'])
+            tech = str(item['Technician']['Name'])
+            sA = str(item['ServiceAdvisor']['Name'])
+            lMB = str(item['Header']['LastModifiedBy'])
+
+            inv = {'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'workOrderNumber': item['WorkOrderNumber'], 'invoiceNumber': item['InvoiceNumber'], 'grandTotal': gt, 'laborTotal': lt, 'netTotal': nt, 'partsTotal': pt, 'technichan': tech, 'serviceAdvisor': sA, 'invoiceTime': iT, 'lastModifiedBy': lMB}
+            invoices.append((0,0,inv))
+
+        self.update({'protractor_invoices': invoices})
+        #return response.text
+
+
+
+    def _set_protractor_invoices(self):
+        #res = []
+        #inv1 = self.env['thomasfleet.invoice'].new({'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'name': 'Test 1','description': 'Test 1', 'workOrderNumber': 'Test 1', 'invoiceNumber': 'Test 1'})
+        #inv2 = self.env['thomasfleet.invoice'].new({'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'name': 'Test 2','description': 'Test 2', 'workOrderNumber': 'Test 2', 'invoiceNumber': 'Test 2'})
+
+        #res.append(inv1)
+        #res.append(inv2)
+        #self.protractor_invoices = res
+        #self.update({'protractor_invoices': [(0,0,inv1),(0,0,inv2)]})
+
+        #get invoices for stored_guid
+        #search for invoices in odoo for vehicle id
+        #determine if new invoices need to be added
+        #add if needed else return
+
+
+        for rec in self:
+            #res =[]
+            print("GET INVOICES for ::" + rec.stored_protractor_guid + "ID:::" + str(rec.id))
+
+            if rec.stored_protractor_guid == '2fbce895-e680-4960-a189-5dc233b3bc6a':
+                if rec.protractor_invoices: #don't add invoices right now if there are some
+                    for inv in rec.protractor_invoices:
+                        print("DELETING INVOICE:::" + inv.invoiceNumber)
+                        inv.unlink()
+
+                else: #add two invoices for testing
+                    print("adding two invoices")
+                    inv1 = {'vehicle_id': rec.id,'protractor_guid':rec.stored_protractor_guid,'name':'Test 1','description':'Test 1','workOrderNumber':'Test 1','invoiceNumber':'Test 1'}
+                    inv2 = {'vehicle_id': rec.id,'protractor_guid':rec.stored_protractor_guid,'name':'Test 2','description':'Test 2','workOrderNumber': 'Test 2','invoiceNumber':'Test 2'}
+                    rec.update({'protractor_invoices': [(0, 0, inv1), (0, 0, inv2)]})
+                #res.append(inv1)
+                #res.append(inv2)
+                #rec.protractor_invoices= [(0,0,inv1),(0,0,inv2)]
+                #for inv in rec.protractor_invoices:
+                 #   print("INVOICE:::" + str(inv.vehicle_id) +"::::"+ inv.name)
+                #rec.onchange({'protractor_invoices': [(0,0,inv1),(0,0,inv2)]},['protractor_invoices'],rec._onchange_spec())
+
+            #rec.update({'protractor_invoices':[(0,0,inv1),(0,0,inv2)]})
+
+        #for rec in self:
+           # print ("LOOPING RECS " + str(rec.protractor_guid))
+           # rec.protractor_invoices = [(0,0,in1),(0,0,in2)]
+
+
+        #return {'type': 'ir.actions.client', 'tag': 'reload'}
+        #invoices = []
+        #invoices = self.env['thomasfleet.protractor_invoice']
+        #for invoice in invoices:
+        #    invoice.invoiceNumber="TEST 1"
+        #    print("Invoice # " + str(invoice.invoiceNumber))
+        #invoices.append((self.id,filledInvoice1))
+       # print(filledInvoice1[0].invoiceNumber)
+        #invoice2 = self.env['thomasfleet.protractor_invoice']
+        #invoice2.create({'name': 'Test 2', 'description': 'Test 2', 'workOrderNumber': 'Test 2', 'invoiceNumber': 'Test 2'})
+        #invoices.append((self.id, invoice2))
+        #for invoice in invoices:
+          #  print(invoice.invoiceNumber)
+
+
+    @api.multi
+    def act_get_invoices(self):
+        print("INVOICE ACTION")
+        print('SELF ID ' + str(self.id))
+        for rec in self:
+            if rec.protractor_invoices:  # don't add invoices right now if there are some
+                for inv in rec.protractor_invoices:
+                    print("DELETING INVOICE:::" + inv.invoiceNumber)
+                    inv.unlink()
+
+        self._get_protractor_invoices()
+
+        self.ensure_one()
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_action')
+        res.update(
+        context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
+        domain=[('vehicle_id', '=', self.id)]
+        )
+        return res
 
 
 class ThomasFleetVehicleModel(models.Model):
@@ -305,6 +454,157 @@ class ThomasFleetInsuranceClass(models.Model):
 
     name = fields.Char('Insurance Class')
     description = fields.Char('Description')
+
+class ThomasFleetInvoiceClass(models.Model):
+    _name = 'thomasfleet.invoice'
+    _res = []
+    #vehicle_id = fields.Char()
+    vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
+    protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
+    #name = fields.Char('Name')
+    #description = fields.Char('Description')
+    invoiceTime = fields.Char('Invoice Time')
+    technichan = fields.Char('Technichan')
+    serviceAdvisor = fields.Char('Service Advisor')
+    lastModifiedBy = fields.Char('Last Modified By')
+    workOrderNumber = fields.Char('Work Order Number')
+    invoiceNumber = fields.Char('Invoice Number')
+    partsTotal = fields.Float('Parts Total')
+    subletTotal= fields.Float('Sublet Total')
+    grandTotal=fields.Float('Grand Total')
+    laborTotal=fields.Float('Labor Total')
+    netTotal=fields.Float('Net Total')
+
+
+    def get_invoices(self):
+        vehicle = self.context.get('active_id', False)
+        print('COMPUTE Vehicle ID' + str(vehicle ))
+        # dump_obj(vehicle)
+        # self.vehicle_id = self.context.get('active_id', False)
+        # print ("GETTTING INVOICES")
+        # print (self.vehicle_id.protractor_guid)
+        # self.protractor_guid = self.vehicle_id.protractor_guid
+        #self.name = 'test'
+        #self.description = 'test'
+        #self.workOrderNumber = 'test'
+        #self.invoiceNumber = 'test'
+
+        # print(self.workOrderNumber)
+
+    '''
+    def browse(self, arg=None, prefetch=None):
+
+        print("IN INVOICE BROWSE" + str(arg) +str(prefetch))
+        inv = super(ThomasFleetInvoiceClass, self).browse(arg,prefetch)
+        for item in inv:
+            print("ITEM ::" + str(item))
+        return inv
+
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        print("IN INVOICE SEARCH")
+   
+    def create(self, vals):
+        print("IN INVOICE CREATE")
+        for val in vals:
+            print("VALS::"+ val)
+
+    def browse(self, arg=None, prefetch=None):
+        print("IN INVOICE BROWSE")
+        for ar in arg:
+            print("ARG "+ str(ar))
+        return self._res[0]
+
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        print("IN INVOICE SEARCH")
+
+        vID=''
+        for arg in args:
+            print(arg)
+            if str(arg[0]) =='vehicle_id':
+                vID = str(arg[2][0])
+                print(vID)
+            else:
+                print(str(arg[0]) +"==" +str(arg[2]))
+
+        inv1 = self.env['thomasfleet.invoice'].new({'vehicle_id': vID, 'name': 'Test 1', 'description': 'Test 1', 'workOrderNumber': 'Test 1', 'invoiceNumber': 'Test 1'})
+        inv2 = self.env['thomasfleet.invoice'].new({'vehicle_id': vID, 'name': 'Test 2', 'description': 'Test 2', 'workOrderNumber': 'Test 2', 'invoiceNumber': 'Test 2'})
+
+        print("VEC ID" + vID)
+        self._res.append(inv1)
+        self._res.append(inv2)
+        return self._res
+
+
+    def _get_vehicle_id(self):
+        print("in Default get")
+        print("ACTIVE ID:::" + str(self.env['fleet.vehicle'].name))
+        print("ACTIVE ID:::" + self.env.context['active_id'])
+        for rec in self:
+            print("ACTIVE ID:::" + rec.env.context['active_id'])
+            print("Rec Name-->" + str(self.env.fleet.vehicle.name))
+            print("Current Vehicle ID-->" +  str(rec.vehicle_id.id))
+            #rec.vehicle_id = self.vehicle_id
+        #vehicle = self.env.context.get('active_id', False)
+        #print("Vehicle: "+ str(vehicle))
+        # dump_obj(vehicle)
+        # self.vehicle_id = self.context.get('active_id', False)
+        # print ("GETTTING INVOICES")
+
+        #return self.context.get('active_id', False)
+
+    
+   
+
+    @api.model
+    def search_invoices(self, args, offset=0, limit=None, order=None, count=False):
+
+        inv1 = {'name':'test', 'description':'test', 'workOrderNumber':'test','invoiceNumber':'test'}
+        record = self.env['thomasfleet.invoice']
+        record.update(inv1)
+        return record
+   
+
+    @api.multi
+    def search(self, args, offset=0, context=None,domain=None, limit=None, order=None, count=False):
+        print("Search")
+        for a in args:
+            veh = a[2][0]
+            print(str(veh))
+
+        in1 = self.env['thomasfleet.invoice'].create({'id':'5','vehicle_id': veh,
+               'name': 'Test 1',
+               'description': 'Test 1',
+               'workOrderNumber': 'Test 1',
+               'invoiceNumber': 'Test 1'})
+        in2 = self.env['thomasfleet.invoice'].create({'id':'6','vehicle_id': veh,
+               'name': 'Test 2',
+               'description': 'Test 2',
+               'workOrderNumber': 'Test 2',
+               'invoiceNumber': 'Test 2'})
+        hits = self.env['thomasfleet.invoice'].search([])
+        hits.append(in1)
+        hits.append(in2)
+        return hits
+        #self._all_invoices =[(0, 0, in1), (0, 0, in2)]
+        #return [(0, 0, in1), (0, 0, in2)]
+
+    @api.multi
+    def browse(self, arg=None, prefetch=None):
+        #for a in arg:
+         #   veh = a[2]
+        print("Browse" + str(arg))
+        return self._all_invoices
+
+     #record = self.env['thomasfleet.invoice'].new({'name': 'test', 'description': 'test', 'workOrderNumber': 'test', 'invoiceNumber': 'test'})
+        #print(record['name'])
+       # return self.new({'name': 'test', 'description': 'test', 'workOrderNumber': 'test', 'invoiceNumber': 'test'})
+    '''
+    #@api.onchange('vehicle_id')
+    #def _onchange_vehicle(self):
+    #    if self.vehicle_id:
+   # @api.onchange('vehicle_id')
+    #def _onchange_vehicle(self):
+     #   print('Vehicle ID changed '+ str(self.vehicle_id.stored_protractor_guid))
 
 
 class ThomasFleetAccessory(models.Model):

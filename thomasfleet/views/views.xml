@@ -27,22 +27,22 @@
                             help="show the contract for this vehicle">
                             <field name="contract_count" widget="statinfo" string="Contracts"/>
                         </button>
-                        <button name="act_show_log_cost"
+                        <button name="act_get_invoices"
                             type="object"
                             class="oe_stat_button"
-                            icon="fa-usd"
-                            help="show all the costs for this vehicle"
+                            icon="fa-wrench"
+                            help="show all the Protractor Service Invoices for this vehicle"
                             groups="fleet.fleet_group_manager">
-                            <field name="cost_count" widget="statinfo" string="Costs"/>
+                            Service Items
                         </button>
-                        <button name="return_action_to_open"
+                       <!-- <button name="return_action_to_open"
                             type="object"
                             class="oe_stat_button"
                             icon="fa-wrench"
                             context="{'xml_id':'fleet_vehicle_log_services_action'}"
                             help="show the services logs for this vehicle" >
                             <field name="service_count" widget="statinfo" string="Services"/>
-                        </button>
+                        </button>-->
                         <button name="return_action_to_open"
                             type="object"
                             class="oe_stat_button"
@@ -121,6 +121,7 @@
                             <label for="tag_ids" class="oe_edit_only"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         </group>
+
                         <group string="Financial History">
                                 <field name="thomas_purchase_price"/>
                                 <field name="betterment_cost"/>
@@ -379,6 +380,74 @@
                 <field name="name"/>
                 <field name="description"/>
             </form>
+        </field>
+    </record>
+
+   <record id='fleet_vehicle_odometer_view_form' model='ir.ui.view'>
+        <field name="name">fleet.vehicle.odometer.form</field>
+        <field name="model">fleet.vehicle.odometer</field>
+        <field name="arch" type="xml">
+            <form string="Odometer Logs">
+                <sheet>
+                    <group>
+                        <field name="vehicle_id"/>
+                        <field name="value" class="oe_inline"/>
+                        <field name="unit" class="oe_inline"/>
+                        <field name="date" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomas_invoice_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.invoice.form</field>
+        <field name="model">thomasfleet.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Invoice">
+               <sheet>
+                   <group>
+                       <field name="vehicle_id"/>
+                       <field name="workOrderNumber"/>
+                       <field name="invoiceNumber"/>
+                   </group>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id='thomas_invoice_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.invoice.tree</field>
+        <field name="model">thomasfleet.invoice</field>
+        <field name="arch" type="xml">
+            <tree string="Invoice" create="false" edit="false" delete="false">
+                <field name="vehicle_id"/>
+                <field name="invoiceTime"/>
+                <field name="technichan"/>
+                <field name="serviceAdvisor"/>
+                <field name="lastModifiedBy"/>
+                <field name="workOrderNumber"/>
+                <field name="invoiceNumber"/>
+                <field name="partsTotal"/>
+                <field name="laborTotal"/>
+                <field name="netTotal"/>
+                <field name="grandTotal"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id='thomas_invoice_action' model='ir.actions.act_window'>
+        <field name="name">Invoices</field>
+        <field name="res_model">thomasfleet.invoice</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            No Invoices Found
+          </p><p>
+           No Invoices Found
+          </p>
         </field>
     </record>
 

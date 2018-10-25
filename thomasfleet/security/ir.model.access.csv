@@ -1,2 +1,11 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_thomasfleet_thomasfleet,thomasfleet.thomasfleet,model_thomasfleet_thomasfleet,,1,0,0,0
+access_thomasfleet_invoice,access_thomasfleet_invoice,model_thomasfleet_invoice,fleet.fleet_group_user,1,0,0,0
+access_thomasfleet_location,access_thomasfleet_location,model_thomasfleet_location,,1,0,0,0
+access_thomasfleet_accessory_class,access_thomasfleet_accessory_class,model_thomasfleet_accessory_class,,1,0,0,0
+access_thomas_asset,access_thomas_asset,model_thomas_asset,,1,0,0,0
+access_thomasfleet_asset_class,access_thomasfleet_asset_class,model_thomasfleet_asset_class,,1,0,0,0
+access_thomasfleet_insurance_class,access_thomasfleet_insurance_class,model_thomasfleet_insurance_class,,1,0,0,0
+access_thomasfleet_seatmaterial,access_thomasfleet_seatmaterial,model_thomasfleet_seatmaterial,,1,0,0,0
+access_thomasfleet_floormaterial,access_thomasfleet_floormaterial,model_thomasfleet_floormaterial,,1,0,0,0
+access_thomasfleet_fueltype,access_thomasfleet_fueltype,model_thomasfleet_fueltype,,1,0,0,0
+access_thomasfleet_trim,access_thomasfleet_trim,model_thomasfleet_trim,,1,0,0,0
