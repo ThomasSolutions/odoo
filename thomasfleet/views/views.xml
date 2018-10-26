@@ -177,6 +177,7 @@
            <xpath expr="//kanban[1]" position="replace">
             <kanban>
                 <field name="unit_slug"/>
+                <field name="unit_no"/>
                 <field name="license_plate" />
                 <field name="model_id" />
                 <field name="driver_id" />
@@ -422,17 +423,17 @@
         <field name="model">thomasfleet.invoice</field>
         <field name="arch" type="xml">
             <tree string="Invoice" create="false" edit="false" delete="false">
-                <field name="vehicle_id"/>
-                <field name="invoiceTime"/>
+                <field name="invoiceDate"/>
                 <field name="technichan"/>
                 <field name="serviceAdvisor"/>
                 <field name="lastModifiedBy"/>
                 <field name="workOrderNumber"/>
                 <field name="invoiceNumber"/>
-                <field name="partsTotal"/>
-                <field name="laborTotal"/>
-                <field name="netTotal"/>
-                <field name="grandTotal"/>
+                <field name="partsTotal" sum="Parts Total"/>
+                <field name="laborTotal" sum="Labor Total"/>
+                <field name="subletTotal" sum="Sublet Total"/>
+                <field name="netTotal" sum="Net Total"/>
+                <field name="grandTotal" sum="Total Service Cost"/>
             </tree>
         </field>
     </record>

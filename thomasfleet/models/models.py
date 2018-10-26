@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api
 import logging, pprint,requests,json,uuid,jsonpath
-from datetime import date
+from datetime import date, datetime
 
 
 def dump_obj(obj):
@@ -34,6 +34,7 @@ class ThomasAsset(models.Model):
 class ThomasFleetVehicle(models.Model):
     _name = 'fleet.vehicle'
     _inherit = ['thomas.asset', 'fleet.vehicle']
+    _order = "unitInt asc"
 
     log = logging.getLogger('thomas')
     log.setLevel(logging.INFO)
@@ -45,6 +46,7 @@ class ThomasFleetVehicle(models.Model):
     #plate registration?
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Invoices')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
+    unitInt = fields.Integer(compute='_getInteger', store=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
     trim_id = fields.Many2one('thomasfleet.trim', 'Trim', help='Trim for the Model of the vehicle',
@@ -82,6 +84,11 @@ class ThomasFleetVehicle(models.Model):
     protractor_guid = fields.Char(compute='protractor_guid_compute')
     stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
 
+    @api.depends('unit_no')
+    def _getInteger(self):
+        for rec in self:
+            rec.unitInt = int(rec.unit_no)
+
     # accessories = fields.Many2many()
     @api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
@@ -116,6 +123,7 @@ class ThomasFleetVehicle(models.Model):
     @api.depends('unit_no', 'model_id')
     def _compute_slug(self):
         for record in self:
+
             if record.unit_no and record.model_id:
                 record.unit_slug = 'Unit # - ' + record.unit_no + '-' + record.model_id.brand_id.name + '/' + record.model_id.name
             else:
@@ -275,8 +283,8 @@ class ThomasFleetVehicle(models.Model):
     def _get_protractor_invoices(self):
         #print("Getting Protarctor Invoices for Vehicle: " + str(self.name))
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
-
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": "2019-12-30", "%20": ""}
+        da = datetime.now()
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
@@ -300,17 +308,30 @@ class ThomasFleetVehicle(models.Model):
             print("WorkOrder Number:" + str(item['WorkOrderNumber']))
             print("Invoice Time:" + str(item['InvoiceTime']))
             print("Summary:" + str(item['Summary']))
-            gt = item['Summary']['GrandTotal']
-            nt = item['Summary']['NetTotal']
-            lt = item['Summary']['LaborTotal']
-            pt = item['Summary']['PartsTotal']
+            inv={'vehicle_id': self.id,
+                 'protractor_guid': self.stored_protractor_guid,
+                 'workOrderNumber': item['WorkOrderNumber'],
+                 'invoiceNumber': item['InvoiceNumber']}
+            if 'Summary' in item:
+                inv['grandTotal'] = item['Summary']['GrandTotal']
+                inv['netTotal'] = item['Summary']['NetTotal']
+                inv['laborTotal'] = item['Summary']['LaborTotal']
+                inv['partsTotal'] = item['Summary']['PartsTotal']
+                inv['subletTotal'] = item['Summary']['SubletTotal']
+            invDT = str(item['InvoiceTime']).split("T")
+            inv['invoiceDate']= invDT[0]
+            inv['invoiceTime']= invDT[1]
+            if 'Technician' in item:
+                inv['technichan'] = str(item['Technician']['Name'])
+            if 'ServiceAdvisor' in item:
+                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+            if 'Header' in item:
+                per =str(item['Header']['LastModifiedBy'])
+                uName = per.split("\\")
+                print(uName)
+                inv['lastModifiedBy'] = uName[1]
 
-            iT = str(item['InvoiceTime'])
-            tech = str(item['Technician']['Name'])
-            sA = str(item['ServiceAdvisor']['Name'])
-            lMB = str(item['Header']['LastModifiedBy'])
-
-            inv = {'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'workOrderNumber': item['WorkOrderNumber'], 'invoiceNumber': item['InvoiceNumber'], 'grandTotal': gt, 'laborTotal': lt, 'netTotal': nt, 'partsTotal': pt, 'technichan': tech, 'serviceAdvisor': sA, 'invoiceTime': iT, 'lastModifiedBy': lMB}
+            #inv = {'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'workOrderNumber': item['WorkOrderNumber'], 'invoiceNumber': item['InvoiceNumber'], 'grandTotal': gt, 'laborTotal': lt, 'netTotal': nt, 'partsTotal': pt, 'subletTotal': slt, 'technichan': tech, 'serviceAdvisor': sA, 'invoiceTime': iT, 'lastModifiedBy': lMB}
             invoices.append((0,0,inv))
 
         self.update({'protractor_invoices': invoices})
@@ -385,7 +406,7 @@ class ThomasFleetVehicle(models.Model):
         for rec in self:
             if rec.protractor_invoices:  # don't add invoices right now if there are some
                 for inv in rec.protractor_invoices:
-                    print("DELETING INVOICE:::" + inv.invoiceNumber)
+                    print("DELETING INVOICE:::" + str(inv.invoiceNumber))
                     inv.unlink()
 
         self._get_protractor_invoices()
@@ -464,6 +485,7 @@ class ThomasFleetInvoiceClass(models.Model):
     #name = fields.Char('Name')
     #description = fields.Char('Description')
     invoiceTime = fields.Char('Invoice Time')
+    invoiceDate = fields.Char('Invoice Date')
     technichan = fields.Char('Technichan')
     serviceAdvisor = fields.Char('Service Advisor')
     lastModifiedBy = fields.Char('Last Modified By')
