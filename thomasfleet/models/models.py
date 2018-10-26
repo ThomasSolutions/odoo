@@ -196,7 +196,7 @@ class ThomasFleetVehicle(models.Model):
         print(response.text)
 
     def get_protractor_id(self):
-        print("Getting Protarctor ID for Vehicle: "+ str(self.name))
+        logging.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
 
         headers = {
@@ -210,7 +210,7 @@ class ThomasFleetVehicle(models.Model):
 
         response = requests.request("GET", url, headers=headers)
 
-        print(response.text)
+        logging.info(response.text)
 
 
         data = response.json()
@@ -297,7 +297,7 @@ class ThomasFleetVehicle(models.Model):
 
         response = requests.request("GET", url, headers=headers, params=querystring)
 
-        print("Invoice details" +response.text)
+        logging.info("Invoice details" +response.text)
 
         data = response.json()
         invoices=[]
