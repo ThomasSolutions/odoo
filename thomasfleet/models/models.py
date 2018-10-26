@@ -196,7 +196,9 @@ class ThomasFleetVehicle(models.Model):
         print(response.text)
 
     def get_protractor_id(self):
-        logging.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
+
+        self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
+
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
 
         headers = {
@@ -297,17 +299,19 @@ class ThomasFleetVehicle(models.Model):
 
         response = requests.request("GET", url, headers=headers, params=querystring)
 
-        logging.info("Invoice details" +response.text)
+
+        self.log.info("Invoice details" + response.text)
+
 
         data = response.json()
         invoices=[]
         for item in data['ItemCollection']:
-            print("===ITEM ===")
-            print(item)
-            print("Invoice Number:"+str(item['InvoiceNumber']))
-            print("WorkOrder Number:" + str(item['WorkOrderNumber']))
-            print("Invoice Time:" + str(item['InvoiceTime']))
-            print("Summary:" + str(item['Summary']))
+           # print("===ITEM ===")
+           # print(item)
+           # print("Invoice Number:"+str(item['InvoiceNumber']))
+           # print("WorkOrder Number:" + str(item['WorkOrderNumber']))
+           # print("Invoice Time:" + str(item['InvoiceTime']))
+           # print("Summary:" + str(item['Summary']))
             inv={'vehicle_id': self.id,
                  'protractor_guid': self.stored_protractor_guid,
                  'workOrderNumber': item['WorkOrderNumber'],
@@ -328,7 +332,7 @@ class ThomasFleetVehicle(models.Model):
             if 'Header' in item:
                 per =str(item['Header']['LastModifiedBy'])
                 uName = per.split("\\")
-                print(uName)
+                #print(uName)
                 inv['lastModifiedBy'] = uName[1]
 
             #inv = {'vehicle_id': self.id, 'protractor_guid': self.stored_protractor_guid, 'workOrderNumber': item['WorkOrderNumber'], 'invoiceNumber': item['InvoiceNumber'], 'grandTotal': gt, 'laborTotal': lt, 'netTotal': nt, 'partsTotal': pt, 'subletTotal': slt, 'technichan': tech, 'serviceAdvisor': sA, 'invoiceTime': iT, 'lastModifiedBy': lMB}
