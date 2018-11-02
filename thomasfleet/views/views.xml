@@ -35,6 +35,14 @@
                             groups="fleet.fleet_group_manager">
                             Service Items
                         </button>
+                         <button name="act_show_photos"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-wrench"
+                            help="show all the Photographs for this vehicle"
+                            groups="fleet.fleet_group_manager">
+                            Vehicle Pictures
+                        </button>
                        <!-- <button name="return_action_to_open"
                             type="object"
                             class="oe_stat_button"
@@ -65,9 +73,13 @@
                     </div>
                     <field name="image_medium" widget='image' class="oe_avatar"/>
                     <div class="oe_title">
-                        <h3>
+                        <h1>
                             <field name="unit_slug" class="oe_read_only"/><br/>
-                         </h3>
+                         </h1>
+                        <div class="oe_edit_only">
+                         <label for="unit_no"/>
+                         <field name="unit_no"></field><br/>
+                        </div>
                          <label for="vin_id"/>
                         <field name="vin_id"></field><br/>
                         <label for="license_plate"/>
@@ -94,6 +106,9 @@
                                 <field name="odometer"/>
                                 <field name="odometer_unit"/>
                             </div>
+                           <!-- <field name="model_name"/>
+                            <field name="make_name"/>
+                            <field name="trim_name"/>-->
                         </group>
                         <group>
                             <field name="location" class="oe_no_button" options="{'no_open':True}"/>
@@ -114,6 +129,8 @@
                     </group>
                     <group col="2">
                         <group string="Notes">
+                            <field name="qc_check"/>
+                            <field name="fin_check"/>
                             <field name="protractor_guid"/>
                             <field name="warranty_start_date"/>
                             <field name="charge_code"/>
@@ -271,6 +288,95 @@
         </field>
     </record>
 
+  <!--
+    <record id='thomas_asset_photo_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.asset_photo.form</field>
+        <field name="model">thomasfleet.asset_photo</field>
+        <field name="arch" type="xml">
+            <form string="Image">
+                <sheet>
+                    <field name="imageFile" widget="image"/>
+                    <field name="position"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomas_asset_photo_kanban' model='ir.ui.view'>
+        <field name="name">thomasfleet.asset_photo.kanban</field>
+        <field name="model">thomasfleet.asset_photo</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="photo_set_id"/>
+                <field name="imageFile"/>
+                <field name="position"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_card">
+                                <div class="o_kanban_image">
+                                    <img t-att-src="kanban_image('thomasfleet.asset_photo', 'imageFile', record.id.raw_value)"/>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <field name="position"/>
+                                </div>
+                           </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+     <record id='thomas_asset_photo_set_kanban' model='ir.ui.view'>
+        <field name="name">thomasfleet.asset_photo_set.kanban</field>
+        <field name="model">thomasfleet.asset_photo_set</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="photoDate"/>
+                <field name="encounter"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_card">
+                                <div class="oe_kanban_details">
+                                   <field name="encounter"/>
+                                    <field name="photoDate"/>
+                                </div>
+                           </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+    <record id="thomas_vehicle_images_form" model="ir.ui.view">
+        <field name="name">thomasfleet.vehicle_images.form</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle Photos">
+                <sheet>
+                    <field name="photoSets" mode="kanban"/>
+                </sheet>
+            </form>
+    </record>
+
+    <record id='thomas_asset_photoset_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.asset_photo_set.form</field>
+        <field name="model">thomasfleet.asset_photo_set</field>
+        <field name="arch" type="xml">
+            <form string="Photo Sets">
+                <field name="encounter"/>
+                <field name="photoDate"/>
+                <sheet>
+                    <field name="photos" mode="kanban"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+-->
        <record id='thomas_location_view_form' model='ir.ui.view'>
         <field name="name">thomasfleet.location.form</field>
         <field name="model">thomasfleet.location</field>
