@@ -72,9 +72,9 @@ class ThomasFleetVehicle(models.Model):
     license_plate = fields.Char('License Plate', required=False)
     trim_id = fields.Many2one('thomasfleet.trim', 'Trim', help='Trim for the Model of the vehicle',
                               domain="[('model_id','=',model_id)]")
-    #trim_name = fields.Char("Trim Name", related=trim_id.name)
-    #make_name = fields.Char("Make Name", related=model_id.brand_id.name)
-    #model_name = fields.Char("Model Name", related=model_id.name)
+    trim_name = fields.Char("Trim", related='trim_id.name')
+    make_name = fields.Char("Make", related='model_id.brand_id.name')
+    model_name = fields.Char("Model", related='model_id.name')
     location = fields.Many2one('thomasfleet.location')
     # fields.Selection([('hamilton', 'Hamilton'), ('selkirk', 'Selkirk'), ('niagara', 'Niagara')])
     door_access_code = fields.Char('Door Access Code')
@@ -201,26 +201,25 @@ class ThomasFleetVehicle(models.Model):
     def get_protractor_id(self):
 
         self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
-
-        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
-
-        headers = {
+        the_resp = "NO VIN"
+        if self.vin_id:
+            url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
+            headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
             'apiKey': "fb3c8305df2a4bd796add61e646f461c",
             'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
             'Accept': "application/json",
             'Cache-Control': "no-cache",
             'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
-        }
+            }
+            response = requests.request("GET", url, headers=headers)
 
-        response = requests.request("GET", url, headers=headers)
+            logging.info(response.text)
+            data = response.json()
+            the_resp = data['ItemCollection'][0]['ID']
 
-        logging.info(response.text)
 
-
-        data = response.json()
-        #print(data)
-        return (data['ItemCollection'][0]['ID'])
+        return the_resp
 
     @api.multi
     def write(self, values):
@@ -304,9 +303,18 @@ class ThomasFleetVehicle(models.Model):
 
         self.update({'protractor_invoices': invoices})
 
-
-
-
+    @api.multi
+    def act_show_vehicle_photos(self):
+        """ This opens log view to view and add new log for this vehicle, groupby default to only show effective costs
+            @return: the costs log view
+        """
+        self.ensure_one()
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_asset_photos_action')
+        res.update(
+            context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
+            domain=[('asset_id', '=', self.id)]
+        )
+        return res
 
 
 
@@ -336,6 +344,16 @@ class ThomasFleetVehicleModel(models.Model):
 
     trim_id = fields.One2many('thomasfleet.trim', 'model_id', 'Available Trims')
 
+    '''
+    @api.multi
+    @api.depends('name', 'brand_id')
+    def name_get(self):
+        res = []
+        for record in self:
+            name = record.name
+            res.append((record.id, name))
+        return res
+    '''
 
 class ThomasFleetTrim(models.Model):
     _name = 'thomasfleet.trim'

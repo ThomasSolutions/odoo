@@ -35,21 +35,13 @@
                             groups="fleet.fleet_group_manager">
                             Service Items
                         </button>
-                         <button name="act_show_photos"
+                       <!-- <button name="act_show_vehicle_photos"
                             type="object"
                             class="oe_stat_button"
-                            icon="fa-wrench"
+                            icon="fa-flask"
                             help="show all the Photographs for this vehicle"
                             groups="fleet.fleet_group_manager">
-                            Vehicle Pictures
-                        </button>
-                       <!-- <button name="return_action_to_open"
-                            type="object"
-                            class="oe_stat_button"
-                            icon="fa-wrench"
-                            context="{'xml_id':'fleet_vehicle_log_services_action'}"
-                            help="show the services logs for this vehicle" >
-                            <field name="service_count" widget="statinfo" string="Services"/>
+                           Vehicle Pictures
                         </button>-->
                         <button name="return_action_to_open"
                             type="object"
@@ -89,8 +81,15 @@
                     </div>
                     <group col="2" >
                         <group string="Vehicle Specs" >
-                            <field name="model_id" class="oe_no_button" options="{'no_open':True}"/>
-                            <field name="trim_id"  options="{'no_open':True}"/>
+                            <div class="oe_read_only">
+                                <label for="make_name"/><field name="make_name"/> <br/>
+                                <label for="model_name"/> <field name="model_name"/> <br/>
+                                <label for="trim_name"/><field name="trim_name"/> <br/>
+                            </div>
+                            <div class="oe_edit_only">
+                                <field name="model_id" class="oe_no_button" options="{'no_open':True}"/>
+                                <field name="trim_id"  options="{'no_open':True}"/>
+                            </div>
                             <field name="model_year"/>
                             <field name="engine"/>
                             <field name="transmission"/>
@@ -135,7 +134,6 @@
                             <field name="warranty_start_date"/>
                             <field name="charge_code"/>
                             <field name="notes"/>
-                            <label for="tag_ids" class="oe_edit_only"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         </group>
 
@@ -174,8 +172,9 @@
            <xpath expr="//tree[1]" position="replace">
               <tree>
                   <field name="unit_no"></field>
-                  <field name="model_id"/>
-                  <field name="trim_id"></field>
+                  <field name="make_name"/>
+                  <field name="model_name"></field>
+                  <field name="trim_name"></field>
                   <field name="color"></field>
                   <field name="vin_id"></field>
                   <field name="license_plate"></field>
@@ -288,7 +287,7 @@
         </field>
     </record>
 
-  <!--
+
     <record id='thomas_asset_photo_form' model='ir.ui.view'>
         <field name="name">thomasfleet.asset_photo.form</field>
         <field name="model">thomasfleet.asset_photo</field>
@@ -309,6 +308,7 @@
             <kanban>
                 <field name="photo_set_id"/>
                 <field name="imageFile"/>
+                <field name="id"/>
                 <field name="position"/>
                 <templates>
                     <t t-name="kanban-box">
@@ -353,14 +353,15 @@
 
 
     <record id="thomas_vehicle_images_form" model="ir.ui.view">
-        <field name="name">thomasfleet.vehicle_images.form</field>
-        <field name="model">fleet.vehicle</field>
+        <field name="name">thomas.asset_images.form</field>
+        <field name="model">thomas.asset</field>
         <field name="arch" type="xml">
             <form string="Vehicle Photos">
                 <sheet>
                     <field name="photoSets" mode="kanban"/>
                 </sheet>
             </form>
+        </field>
     </record>
 
     <record id='thomas_asset_photoset_form' model='ir.ui.view'>
@@ -376,7 +377,19 @@
             </form>
         </field>
     </record>
--->
+
+      <record id='thomas_asset_photos_action' model='ir.actions.act_window'>
+        <field name="name">Vehicles Photos</field>
+        <field name="res_model">thomasfleet.asset_photo_set</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new Photoset for the current unit>
+          </p>
+        </field>
+    </record>
+
        <record id='thomas_location_view_form' model='ir.ui.view'>
         <field name="name">thomasfleet.location.form</field>
         <field name="model">thomasfleet.location</field>
