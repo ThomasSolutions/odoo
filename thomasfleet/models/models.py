@@ -11,6 +11,11 @@ def dump_obj(obj):
         fields_dict[key] = obj[key]
     return fields_dict
 
+class ThomasContact(models.Model):
+    _inherit = 'res.partner'
+    department = fields.Char('Department')
+    qc_check = fields.Boolean('Data Accuracy Validation')
+
 
 class ThomasAsset(models.Model):
     _name = 'thomas.asset'
@@ -145,7 +150,7 @@ class ThomasFleetVehicle(models.Model):
 
 
     def update_protractor(self):
-        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/a70c552f-5555-4a57-b4ea-8dbb798e7013"
+        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+self.stored_protractor_guid
         vin = self.vin_id
         plateReg = "ON"
         unit = self.unit_no
@@ -153,7 +158,7 @@ class ThomasFleetVehicle(models.Model):
         theUnit = {
             "VIN":self.vin_id,
             "PlateRegistration":"ON",
-            "ID":"a70c552f-5555-4a57-b4ea-8dbb798e7013",
+            "ID":self.stored_protractor_guid,
             "IsComplete":True,
             "Unit":self.unit_no,
             "Color": self.color,
@@ -175,7 +180,7 @@ class ThomasFleetVehicle(models.Model):
             }
 
         payload =json.dumps(theUnit)
-        print(payload)
+        #print(payload)
             #"{\"IsComplete\": true,\"PlateRegistration\": \""+plateReg+"\",
         # \"VIN\": \"2C4RDGBGXDR542491\",\"Unit\": \"\",\"Color\": \"PURPLE\",
         # \"Year\": 2013,\"Make\": \"Dodge\",\"Model\": \"Grand Caravan\",
@@ -196,7 +201,7 @@ class ThomasFleetVehicle(models.Model):
 
         response = requests.request("POST", url, data=payload, headers=headers)
 
-        print(response.text)
+        #print(response.text)
 
     def get_protractor_id(self):
 
@@ -224,7 +229,7 @@ class ThomasFleetVehicle(models.Model):
     @api.multi
     def write(self, values):
         ThomasFleetVehicle_write = super(ThomasFleetVehicle,self).write(values)
-        #self.update_protractor()
+        self.update_protractor()
         #ThomasFleetVehicle_write.get_protractor_id()
         return ThomasFleetVehicle_write
 
