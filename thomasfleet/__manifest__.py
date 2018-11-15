@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Human Resources',
-    'version': '0.34',
+    'version': '0.36',
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'fleet'],
