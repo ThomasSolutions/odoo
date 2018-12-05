@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, tools
 import logging, pprint,requests,json,uuid,jsonpath
 from datetime import date, datetime
 
@@ -35,20 +35,37 @@ class ThomasAsset(models.Model):
     sold_to = fields.Char('Sold To')
     betterment_cost = fields.Char("Betterment Cost")
     lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
-    photoSets = fields.One2many('thomasfleet.asset_photo_set', 'asset_id')
+    photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set')
 
 class ThomasAssetPhotoSet(models.Model):
     _name = 'thomasfleet.asset_photo_set'
-    asset_id = fields.Many2one('thomas.asset')
+    vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
     photoDate = fields.Date("Date")
-    photos = fields.One2many('thomasfleet.asset_photo', 'photo_set_id')
-    encounter = fields.Selection([('pickup', 'Pick Up'),('service', 'Service'),('return', 'Return')])
+    photos = fields.One2many('thomasfleet.asset_photo', 'photo_set_id', 'Photos')
+    encounter = fields.Selection([('pickup', 'Pick Up'),('service', 'Service'),('return', 'Return')],'Encounter Type')
 
 class ThomasAssetPhoto(models.Model):
     _name = 'thomasfleet.asset_photo'
     photo_set_id = fields.Many2one('thomasfleet.asset_photo_set', 'PhotoSet')
-    position = fields.Selection([('left', 'Left Side'), ('right', 'Right Side'),('front', 'Front'),('back', 'Back')])
-    imageFile = fields.Binary("Photograph")
+    position = fields.Selection([('driver side', 'Driver Side'), ('passenger side', 'Passenger Side'),
+                                 ('front', 'Front'),('back', 'Back'),
+                                 ('driver side front angle', 'Driver Side front Angle'),
+                                 ('passenger side front angle', 'Passenger Side Front Angle'),
+                                 ('driver side back angle', 'Driver Side Back Angle'),
+                                 ('passenger side back angle', 'Passenger Side Back Angle')])
+    image = fields.Binary("Image", attachment=True)
+    image_small=fields.Binary("Small Image", attachment=True)
+    image_medium=fields.Binary("Medium Image", attachment=True)
+
+    @api.model
+    def create(self, vals):
+        tools.image_resize_images(vals)
+        return super(ThomasAssetPhoto, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        tools.image_resize_images(vals)
+        return super(ThomasAssetPhoto, self).write(vals)
 
 class ThomasFleetVehicle(models.Model):
     _name = 'fleet.vehicle'
@@ -57,22 +74,21 @@ class ThomasFleetVehicle(models.Model):
 
     log = logging.getLogger('thomas')
     log.setLevel(logging.INFO)
+    unitInt = fields.Integer(compute='_getInteger', store=True)
 
     def default_unit_no(self):
         last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unitInt desc')
-        print('Last Unit #' +last_vehicle.unit_no )
-        return str(int(last_vehicle.unit_no)+1)
-
+        print('Last Unit #' + last_vehicle.unit_no)
+        return str(int(last_vehicle.unit_no) + 1)
 
     # thomas_asset = fields.Many2one('thomas.asset', ondelete='cascade')
     # fleet_vehicle = fields.Many2one('fleet.vehicle', ondelete='cascade')
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
 
     #plate registration?
-    unit_no = fields.Char("Unit #", default=default_unit_no)
+    unit_no = fields.Char("Unit #")
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Invoices')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
-    unitInt = fields.Integer(compute='_getInteger', store=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
     trim_id = fields.Many2one('thomasfleet.trim', 'Trim', help='Trim for the Model of the vehicle',
@@ -114,6 +130,8 @@ class ThomasFleetVehicle(models.Model):
     stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
+
+
 
     @api.depends('unit_no')
     def _getInteger(self):
@@ -317,8 +335,11 @@ class ThomasFleetVehicle(models.Model):
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_asset_photos_action')
         res.update(
             context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
-            domain=[('asset_id', '=', self.id)]
+            domain=[('vehicle_id', '=', self.id)]
         )
+        print("Unit"+str(self.unit_no))
+        for aSet in self.photoSets:
+            print("ENCOUNTER" + aSet.encounter)
         return res
 
 
