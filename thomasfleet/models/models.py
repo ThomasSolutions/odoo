@@ -5,6 +5,7 @@ import logging, pprint,requests,json,uuid,jsonpath
 from datetime import date, datetime
 
 
+
 def dump_obj(obj):
     fields_dict = {}
     for key in obj.fields_get():
@@ -15,6 +16,7 @@ class ThomasContact(models.Model):
     _inherit = 'res.partner'
     department = fields.Char('Department')
     qc_check = fields.Boolean('Data Accuracy Validation')
+    lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts')
 
 
 class ThomasAsset(models.Model):
@@ -36,6 +38,7 @@ class ThomasAsset(models.Model):
     betterment_cost = fields.Char("Betterment Cost")
     lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set')
+    inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions')
 
 class ThomasAssetPhotoSet(models.Model):
     _name = 'thomasfleet.asset_photo_set'
@@ -88,6 +91,8 @@ class ThomasFleetVehicle(models.Model):
     #plate registration?
     unit_no = fields.Char("Unit #")
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Invoices')
+    lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Contracts')
+    lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
@@ -130,7 +135,7 @@ class ThomasFleetVehicle(models.Model):
     stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
-
+    accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories")
 
 
     @api.depends('unit_no')
@@ -165,6 +170,12 @@ class ThomasFleetVehicle(models.Model):
                 record.unit_slug = 'Unit # - ' + record.unit_no + '-' + record.model_id.brand_id.name + '/' + record.model_id.name
             else:
                 record.unit_slug = 'Unit # - '
+
+    def _compute_thomas_counts(self):
+
+        Agreements = self.env['thomaslease.lease']
+        for record in self:
+            record.lease_agreements_count = Agreements.search_count([('vehicle_id', '=', record.id)])
 
 
     def update_protractor(self):
@@ -345,6 +356,21 @@ class ThomasFleetVehicle(models.Model):
 
 
     @api.multi
+    def act_show_vehicle_lease_agreements(self):
+        """ This opens log view to view and add new log for this vehicle, groupby default to only show effective costs
+            @return: the costs log view
+        """
+        self.ensure_one()
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_lease_agreements_action')
+        res.update(
+            context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
+            domain=[('vehicle_id', '=', self.id)]
+        )
+        print("Unit" + str(self.unit_no))
+
+        return res
+
+    @api.multi
     def act_get_invoices(self):
         print("INVOICE ACTION")
         print('SELF ID ' + str(self.id))
@@ -431,6 +457,13 @@ class ThomasFleetInsuranceClass(models.Model):
     name = fields.Char('Insurance Class')
     description = fields.Char('Description')
 
+class ThomasFleetInclusions(models.Model):
+    _name = 'thomasfleet.inclusions'
+
+    name = fields.Char('Inclusion')
+    description = fields.Char('Description')
+    inclusion_cost= fields.Float('Cost')
+
 class ThomasFleetInvoiceClass(models.Model):
     _name = 'thomasfleet.invoice'
     _res = []
@@ -449,16 +482,21 @@ class ThomasFleetInvoiceClass(models.Model):
     laborTotal=fields.Float('Labor Total')
     netTotal=fields.Float('Net Total')
 
+class ThomasFleetAccessoryType(models.Model):
+    _name='thomasfleet.accessory_type'
+    name = fields.Char("Accessory Type")
 
 class ThomasFleetAccessory(models.Model):
-    _name = 'thomasfleet.accessory_class'
+    _name = 'thomasfleet.accessory'
 
+    vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
     name = fields.Char('Accessory Name')
     description = fields.Char('Description')
     unit_no = fields.Char('Unit #')
     thomas_purchase_price = fields.Float('Thomas Purchase Price')
-    purchase_date = fields.Char('Purchase Date')
-    type = fields.Char('Accessory Type')
+    purchase_date = fields.Date('Purchase Date')
+    type = fields.Many2one('thomasfleet.accessory_type', 'Accessory Type')
+    #fields.Selection([('plow','Plow'),('transponder','Transponder')],'Accessory Type')
     #     name = fields.Char()
     #     value = fields.Integer()
     #     value2 = fields.Float(compute="_value_pc", store=True)

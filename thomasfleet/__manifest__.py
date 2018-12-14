@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Human Resources',
-    'version': '0.37',
+    'version': '0.38',
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'fleet'],
@@ -25,6 +25,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/views.xml',
+        'views/lease_views.xml',
         'views/templates.xml',
         'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
@@ -38,7 +39,11 @@
         #'data/thomasfleet.remove_brands.xml',
        'data/fleet.vehicle.model.brand.csv',
        'data/fleet.vehicle.model.csv',
-       'data/thomasfleet.trim.csv'
+       'data/thomasfleet.trim.csv',
+        'data/thomasfleet.inclusions.csv',
+        'data/thomasfleet.accessory_type.csv'
+
+
 
     ],
     # only loaded in demonstration mode
@@ -46,3 +51,4 @@
         'demo/demo.xml',
     ],
 }
+

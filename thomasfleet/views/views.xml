@@ -30,13 +30,21 @@
                 </header>
               <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="return_action_to_open"
+                       <!-- <button name="return_action_to_open"
                             type="object"
                             class="oe_stat_button"
                             icon="fa-book"
                             context="{'xml_id':'fleet_vehicle_log_contract_action', 'search_default_open': 1}"
                             help="show the contract for this vehicle">
                             <field name="contract_count" widget="statinfo" string="Contracts"/>
+                        </button>-->
+                         <button name="act_show_vehicle_lease_agreements"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-book"
+                            help="show all the Lease Agreements for this vehicle"
+                            groups="fleet.fleet_group_manager">
+                           <field name="lease_agreements_count" widget="statinfo" string="Lease Agreements"/>
                         </button>
                         <button name="act_get_invoices"
                             type="object"
@@ -90,8 +98,9 @@
                         <label for="lease_status"/>
                         <field name="lease_status"/>
                     </div>
+
                     <group col="2" >
-                        <group string="Vehicle Specs" >
+                        <group string="Vehicle Specs">
                             <div class="oe_read_only">
                                 <label for="make_name"/><field name="make_name"/> <br/>
                                 <label for="model_name"/> <field name="model_name"/> <br/>
@@ -122,6 +131,7 @@
                             <field name="trim_name"/>-->
                         </group>
                         <group>
+                            <br></br>
                             <field name="location" class="oe_no_button" options="{'no_open':True}"/>
                             <field name="door_access_code"></field>
                             <field name="wheel_studs"/>
@@ -137,6 +147,18 @@
                             <field name="bluetooth"/>
                             <field name="navigation"/>
                         </group>
+                    </group>
+                    <group>
+                        <field name="inclusions" widget="many2many_tags"/>
+                            <field name="accessories">
+                                <tree>
+                                    <field name="unit_no"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="type"/>
+                                    <field name="thomas_purchase_price"/>
+                                </tree>
+                            </field>
                     </group>
                     <group col="2">
                         <group string="Notes">
@@ -434,6 +456,18 @@
         </field>
     </record>
 
+         <record id='thomas_lease_agreements_action' model='ir.actions.act_window'>
+        <field name="name">Vehicles Lease Agreements</field>
+        <field name="res_model">thomaslease.lease</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new Lease Agreement for the current unit
+          </p>
+        </field>
+    </record>
+
        <record id='thomas_location_view_form' model='ir.ui.view'>
         <field name="name">thomasfleet.location.form</field>
         <field name="model">thomasfleet.location</field>
@@ -520,7 +554,27 @@
         </field>
     </record>
 
+    <record id='thomas_inclusions_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.inclusions.form</field>
+        <field name="model">thomasfleet.inclusions</field>
+        <field name="arch" type="xml">
+            <form string="Inclusions">
+                <field name="name"/>
+            </form>
+        </field>
+    </record>
 
+
+    <record id='thomas_inclusions_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.inclusions.tree</field>
+        <field name="model">thomasfleet.inclusions</field>
+        <field name="arch" type="xml">
+            <tree string="Inclusions" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
       <record id='thomas_model_trim_view_tree' model='ir.ui.view'>
         <field name="name">thomasfleet.trim.tree</field>
         <field name="model">thomasfleet.trim</field>
@@ -631,6 +685,23 @@
 
     <menuitem action="thomas_model_trims_action" parent="fleet.fleet_configuration" id="thomas_model_trims_menu" sequence="3"/>
 
+     <record id='thomas_accessory_action' model='ir.actions.act_window'>
+        <field name="name">Accessories</field>
+        <field name="res_model">thomasfleet.accessory</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new trim type for a model.
+          </p><p>
+            Each model can have more than one trim types.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_accessory_action" parent="fleet.fleet_configuration" id="thomas_accessory_menu" sequence="4"/>
+
+
     <record id='thomas_location_action' model='ir.actions.act_window'>
         <field name="name">Locations</field>
         <field name="res_model">thomasfleet.location</field>
@@ -645,7 +716,7 @@
         </field>
     </record>
 
-    <menuitem action="thomas_location_action" parent="fleet.fleet_configuration" id="thomas_location_menu" sequence="4"/>
+    <menuitem action="thomas_location_action" parent="fleet.fleet_configuration" id="thomas_location_menu" sequence="5"/>
 
    <record id='thomas_seatmaterial_action' model='ir.actions.act_window'>
         <field name="name">Seat Materials</field>
@@ -661,7 +732,7 @@
         </field>
     </record>
 
-    <menuitem action="thomas_seatmaterial_action" parent="fleet.fleet_configuration" id="thomas_seatmaterial_menu" sequence="5"/>
+    <menuitem action="thomas_seatmaterial_action" parent="fleet.fleet_configuration" id="thomas_seatmaterial_menu" sequence="6"/>
       
       <record id='thomas_floormaterial_action' model='ir.actions.act_window'>
         <field name="name">Floor Materials</field>
@@ -677,7 +748,7 @@
         </field>
     </record>
 
-    <menuitem action="thomas_floormaterial_action" parent="fleet.fleet_configuration" id="thomas_floormaterial_menu" sequence="6"/>
+    <menuitem action="thomas_floormaterial_action" parent="fleet.fleet_configuration" id="thomas_floormaterial_menu" sequence="7"/>
       
       <record id='thomas_fueltype_action' model='ir.actions.act_window'>
         <field name="name">Fuel Types</field>
@@ -693,7 +764,7 @@
         </field>
     </record>
 
-    <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="7"/>
+    <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="8"/>
 
 
       <record model="ir.ui.menu" id="fleet.fleet_vehicles">

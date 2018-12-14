@@ -1,0 +1,145 @@
+<odoo>
+  <data>
+        <record id='thomaslease_lease_view_form' model='ir.ui.view'>
+        <field name="name">thomaslease.lease.form</field>
+        <field name="model">thomaslease.lease</field>
+        <field name="arch" type="xml">
+            <form string="Lease Agreements">
+                 <header>
+                    <button name="do_something_with_the_record"
+                    string="Stage 1" type="object" class="btn-primary" />
+                    <button name="do_something_else" string="Stage 2" />
+                    <field name="lease_status"  widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group col="3" colspan="4">
+                            <group string="Unit">
+                                <field name="unit_no"/>
+                                <field name="vehicle_id"/>
+                            </group>
+                            <group string="Customer">
+                                <field name="customer_id"/>
+                            </group>
+                            <group string="Lease Details">
+                                <field name="lease_number"/>
+                                <field name="lease_start_date"/>
+                                <field name="min_lease_end_date"/>
+                                <field name="monthly_mileage"/>
+                                <field name="mileage_overage_rate"/>
+                            </group>
+                        </group>
+                        <field name="inclusions">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="inclusion_cost"/>
+                                </tree>
+                        </field>
+                         <field name="accessories">
+                                <tree>
+                                    <field name="unit_no"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="type"/>
+                                    <field name="thomas_purchase_price"/>
+                                </tree>
+                         </field>
+
+                        <group string="Payments">
+                            <field name="monthly_rate"/>
+                            <p>Inclusions and Accessories charges + others</p>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomaslease_lease_view_tree' model='ir.ui.view'>
+        <field name="name">thomaslease.lease.tree</field>
+        <field name="model">thomaslease.lease</field>
+        <field name="arch" type="xml">
+            <tree string="Lease Agreements">
+                <field name="unit_no"/>
+                <field name="lease_number"/>
+                <field name="lease_start_date"/>
+                <field name="vehicle_id"/>
+                <field name="customer_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id='thomaslease_lease_view_kanban' model='ir.ui.view'>
+        <field name="name">thomaslease.lease.kanban</field>
+        <field name="model">thomaslease.lease</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div>
+                                <strong>
+                                    <field name="vehicle_id"/>
+                                    <field name="customer_id"/>
+                                </strong>
+                            </div>
+                            <div>
+                                <span class="pull-right"><field name="lease_number"/> Km</span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id='thomaslease_lease_view_search' model='ir.ui.view'>
+        <field name="name">thomaslease.lease.search</field>
+        <field name="model">thomaslease.lease</field>
+        <field name="arch" type="xml">
+            <search string="Lease Agreements" >
+                <field name="unit_no"/>
+                <field name="vehicle_id" />
+                <field name="customer_id"/>
+                <field name="lease_number"/>
+                <group expand="0" string="Group By">
+                   <filter name="groupby_vehicle_id" context="{'group_by' : 'vehicle_id'}" string="Vehicle"/>
+                    <filter name="groupby_customer" context="{'group_by' : 'customer_id'}" string="Customer"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+
+    <record id='thomaslease_lease_action' model='ir.actions.act_window'>
+        <field name="name">Lease Agreements</field>
+        <field name="res_model">thomaslease.lease</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="context">{"search_default_groupby_vehicle" : True}</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a lease agreement.
+          </p>
+          <p>
+            Blah Blah Blah
+          </p>
+        </field>
+    </record>
+    <menuitem name="Lease Agreements"  id="lease_agreements_main" sequence="2"/>
+
+    <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main" id="thomaslease_lease_menu" />
+
+    <menuitem name="Work Orders"  id="work_orders_main" sequence="2"/>
+
+    <menuitem name="Work Orders" action="thomaslease_lease_action" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+
+    <menuitem name="Invoices"  id="invoices_main" sequence="2"/>
+
+    <menuitem name="Invoices" action="thomaslease_lease_action" parent="invoices_main" id="thomasfleet_invoices_menu" />
+
+
+  </data>
+</odoo>
