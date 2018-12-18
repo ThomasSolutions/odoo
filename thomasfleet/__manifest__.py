@@ -29,6 +29,7 @@
         'views/templates.xml',
         'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
+        'data/thomasfleet.lease_status.csv',
         'data/thomasfleet.location.csv',
         'data/thomasfleet.floormaterial.csv',
         'data/thomasfleet.fueltype.csv',

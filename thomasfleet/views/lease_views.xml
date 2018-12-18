@@ -22,7 +22,9 @@
                                 <field name="customer_id"/>
                             </group>
                             <group string="Lease Details">
-                                <field name="lease_number"/>
+                                 <field name="lease_number"/>
+                                <field name="po_number"/>
+                                <field name="lease_status"/>
                                 <field name="lease_start_date"/>
                                 <field name="min_lease_end_date"/>
                                 <field name="monthly_mileage"/>
@@ -122,9 +124,6 @@
         <field name="help" type="html">
           <p class="oe_view_nocontent_create">
             Click to create a lease agreement.
-          </p>
-          <p>
-            Blah Blah Blah
           </p>
         </field>
     </record>

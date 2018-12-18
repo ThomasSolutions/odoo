@@ -563,7 +563,43 @@
             </form>
         </field>
     </record>
+  <record id='thomas_lease_status_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.lease_status.form</field>
+        <field name="model">thomasfleet.lease_status</field>
+        <field name="arch" type="xml">
+            <form string="Lease Status">
+                <field name="name"/>
+                <field name="description"/>
+            </form>
+        </field>
+    </record>
 
+      <record id='thomas_lease_status_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.lease_status.tree</field>
+        <field name="model">thomasfleet.lease_status</field>
+        <field name="arch" type="xml">
+            <tree string="Lease Status" editable="top">
+                <field name="name" />
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id='thomas_lease_status_action' model='ir.actions.act_window'>
+        <field name="name">Lease Status</field>
+        <field name="res_model">thomasfleet.lease_status</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new trim type for a model.
+          </p><p>
+            Each model can have more than one trim types.
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_lease_status_action" parent="fleet.fleet_configuration" id="thomas_lease_status_menu" sequence="9"/>
 
     <record id='thomas_inclusions_view_tree' model='ir.ui.view'>
         <field name="name">thomasfleet.inclusions.tree</field>
@@ -575,6 +611,8 @@
             </tree>
         </field>
     </record>
+
+
       <record id='thomas_model_trim_view_tree' model='ir.ui.view'>
         <field name="name">thomasfleet.trim.tree</field>
         <field name="model">thomasfleet.trim</field>

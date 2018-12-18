@@ -15,6 +15,8 @@ access_thomasfleet_seatmaterial_user,thomasfleet.seatmaterial.user,model_thomasf
 access_thomasfleet_seatmaterial_manager,thomasfleet.seatmaterial.manager,model_thomasfleet_seatmaterial,base.group_system,1,1,1,1
 access_thomasfleet_floormaterial_user,thomasfleet.floormaerial.user,model_thomasfleet_floormaterial,base.group_user,1,0,0,0
 access_thomasfleet_floormaterial_manager,thomasfleet.floormaerial.manager,model_thomasfleet_floormaterial,base.group_system,1,1,1,1
+access_thomasfleet_lease_status_user,thomasfleet.lease_status.user,model_thomasfleet_lease_status,base.group_user,1,0,0,0
+access_thomasfleet_lease_status_manager,thomasfleet.lease_status.manager,model_thomasfleet_lease_status,base.group_system,1,1,1,1
 access_thomasfleet_fueltype_user,thomasfleet.fueltpe.user,model_thomasfleet_fueltype,base.group_user,1,0,0,0
 access_thomasfleet_fueltype_manager,thomasfleet.fueltpe.manager,model_thomasfleet_fueltype,base.group_system,1,1,1,1
 access_thomasfleet_trim_user,thomasfleet.trim.user,model_thomasfleet_trim,base.group_user,1,0,0,0

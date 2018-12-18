@@ -36,7 +36,8 @@ class ThomasAsset(models.Model):
     disposal_proceeds = fields.Float('Disposal Proceeds')
     sold_to = fields.Char('Sold To')
     betterment_cost = fields.Char("Betterment Cost")
-    lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
+    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Status')
+   # lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set')
     inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions')
 
@@ -136,7 +137,7 @@ class ThomasFleetVehicle(models.Model):
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
     accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories")
-
+    write_to_protractor = fields.Boolean(default=False)
 
     @api.depends('unit_no')
     def _getInteger(self):
@@ -151,9 +152,9 @@ class ThomasFleetVehicle(models.Model):
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
                 print('Retrieved GUID' + guid)
-                record.write({'stored_protractor_guid': guid})
-                record.stored_protractor_guid = guid
-                record.protractor_guid = guid
+                record.write({'stored_protractor_guid': guid['id']})
+                record.stored_protractor_guid = guid['id']
+                record.protractor_guid = guid['id']
             else:
                 record.protractor_guid = record.stored_protractor_guid
 
@@ -228,13 +229,13 @@ class ThomasFleetVehicle(models.Model):
             'Postman-Token': "2e5fe1e2-b08e-41b8-aab1-58b75642351a"
         }
 
-        response = requests.request("POST", url, data=payload, headers=headers)
+        #response = requests.request("POST", url, data=payload, headers=headers)
 
         #print(response.text)
 
     def get_protractor_id(self):
-
-        self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
+        print("IN GET PROTRACTOR ID for" + str(self.vin_id))
+       # self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
         the_resp = "NO VIN"
         if self.vin_id:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
@@ -250,21 +251,52 @@ class ThomasFleetVehicle(models.Model):
 
             logging.info(response.text)
             data = response.json()
-            the_resp = data['ItemCollection'][0]['ID']
+            the_id= False
+            for item in data['ItemCollection']:
+                the_id = item['ID']
 
+            if not the_id:
+                the_id = uuid.uuid4()
+                the_resp={'id':the_id,'update':True}
+                print("Setting Write to protractor cause no id found")
+
+
+
+
+            else:
+                print("Found an existing unit: "+the_id)
+                the_resp = {'id':the_id,'update':False}
+                 #this can only be set on create
 
         return the_resp
 
     @api.multi
     def write(self, values):
-        ThomasFleetVehicle_write = super(ThomasFleetVehicle,self).write(values)
-        self.update_protractor()
+        #we only want to update protractor if the unit doesn't exist the firt time
+        #subsequent updates should happen
+
+        print("IN WRITE FUNCTION")
+
+        record = super(ThomasFleetVehicle,self).write(
+            values)
+
+        print("Loop Breaker" + str(self.env.context.get('skip_update')))
+        if self.env.context.get('skip_update'):
+            print("BUSTING OUT")
+            return
+        else:
+            print("updating protractor")
+            self.update_protractor()
+
+
         #ThomasFleetVehicle_write.get_protractor_id()
-        return ThomasFleetVehicle_write
+
+        return record
 
 
     @api.model
     def create(self, data):
+        print ("IN CREATE FUNCTION")
         '''
         self.log.info('CREATING THIS THING')
         last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unit_no')
@@ -287,10 +319,27 @@ class ThomasFleetVehicle(models.Model):
                 record.unit_no = str(right_now_yr * 100)
         '''
 
-        record = super(ThomasFleetVehicle, self).create(data)
-        record.protractor_guid = uuid.uuid4()
+        self = self.with_context(skip_update=True)
 
-        return record
+
+        print("before create")
+
+        res = super(ThomasFleetVehicle, self).create(data)
+
+        print("after create")
+        guid= res.get_protractor_id()
+        print("GUID UDPATE VALUE" + str(guid['update']))
+        if guid['update']:
+            self = self.with_context(skip_update=False)
+            res.with_context(self).stored_protractor_guid = guid['id']
+        else:
+            res.stored_protractor_guid = guid['id']
+        print("UPDATED CONTEXT" + str(self.env.context.get('skip_update')))
+
+
+        print("after setting guid")
+
+        return res
 
     def _get_protractor_invoices(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
@@ -416,6 +465,10 @@ class ThomasFleetTrim(models.Model):
     model_name = fields.Char(related='model_id.name')
     make_name = fields.Char(related='model_id.brand_id.name')
 
+class ThomasFleetLeaseStatus(models.Model):
+    _name = 'thomasfleet.lease_status'
+    name = fields.Char('Lease Status')
+    description = fields.Char('Description')
 
 class ThomasFleetLocation(models.Model):
     _name = 'thomasfleet.location'
