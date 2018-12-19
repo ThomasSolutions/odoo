@@ -4,17 +4,22 @@ from odoo import models, fields, api
 
 
 class ThomasLease(models.Model):
+
+    def _getLeaseDefault(self):
+        return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
+
     _name = 'thomaslease.lease'
     lease_number = fields.Char('Lease ID',readonly=True)
     po_number = fields.Char("Purchase Order #")
-    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Status')
+    lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
     lease_start_date = fields.Date("Rental Period is from")
     min_lease_end_date = fields.Date("To")
     monthly_rate = fields.Float("Monthly Rate")
     monthly_mileage = fields.Integer("Monthly Mileage")
     mileage_overage_rate =fields.Float("Additional Mileage Charge")
     customer_id = fields.Many2one("res.partner", "Customer")
-    vehicle_id = fields.Many2one("fleet.vehicle", "Vehicle")
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
+    #unit_no = fields.Many2one("fleet.vehicle.unit_no", "Unit No")
     unit_no = fields.Char('Unit #',related="vehicle_id.unit_no",readonly=True)
     inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True)
     accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True)
@@ -24,6 +29,8 @@ class ThomasLease(models.Model):
     #accessories_base_rate = fields.Float(compute="_calcBaseAccRate", string="Accessor List Rate")
    # accessory_discount=fields.float('Accessor Discount')
     #accessory_rate =fields.float(compute="_caclAccRate",string='Accessory Rate')
+
+
     @api.multi
     def write(self, values):
         ThomasLease_write = super(ThomasLease, self).write(values)
@@ -38,6 +45,16 @@ class ThomasLease(models.Model):
 
         # ThomasFleetVehicle_write.get_protractor_id()
         return ThomasLease_write
+
+    @api.multi
+    @api.depends('lease_number')
+    def name_get(self):
+        res = []
+        for record in self:
+            name = record.lease_number
+            res.append((record.id, name))
+        return res
+
 
     @api.model
     def create(self, data):

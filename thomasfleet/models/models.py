@@ -12,12 +12,6 @@ def dump_obj(obj):
         fields_dict[key] = obj[key]
     return fields_dict
 
-class ThomasContact(models.Model):
-    _inherit = 'res.partner'
-    department = fields.Char('Department')
-    qc_check = fields.Boolean('Data Accuracy Validation')
-    lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts')
-
 
 class ThomasAsset(models.Model):
     _name = 'thomas.asset'
@@ -91,17 +85,19 @@ class ThomasFleetVehicle(models.Model):
 
     #plate registration?
     unit_no = fields.Char("Unit #")
-    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Invoices')
-    lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Contracts')
+    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Service Items')
+    lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N')
     license_plate = fields.Char('License Plate', required=False)
-    trim_id = fields.Many2one('thomasfleet.trim', 'Trim', help='Trim for the Model of the vehicle',
+    brand_id = fields.Many2one(related='model_id.brand_id', string='Make')
+
+    model_id = fields.Many2one('fleet.vehicle.model', 'Model', required=True, help='Model of the vehicle',
+                               domain="[('brand_id','=',brand_id)]")
+
+    trim_id = fields.Many2one('thomasfleet.trim', string='Trim', help='Trim for the Model of the vehicle',
                               domain="[('model_id','=',model_id)]")
-    trim_name = fields.Char("Trim", related='trim_id.name')
-    make_name = fields.Char("Make", related='model_id.brand_id.name')
-    model_name = fields.Char("Model", related='model_id.name')
     location = fields.Many2one('thomasfleet.location')
     # fields.Selection([('hamilton', 'Hamilton'), ('selkirk', 'Selkirk'), ('niagara', 'Niagara')])
     door_access_code = fields.Char('Door Access Code')
@@ -139,6 +135,19 @@ class ThomasFleetVehicle(models.Model):
     accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories")
     write_to_protractor = fields.Boolean(default=False)
 
+    @api.multi
+    @api.depends('unit_no')
+    def name_get(self):
+        if self._context.get('lease'):
+            res = []
+            for record in self:
+                name = record.unit_no
+                res.append((record.id, name))
+            return res
+        else:
+            print("Context is none")
+            return super(ThomasFleetVehicle, self).name_get()
+
     @api.depends('unit_no')
     def _getInteger(self):
         for rec in self:
@@ -151,7 +160,7 @@ class ThomasFleetVehicle(models.Model):
             print('Computing GUID' + str(record.stored_protractor_guid))
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
-                print('Retrieved GUID' + guid)
+                print('Retrieved GUID' + guid['id'])
                 record.write({'stored_protractor_guid': guid['id']})
                 record.stored_protractor_guid = guid['id']
                 record.protractor_guid = guid['id']
@@ -259,10 +268,6 @@ class ThomasFleetVehicle(models.Model):
                 the_id = uuid.uuid4()
                 the_resp={'id':the_id,'update':True}
                 print("Setting Write to protractor cause no id found")
-
-
-
-
             else:
                 print("Found an existing unit: "+the_id)
                 the_resp = {'id':the_id,'update':False}
@@ -412,7 +417,7 @@ class ThomasFleetVehicle(models.Model):
         self.ensure_one()
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_lease_agreements_action')
         res.update(
-            context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
+            #context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
             domain=[('vehicle_id', '=', self.id)]
         )
         print("Unit" + str(self.unit_no))
@@ -443,27 +448,33 @@ class ThomasFleetVehicle(models.Model):
 class ThomasFleetVehicleModel(models.Model):
     _inherit = 'fleet.vehicle.model'
 
+    name = fields.Char('Model name', required=True)
     trim_id = fields.One2many('thomasfleet.trim', 'model_id', 'Available Trims')
 
-    '''
     @api.multi
-    @api.depends('name', 'brand_id')
+    @api.depends('name')
     def name_get(self):
         res = []
         for record in self:
             name = record.name
             res.append((record.id, name))
         return res
-    '''
+
+
+
 
 class ThomasFleetTrim(models.Model):
     _name = 'thomasfleet.trim'
 
     name = fields.Char('Trim Name')
     description = fields.Char('Description')
-    model_id = fields.Many2one('fleet.vehicle.model', 'Model' 'Available Trims')
-    model_name = fields.Char(related='model_id.name')
-    make_name = fields.Char(related='model_id.brand_id.name')
+    brand_id = fields.Many2one(related='model_id.brand_id', string='Make')
+
+    model_id = fields.Many2one('fleet.vehicle.model', required=True, string='Model', help='Model of the vehicle',
+                               domain="[('brand_id','=',brand_id)]")
+
+    #model_name = fields.Char(related='model_id.name')
+    #make_name = fields.Char(related='model_id.brand_id.name')
 
 class ThomasFleetLeaseStatus(models.Model):
     _name = 'thomasfleet.lease_status'

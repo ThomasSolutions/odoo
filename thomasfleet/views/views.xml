@@ -101,15 +101,12 @@
 
                     <group col="2" >
                         <group string="Vehicle Specs">
-                            <div class="oe_read_only">
-                                <label for="make_name"/><field name="make_name"/> <br/>
-                                <label for="model_name"/> <field name="model_name"/> <br/>
-                                <label for="trim_name"/><field name="trim_name"/> <br/>
-                            </div>
-                            <div class="oe_edit_only">
-                               <label for="model_id"/><field name="model_id" class="oe_no_button" options="{'no_open':True}"/>
-                               <label for="trim_id"/><field name="trim_id"  options="{'no_open':True}"/>
-                            </div>
+                           <!-- <field name="make_name" class="oe_read_only"/>
+                            <field name="model_name" class="oe_read_only"/>
+                            <field name="trim_name" class="oe_read_only"/>-->
+                            <field name="brand_id"  options="{'no_open':True}"/>
+                            <field name="model_id"  options="{'no_open':True}"/>
+                            <field name="trim_id"  options="{'no_open':True}"/>
                             <field name="unitInt" invisible="1"/>
                             <field name="model_year"/>
                             <field name="engine"/>
@@ -207,9 +204,9 @@
               <tree>
                  <field name="unitInt" invisible="1"></field>
                   <field name="unit_no"></field>
-                  <field name="make_name"/>
-                  <field name="model_name"></field>
-                  <field name="trim_name"></field>
+                  <field name="brand_id"/>
+                  <field name="model_id"></field>
+                  <field name="trim_id"></field>
                   <field name="color"></field>
                   <field name="vin_id"></field>
                   <field name="license_plate"></field>
@@ -231,6 +228,8 @@
                 <field name="unit_no"/>
                 <field name="unitInt" invisible="1"/>
                 <field name="license_plate" />
+                <field name="brand_id" />
+                <field name="model_id" />
                 <field name="model_id" />
                 <field name="driver_id" />
                 <field name="location" />
@@ -305,6 +304,7 @@
             <xpath expr="//search[1]" position="replace">
                 <search string="All vehicles">
                     <field name="unit_no"></field>
+                    <field name="brand_id"></field>
                     <field name="model_id"></field>
                     <field name="trim_id"></field>
                     <field name="license_plate"></field>
@@ -330,8 +330,10 @@
         <field name="arch" type="xml">
             <form string="Image">
                 <sheet>
-                    <field name="position"/>
-                    <field name="image" widget="image"/>
+                    <group>
+                        <field name="position"/>
+                        <field name="image" widget="image"/>
+                    </group>
                 </sheet>
             </form>
         </field>
@@ -460,7 +462,8 @@
         <field name="name">Vehicles Lease Agreements</field>
         <field name="res_model">thomaslease.lease</field>
         <field name="view_type">form</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"lease" : True}</field>
         <field name="help" type="html">
           <p class="oe_view_nocontent_create">
             Click to create a new Lease Agreement for the current unit
@@ -473,7 +476,11 @@
         <field name="model">thomasfleet.location</field>
         <field name="arch" type="xml">
             <form string="Locations">
+                <sheet>
+                    <group>
                 <field name="name"/>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
@@ -494,8 +501,12 @@
         <field name="model">thomasfleet.seatmaterial</field>
         <field name="arch" type="xml">
             <form string="Seat Materials">
-                <field name="name"/>
-                <field name="description"/>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
@@ -516,8 +527,12 @@
         <field name="model">thomasfleet.floormaterial</field>
         <field name="arch" type="xml">
             <form string="Floor Materials">
-                <field name="name"/>
-                <field name="description"/>
+                <sheet>
+                    <group>
+                         <field name="name"/>
+                         <field name="description"/>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
@@ -538,7 +553,11 @@
         <field name="model">thomasfleet.fueltype</field>
         <field name="arch" type="xml">
             <form string="Fuel Type">
+                   <sheet>
+                    <group>
                 <field name="name"/>
+                    </group>
+                   </sheet>
             </form>
         </field>
     </record>
@@ -559,7 +578,11 @@
         <field name="model">thomasfleet.inclusions</field>
         <field name="arch" type="xml">
             <form string="Inclusions">
-                <field name="name"/>
+                   <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                   </sheet>
             </form>
         </field>
     </record>
@@ -568,8 +591,12 @@
         <field name="model">thomasfleet.lease_status</field>
         <field name="arch" type="xml">
             <form string="Lease Status">
-                <field name="name"/>
-                <field name="description"/>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                         <field name="description"/>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
@@ -617,11 +644,10 @@
         <field name="name">thomasfleet.trim.tree</field>
         <field name="model">thomasfleet.trim</field>
         <field name="arch" type="xml">
-            <tree string="Model Trim" editable="top">
+            <tree string="Model Trim">
+               <field name="brand_id"/>
                 <field name="model_id"/>
-                <field name="make_name"/>
-                <field name="model_name"/>
-                <field name="name" />
+                <field name="name"/>
                 <field name="description"/>
             </tree>
         </field>
@@ -632,9 +658,14 @@
         <field name="model">thomasfleet.trim</field>
         <field name="arch" type="xml">
             <form string="Model Trim">
-                <field name="model_id"/>
-                <field name="name"/>
-                <field name="description"/>
+               <sheet>
+                   <group>
+                    <field name="brand_id"/>
+                    <field name="model_id"/>
+                    <field name="name"/>
+                    <field name="description"/>
+                   </group>
+               </sheet>
             </form>
         </field>
     </record>
@@ -723,6 +754,39 @@
 
     <menuitem action="thomas_model_trims_action" parent="fleet.fleet_configuration" id="thomas_model_trims_menu" sequence="3"/>
 
+     <record id='thomas_accessory_view_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.accessory.form</field>
+        <field name="model">thomasfleet.accessory</field>
+        <field name="arch" type="xml">
+            <form string="Accessory">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="unit_no"/>
+                        <field name="thomas_purchase_price"/>
+                        <field name="purchase_date"/>
+                        <field name="type"/>
+                        <field name="description" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id='thomas_accessory_view_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.accessory.tree</field>
+        <field name="model">thomasfleet.accessory</field>
+        <field name="arch" type="xml">
+            <tree string="Accessory">
+                <field name="name"/>
+                <field name="unit_no"/>
+                <field name="thomas_purchase_price"/>
+                <field name="purchase_date"/>
+                <field name="type"/>
+                <field name="description" invisible="1"/>
+            </tree>
+        </field>
+    </record>
      <record id='thomas_accessory_action' model='ir.actions.act_window'>
         <field name="name">Accessories</field>
         <field name="res_model">thomasfleet.accessory</field>
