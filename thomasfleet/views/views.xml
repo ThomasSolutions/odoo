@@ -581,6 +581,8 @@
                    <sheet>
                     <group>
                         <field name="name"/>
+                        <field name="description"/>
+                        <field name="inclusion_cost"/>
                     </group>
                    </sheet>
             </form>
@@ -635,6 +637,7 @@
             <tree string="Inclusions" editable="top">
                 <field name="name" />
                 <field name="description" invisible="1"/>
+                <field name="inclusion_cost"/>
             </tree>
         </field>
     </record>
@@ -758,9 +761,10 @@
         <field name="name">thomasfleet.accessory.form</field>
         <field name="model">thomasfleet.accessory</field>
         <field name="arch" type="xml">
-            <form string="Accessory">
+        <form string="Accessory">
                 <sheet>
                     <group>
+                        <field name="vehicle_id" context="{'lease':True}"/>
                         <field name="name"/>
                         <field name="unit_no"/>
                         <field name="thomas_purchase_price"/>
@@ -778,6 +782,7 @@
         <field name="model">thomasfleet.accessory</field>
         <field name="arch" type="xml">
             <tree string="Accessory">
+                <field name="vehicle_id" context="{'lease':True}"/>
                 <field name="name"/>
                 <field name="unit_no"/>
                 <field name="thomas_purchase_price"/>
@@ -792,6 +797,7 @@
         <field name="res_model">thomasfleet.accessory</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
+         <field name="context">{"lease" : True}</field>
         <field name="help" type="html">
           <p class="oe_view_nocontent_create">
             Click to create a new trim type for a model.

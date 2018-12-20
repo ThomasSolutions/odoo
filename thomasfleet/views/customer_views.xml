@@ -183,14 +183,19 @@
                             <page name='internal_notes' string="Internal Notes">
                                 <field name="comment" placeholder="Internal note..."/>
                             </page>
-                            <page name="'lease_agreements" string="Lease Agreeements">
+                            <page name='lease_agreements' string="Lease Agreeements">
                                 <field name="lease_agreements" context="{'lease':True}" >
                                      <tree string="Lease Agreements">
                                         <field name="vehicle_id" context="{'lease':True}"/>
+                                        <field name="contact_ap_id"/>
+                                        <field name="contact_driver_id"/>
                                         <field name="lease_number"/>
                                         <field name="lease_start_date"/>
                                      </tree>
                                 </field>
+                            </page>
+                            <page name='documents' string="Customer Documents">
+                                    <field name="documents"/>
                             </page>
                             <page name='sales_purchases' string="Sales &amp; Purchases">
                                 <group name="container_row_2">
@@ -214,5 +219,39 @@
             </xpath>
         </field>
     </record>
+
+
+      <record id='thomas_customer_document_form' model='ir.ui.view'>
+        <field name="name">thomasfleet.customer_documents.form</field>
+        <field name="model">thomasfleet.customer_document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                        <field name="type"/>
+                        <field name="expiration"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+      <record id='thomas_customer_document_tree' model='ir.ui.view'>
+        <field name="name">thomasfleet.customer_document.tree</field>
+        <field name="model">thomasfleet.customer_document</field>
+        <field name="arch" type="xml">
+            <tree string="Document" editable="top">
+                <field name="document"/>
+                <field name="name" />
+                <field name="description"/>
+                <field name="type"/>
+                <field name="expiration"/>
+            </tree>
+        </field>
+    </record>
+
+
   </data>
 </odoo>

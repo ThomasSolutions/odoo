@@ -18,6 +18,8 @@ class ThomasLease(models.Model):
     monthly_mileage = fields.Integer("Monthly Mileage")
     mileage_overage_rate =fields.Float("Additional Mileage Charge")
     customer_id = fields.Many2one("res.partner", "Customer")
+    contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
+    contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
     #unit_no = fields.Many2one("fleet.vehicle.unit_no", "Unit No")
     unit_no = fields.Char('Unit #',related="vehicle_id.unit_no",readonly=True)

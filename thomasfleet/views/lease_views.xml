@@ -19,6 +19,8 @@
                             </group>
                             <group string="Customer">
                                 <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                                <field name="contact_ap_id"/>
+                                <field name="contact_driver_id"/>
                             </group>
                             <group string="Lease Details">
                                  <field name="lease_number"/>
@@ -66,6 +68,8 @@
                 <field name="lease_number"/>
                 <field name="lease_start_date"/>
                 <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                <field name="contact_ap_id"/>
+                <field name="contact_driver_id"/>
             </tree>
         </field>
     </record>

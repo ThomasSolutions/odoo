@@ -556,7 +556,7 @@ class ThomasFleetAccessory(models.Model):
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
     name = fields.Char('Accessory Name')
     description = fields.Char('Description')
-    unit_no = fields.Char('Unit #')
+    unit_no = fields.Char('Accessory #')
     thomas_purchase_price = fields.Float('Thomas Purchase Price')
     purchase_date = fields.Date('Purchase Date')
     type = fields.Many2one('thomasfleet.accessory_type', 'Accessory Type')

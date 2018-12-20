@@ -31,3 +31,5 @@ access_thomasfleet_asset_photo_user,thomasfleet.asset_photo.user,model_thomasfle
 access_thomasfleet_asset_photo_manager,thomasfleet.asset_photo.manager,model_thomasfleet_asset_photo,base.group_system,1,1,1,1
 access_thomaslease_lease_user,thomasfleet.lease.user,model_thomaslease_lease,base.group_user,1,0,0,0
 access_thomaslease_lease_manager,thomasfleet.lease.manager,model_thomaslease_lease,base.group_system,1,1,1,1
+access_thomaslease_lease_user,thomasfleet.lease.user,model_thomasfleet_customer_document,base.group_user,1,0,0,0
+access_thomaslease_lease_manager,thomasfleet.lease.manager,model_thomasfleet_customer_document,base.group_system,1,1,1,1
