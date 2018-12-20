@@ -42,6 +42,15 @@ class ThomasAssetPhotoSet(models.Model):
     photos = fields.One2many('thomasfleet.asset_photo', 'photo_set_id', 'Photos')
     encounter = fields.Selection([('pickup', 'Pick Up'),('service', 'Service'),('return', 'Return')],'Encounter Type')
 
+    @api.multi
+    @api.depends('photoDate', 'encounter')
+    def name_get(self):
+        res = []
+        for record in self:
+            name = str(record.encounter) + "-"+ str(record.photoDate)
+            res.append((record.id, name))
+        return res
+
 class ThomasAssetPhoto(models.Model):
     _name = 'thomasfleet.asset_photo'
     photo_set_id = fields.Many2one('thomasfleet.asset_photo_set', 'PhotoSet')
@@ -54,6 +63,15 @@ class ThomasAssetPhoto(models.Model):
     image = fields.Binary("Image", attachment=True)
     image_small=fields.Binary("Small Image", attachment=True)
     image_medium=fields.Binary("Medium Image", attachment=True)
+
+    @api.multi
+    @api.depends('position')
+    def name_get(self):
+        res = []
+        for record in self:
+            name = record.position
+            res.append((record.id, name))
+        return res
 
     @api.model
     def create(self, vals):
