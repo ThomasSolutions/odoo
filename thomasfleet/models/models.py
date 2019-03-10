@@ -35,6 +35,8 @@ class ThomasAsset(models.Model):
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set')
     inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions')
 
+
+
 class ThomasAssetPhotoSet(models.Model):
     _name = 'thomasfleet.asset_photo_set'
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
@@ -139,7 +141,7 @@ class ThomasFleetVehicle(models.Model):
     seats = fields.Integer('# Seats', help='Number of seats of the vehicle')
     doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5)
     # fuel_type = fields.Selection([('gasoline', 'Gasoline'), ('diesel', 'Diesel')],'Fuel Type', default='gasoline')
-
+    notes = fields.Text(compute='_get_protractor_notes', string='Protractor Notes')
     rim_bolts = fields.Char('Rim Bolts')
     engine = fields.Char('Engine')
     fuel_type = fields.Many2one('thomasfleet.fueltype', 'Fuel Type')
@@ -179,16 +181,33 @@ class ThomasFleetVehicle(models.Model):
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
                 print('Retrieved GUID' + guid['id'])
-                record.write({'stored_protractor_guid': guid['id']})
-                record.stored_protractor_guid = guid['id']
+                record.with_context(skip_update=True).write({'stored_protractor_guid': guid['id']})
+                #record.stored_protractor_guid = guid['id']
                 record.protractor_guid = guid['id']
             else:
                 record.protractor_guid = record.stored_protractor_guid
 
-    def notes_compute(self):
-        self.log.info('Computing Notes')
-        for record in self:
-            record.notes = 'here are the core notesnotes'
+    def _generateProtractorNotes(self):
+        if self.notes:
+            p_notes = self.notes
+        else:
+            p_notes = "Body Style: " + str(self.body_style) + "\r\n" + "Drive: " + str(self.drive) + "\r\n" + "Flooring: " +\
+                  str(self.flooring.name)+ "\r\n" + "Wheel Base: " + str(self.wheel_base) + "\r\n" + "Box Size: " + \
+                  str(self.box_size) + "\r\n" + "Seat Type: " + str(self.seat_material.name) + "\r\n" + "Seat Belts: " + \
+                  str(self.seat_belts) + "\r\n" + "Trailer Hitch: " + str(self.trailer_hitch) + "\r\n" + \
+                  "Brake Controller: " + str(self.brake_controller) + "\r\n" + "Tires: " + str(self.tires) + "\r\n" + \
+                  "Fuel Type: " + str(self.fuel_type.name) + "\r\n" + \
+                  "Location: " + str(self.location.name) + "\r\n" + \
+                  "Door Access Code: " + str(self.door_access_code) + "\r\n" + \
+                  "Wheel Studs: " + str(self.wheel_studs) + "\r\n" + \
+                  "Rim Bolts: " + str(self.rim_bolts) + "\r\n" + \
+                  "Capless Fuel Filter: " + str(self.capless_fuel_filler) + "\r\n" + \
+                  "Bluetooth: " + str(self.bluetooth) + "\r\n" + \
+                  "Navigation: " + str(self.navigation) + "\r\n"
+
+        return p_notes
+
+
 
     @api.depends('unit_no', 'model_id')
     def _compute_slug(self):
@@ -227,15 +246,15 @@ class ThomasFleetVehicle(models.Model):
             "Type":"Vehicle",
             "Lookup":self.license_plate,
             "Description": self.unit_slug,
-            "Usage": 0,
+            "Usage": int(self.odometer),
             "ProductionDate":"",
-            "Note":"",
+            "Note": self._generateProtractorNotes(),
             "NoEmail": False,
             "NoPostCard": False,
             "PreferredContactMethod":"Email",
-            "MarketingSource":""
+            "MarketingSource":"",
+            "OwnerID": "ff5def95-ecec-45ef-a7f4-1badf9992d73"
             }
-
         payload =json.dumps(theUnit)
         #print(payload)
             #"{\"IsComplete\": true,\"PlateRegistration\": \""+plateReg+"\",
@@ -246,6 +265,7 @@ class ThomasFleetVehicle(models.Model):
         # \"Lookup\": \"BRDA497\",\"Description\": \"2013 Dodge Grand Caravan SE\",
         # \"Usage\": 0,\"ProductionDate\": \"0001-01-01T00:00:00\",\"Note\": \"\",
         # \"NoEmail\": false,\"NoPostCard\": false,\"PreferredContactMethod\": \"Email\",\"MarketingSource\":\"\"}"
+        '''
         headers = {
             'connectionId': "de8b3762edfd41fdbc37ddc3ef4d0f1d",
             'apiKey': "3d326387107942f0bf5fa9ec342e4989",
@@ -255,10 +275,17 @@ class ThomasFleetVehicle(models.Model):
             'Cache-Control': "no-cache",
             'Postman-Token': "2e5fe1e2-b08e-41b8-aab1-58b75642351a"
         }
+        '''
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept' : "application/json",
+            'Content-Type': "application/json"
+        }
+        response = requests.request("POST", url, data=payload, headers=headers)
 
-        #response = requests.request("POST", url, data=payload, headers=headers)
-
-        #print(response.text)
+        print(payload)
 
     def get_protractor_id(self):
         print("IN GET PROTRACTOR ID for" + str(self.vin_id))
@@ -270,9 +297,7 @@ class ThomasFleetVehicle(models.Model):
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
             'apiKey': "fb3c8305df2a4bd796add61e646f461c",
             'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
-            'Accept': "application/json",
-            'Cache-Control': "no-cache",
-            'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
+            'Accept': "application/json"
             }
             response = requests.request("GET", url, headers=headers)
 
@@ -357,12 +382,39 @@ class ThomasFleetVehicle(models.Model):
             res.with_context(self).stored_protractor_guid = guid['id']
         else:
             res.stored_protractor_guid = guid['id']
+
         print("UPDATED CONTEXT" + str(self.env.context.get('skip_update')))
 
 
         print("after setting guid")
 
         return res
+
+    @api.depends('stored_protractor_guid')
+    def _get_protractor_notes(self):
+        the_resp = "NO VIN"
+        if self.vin_id:
+            url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
+            headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'Cache-Control': "no-cache",
+            'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
+            }
+            response = requests.request("GET", url, headers=headers)
+
+            logging.info(response.text)
+            data = response.json()
+            the_note= ""
+            for item in data['ItemCollection']:
+                the_note = item['Note']
+
+        for record in self:
+            record.notes = the_note
+
+
 
     def _get_protractor_invoices(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
