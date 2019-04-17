@@ -104,7 +104,7 @@ class ThomasFleetVehicle(models.Model):
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
 
     #plate registration?
-    unit_no = fields.Char("Unit #")
+    unit_no = fields.Char("Unit #", default=default_unit_no)
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Service Items')
     lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
@@ -415,7 +415,7 @@ class ThomasFleetVehicle(models.Model):
             record.notes = the_note
 
 
-
+    @api.one
     def _get_protractor_invoices(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
         da = datetime.now()
@@ -432,9 +432,24 @@ class ThomasFleetVehicle(models.Model):
 
         response = requests.request("GET", url, headers=headers, params=querystring)
         data = response.json()
-        invoices=[]
+        updatedInvoices = []
+        invoices = self.protractor_invoices
+
+        for a in invoices:
+            invoiceFound = False
+            for i in data['ItemCollection']:
+                print("Invoice Numbers:::"+ str(a.invoiceNumber) +"=="+ str(i['InvoiceNumber']))
+                if a.invoiceNumber == i['InvoiceNumber']:
+                    print("Found ID " + a.id)
+                    invoiceFound = True
+
+            if not invoiceFound:
+                print("Invoice Not Found# " + a.invoiceNumber)
+                updatedInvoices.append((2,a.id,0))
+
         for item in data['ItemCollection']:
             inv={'vehicle_id': self.id,
+                 'invoice_guid' : item['ID'],
                  'protractor_guid': self.stored_protractor_guid,
                  'workOrderNumber': item['WorkOrderNumber'],
                  'invoiceNumber': item['InvoiceNumber']}
@@ -457,9 +472,20 @@ class ThomasFleetVehicle(models.Model):
                 #print(uName)
                 inv['lastModifiedBy'] = uName[1]
 
-            invoices.append((0,0,inv))
+            invoiceNotFound=True
 
-        self.update({'protractor_invoices': invoices})
+            for invoice in invoices:
+                if invoice.invoiceNumber == item['InvoiceNumber']:
+                    updatedInvoices.append((1, invoice.id, inv))
+                    invoiceNotFound = False
+
+            if invoiceNotFound:
+                updatedInvoices.append((0,0,inv))
+
+
+
+        print("Updated Invoices" + str(updatedInvoices))
+        self.update({'protractor_invoices': updatedInvoices})
 
     @api.multi
     def act_show_vehicle_photos(self):
@@ -501,10 +527,13 @@ class ThomasFleetVehicle(models.Model):
         for rec in self:
             if rec.protractor_invoices:  # don't add invoices right now if there are some
                 for inv in rec.protractor_invoices:
-                    print("DELETING INVOICE:::" + str(inv.invoiceNumber))
-                    inv.unlink()
+                    print("NOT DELETING INVOICE:::" + str(inv.invoiceNumber))
+                    #inv.unlink()
 
         self._get_protractor_invoices()
+        #for rec in self:
+            #for inv in rec.protractor_invoices:
+                #inv.get_invoice_details()
 
         self.ensure_one()
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_action')
@@ -602,6 +631,7 @@ class ThomasFleetInvoiceClass(models.Model):
     _name = 'thomasfleet.invoice'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
+    invoice_details = fields.One2many('thomasfleet.invoice_details', 'invoice_id',  'Invoice Details')
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
     invoiceTime = fields.Char('Invoice Time')
     invoiceDate = fields.Char('Invoice Date')
@@ -615,6 +645,164 @@ class ThomasFleetInvoiceClass(models.Model):
     grandTotal=fields.Float('Grand Total')
     laborTotal=fields.Float('Labor Total')
     netTotal=fields.Float('Net Total')
+    invoice_guid = fields.Char('Invoice Guid')
+
+
+    def get_invoice_details(self):
+
+        url = "https://integration.protractor.com/IntegrationServices/1.0/Invoice/"+str(self.invoice_guid)
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers)
+        data = response.json()
+        print(data)
+        inv_det_model = self.env['thomasfleet.invoice_details']
+        recs = inv_det_model.search([])
+        sp_lines = []
+
+        for r in recs:
+            r.unlink()
+
+        inv_det_line_model = self.env['thomasfleet.invoice_details_line']
+
+        l_recs = inv_det_line_model.search([])
+
+        for l in l_recs:
+            l.unlink()
+        work_order_num = data['WorkOrderNumber']
+        inv_num = data['InvoiceNumber']
+        inv_guid = data['ID']
+
+        for sp in data['ServicePackages']['ItemCollection']:
+            inv_detail = {'title': sp['ServicePackageHeader']['Title'],
+                          'description': sp['ServicePackageHeader']['Description'],
+                          'invoice_number': inv_num,
+                          'work_order_number':work_order_num,
+                          'invoice_guid':inv_guid
+                          }
+
+            for spd in sp['ServicePackageLines']['ItemCollection']:
+                inv_detail_line ={'invoice_number': inv_num,
+                                  'work_order_number': work_order_num,
+                                  'invoice_guid': inv_guid,
+                                  'complete': spd.get('Completed'),
+                                  'rank': spd.get('Rank'),
+                                  'type': spd.get('Type'),
+                                  'description': spd.get('Description'),
+                                  'quantity': spd.get('Quantity'),
+                                  'unit': spd.get('Unit'),
+                                  'rate_code': spd.get('Rate Code'),
+                                  'price': spd.get('Price'),
+                                  'price_unit': spd.get('PriceUnit'),
+                                  'minimum_charge': spd.get('Minimum Charge'),
+                                  'total': spd.get('Total'),
+                                  'discount':spd.get('Discount'),
+                                  'extended_total': spd.get('Exteneded Total'),
+                                  'total_cost': spd.get('Total Cost'),
+                                  'other_charge_code': spd.get('Other Charge Code'),
+                                  'tags': spd.get('Tags'),
+                                  'flag': spd.get('Flag'),
+                                  'technician_name': spd.get('Technician'),
+                                  'service_advisor': spd.get('Service Advisor')
+                                  }
+
+                sp_lines.append((0,0,inv_detail_line))
+
+            inv_detail['line_items']= sp_lines
+            self.invoice_details = [(0, 0, inv_detail)]
+
+            #inv_det_model.create(inv_detail)
+            #i_details = []
+            #i_details.append((0,0,the_details))
+
+
+            #self.update({'invoice_details': inv_detail})
+
+    @api.multi
+    def act_get_invoice_details(self):
+
+        for rec in self:
+            if rec.invoice_details:  # don't add invoices right now if there are some
+                for inv_det in rec.invoice_details:
+                    print("UNLINKING  INVOICE:::" + str(inv_det.invoice_id))
+                    inv_det.unlink()
+        self.ensure_one()
+        self.get_invoice_details()
+
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_details_action')
+        res.update(
+            context=dict(self.env.context, default_invoice_id=self.id, search_default_parent_false=True),
+            domain=[('invoice_id', '=', self.id)]
+        )
+        return res
+
+
+class ThomasFleetInvoiceDetails(models.Model):
+    _name = 'thomasfleet.invoice_details'
+    invoice_id = fields.Many2one('thomasfleet.invoice', 'Invoice')
+    line_items = fields.One2many('thomasfleet.invoice_details_line', 'invoice_details_id', 'Invoice Details Line')
+    invoice_number = fields.Char('Invoice Number')
+    work_order_number = fields.Char('Work Order Number')
+    title = fields.Char('Title')
+    description = fields.Char('Description')
+    type = fields.Char('Type')
+    quantity = fields.Char('Quantity')
+    rate = fields.Char('Rate')
+    total = fields.Char('Total')
+    invoice_guid = fields.Char('Invoice Guid')
+
+    @api.multi
+    def act_get_invoice_details_line(self):
+        #for rec in self:
+            #if rec.line_items:  # don't add invoices right now if there are some
+                #for inv_item in rec.line_items:
+                    #print("Unlinking INVOICE:::" + str(inv_item.invoice_guid))
+                    #inv_item.unlink()
+            #self.ensure_one()
+        #self.get_invoice_details()
+
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_details_line_action')
+        res.update(
+            context=dict(self.env.context, default_invoice_id = self.id, search_default_parent_false=True),
+            domain=[('invoice_details_id', '=', self.id)]
+         )
+        return res
+
+
+
+class ThomasFleetInvoiceLine(models.Model):
+    _name = 'thomasfleet.invoice_details_line'
+    invoice_details_id = fields.Many2one('thomasfleet.invoice_details', 'Invoice Details')
+    complete = fields.Boolean('Complete')
+    rank = fields.Integer('Rank')
+    type = fields.Char('Type')
+    description = fields.Char('Description')
+    quantity = fields.Float('Quantity')
+    unit = fields.Char('Unit')
+    rate_code = fields.Char('Rate Code')
+    price = fields.Float('Price')
+    price_unit = fields.Char('PriceUnit')
+    minimum_charge = fields.Float('Minimum Charge')
+    total = fields.Float('Total')
+    discount = fields.Float('Discount')
+    extended_total = fields.Float('Extended Total')
+    total_cost = fields.Float('Total Cost')
+    other_charge_code = fields.Char('Other Charge Code')
+    tags = fields.Char('Tags')
+    flag = fields.Char('Flag')
+    technician_name = fields.Char('Technician')
+    service_advisor = fields.Char('Service Advisor')
+    invoice_number =  fields.Char('Invoice Number')
+    work_order_number = fields.Char('Work Order Number')
+    invoice_guid = fields.Char('Invoice Guid')
 
 class ThomasFleetAccessoryType(models.Model):
     _name='thomasfleet.accessory_type'
