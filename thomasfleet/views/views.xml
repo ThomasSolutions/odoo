@@ -87,14 +87,16 @@
                         <h1>
                             <field name="unit_slug" class="oe_read_only"/><br/>
                          </h1>
+
+                        <label for="unit_no"/>
                         <div class="oe_edit_only">
-                         <label for="unit_no"/>
                          <field name="unit_no"></field><br/>
                         </div>
                          <label for="vin_id"/>
                         <field name="vin_id"></field><br/>
                         <label for="license_plate"/>
                         <field name="license_plate"/><br/>
+
                         <label for="lease_status"/>
                         <field name="lease_status"/>
                     </div>

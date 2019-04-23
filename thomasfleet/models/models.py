@@ -104,8 +104,8 @@ class ThomasFleetVehicle(models.Model):
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
 
     #plate registration?
-    unit_no = fields.Char("Unit #", default=default_unit_no)
-    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id', 'Service Items')
+    unit_no = fields.Char("Unit #", default=default_unit_no, required=True)
+    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service History')
     lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
@@ -154,6 +154,8 @@ class ThomasFleetVehicle(models.Model):
     fin_check = fields.Boolean('Financial Accuracy Validated')
     accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories")
     write_to_protractor = fields.Boolean(default=False)
+    production_date = fields.Char("Production Date")
+    pulled_protractor_data = fields.Boolean(default=False,String="Got Data from Protractor")
 
     @api.multi
     @api.depends('unit_no')
@@ -304,8 +306,10 @@ class ThomasFleetVehicle(models.Model):
             logging.info(response.text)
             data = response.json()
             the_id= False
+            color=""
             for item in data['ItemCollection']:
                 the_id = item['ID']
+
 
             if not the_id:
                 the_id = uuid.uuid4()
@@ -383,12 +387,98 @@ class ThomasFleetVehicle(models.Model):
         else:
             res.stored_protractor_guid = guid['id']
 
+
         print("UPDATED CONTEXT" + str(self.env.context.get('skip_update')))
 
 
         print("after setting guid")
 
         return res
+
+    @api.onchange('vin_id')
+    def _get_protractor_data(self):
+        print("GETTING PROTRACTOR DATA")
+        the_resp = "NO VIN"
+        if self.vin_id:
+            url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/" + self.vin_id
+            headers = {
+                'connectionId': "8c3d682f873644deb31284b9f764e38f",
+                'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+                'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+                'Accept': "application/json",
+                'Cache-Control': "no-cache",
+                'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
+            }
+            response = requests.request("GET", url, headers=headers)
+
+            logging.info(response.text)
+            data = response.json()
+            the_note = ""
+
+            for item in data['ItemCollection']:
+                the_note = item['Note']
+                plate_reg = item['PlateRegistration']
+                vin = item['VIN']
+                unit = item['Unit']
+                color = item['Color']
+                year = item['Year']
+                themake = item['Make']
+                themodel = item['Model']
+                thesubmodel = item['Submodel']
+                engine = item['Engine']
+                plate = item['Lookup']
+                description = item['Description']
+                usage = item['Usage']
+                proddate = item['ProductionDate']
+
+
+                self.notes = the_note
+                #self.vin_id = vin
+                # "PlateRegistration": "ON",
+                # "ID": self.stored_protractor_guid,
+                # "IsComplete": True,
+                # "Unit": self.unit_no,
+                self.unit_no = unit
+                self.color = color
+                self.model_year = year
+                self.odometer = int(usage)
+
+                the_brand = self.env['fleet.vehicle.model.brand'].search([('name', '=', themake)])
+                if the_brand:
+                    self.brand_id = the_brand.id
+                else:
+                    brand_data={'name':themake}
+                    the_new_brand = self.env['fleet.vehicle.model.brand'].create(brand_data)
+                    self.brand_id = the_new_brand.id
+
+                the_model = self.env['fleet.vehicle.model'].search([('brand_id', '=', the_brand.id),('name', '=', themodel)])
+                if the_model:
+                    self.model_id = the_model.id
+                else:
+                    model_data={'name': themodel, 'brand_id':the_brand.id}
+                    the_new_model = self.env['fleet.vehicle.model'].create(model_data)
+                    self.model_id = the_new_model.id
+
+                the_trim = self.env['thomasfleet.trim'].search([('brand_id', '=', the_brand.id),('model_id', '=', the_model.id),('name', '=', thesubmodel)])
+                if the_trim:
+                    print("Found Trim "+ the_trim.name)
+                    self.trim_id = the_trim.id
+                else:
+                    trim_data = {'name':thesubmodel, 'model_id':the_model.id, 'brand_id': the_brand.id}
+                    the_new_trim = self.env['thomasfleet.trim'].create(trim_data)
+                    self.trim_id = the_new_trim.id
+
+                self.engine = engine
+                self.license_plate = plate
+                self.production_date = proddate
+                self.pulled_protractor_data = True
+                # "Usage": int(self.odometer),
+
+                result ={'warning': {
+                    'title': 'Vehicle VIN is in Protractor',
+                    'message': 'Found an existing vechile with this VIN in Protractor.  The data has been copied to the form, changes will be saved back to protractor'
+                }}
+                return result
 
     @api.depends('stored_protractor_guid')
     def _get_protractor_notes(self):
@@ -407,12 +497,15 @@ class ThomasFleetVehicle(models.Model):
 
             logging.info(response.text)
             data = response.json()
-            the_note= ""
+            the_note=""
             for item in data['ItemCollection']:
                 the_note = item['Note']
 
-        for record in self:
-            record.notes = the_note
+            for record in self:
+                record.notes = the_note
+
+
+
 
 
     @api.one
