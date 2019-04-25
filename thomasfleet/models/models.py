@@ -287,7 +287,7 @@ class ThomasFleetVehicle(models.Model):
         }
         response = requests.request("POST", url, data=payload, headers=headers)
 
-        print(payload)
+        #print(payload)
 
     def get_protractor_id(self):
         print("IN GET PROTRACTOR ID for" + str(self.vin_id))
