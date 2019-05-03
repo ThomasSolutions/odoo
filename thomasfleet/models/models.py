@@ -141,7 +141,7 @@ class ThomasFleetVehicle(models.Model):
     seats = fields.Integer('# Seats', help='Number of seats of the vehicle')
     doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5)
     # fuel_type = fields.Selection([('gasoline', 'Gasoline'), ('diesel', 'Diesel')],'Fuel Type', default='gasoline')
-    notes = fields.Text(compute='_get_protractor_notes', string='Protractor Notes')
+    notes = fields.Text(compute='_get_protractor_notes_and_owner', string='Protractor Notes')
     rim_bolts = fields.Char('Rim Bolts')
     engine = fields.Char('Engine')
     fuel_type = fields.Many2one('thomasfleet.fueltype', 'Fuel Type')
@@ -156,6 +156,7 @@ class ThomasFleetVehicle(models.Model):
     write_to_protractor = fields.Boolean(default=False)
     production_date = fields.Char("Production Date")
     pulled_protractor_data = fields.Boolean(default=False,String="Got Data from Protractor")
+    protractor_owner_guid = fields.Char(compute='_get_protractor_notes_and_owner', string= 'Protractor Owner ID')
 
     @api.multi
     @api.depends('unit_no')
@@ -226,13 +227,16 @@ class ThomasFleetVehicle(models.Model):
         for record in self:
             record.lease_agreements_count = Agreements.search_count([('vehicle_id', '=', record.id)])
 
-
     def update_protractor(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+self.stored_protractor_guid
         vin = self.vin_id
         plateReg = "ON"
         unit = self.unit_no
         #self.protractor_guid
+        if self.protractor_owner_guid:
+            owner_id = self.protractor_owner_guid
+        else:
+            owner_id = "43e0319c-41bc-40c3-be47-336b9e0afaa1"
         theUnit = {
             "VIN":self.vin_id,
             "PlateRegistration":"ON",
@@ -255,7 +259,7 @@ class ThomasFleetVehicle(models.Model):
             "NoPostCard": False,
             "PreferredContactMethod":"Email",
             "MarketingSource":"",
-            "OwnerID": "ff5def95-ecec-45ef-a7f4-1badf9992d73"
+            "OwnerID": owner_id
             }
         payload =json.dumps(theUnit)
         #print(payload)
@@ -430,7 +434,7 @@ class ThomasFleetVehicle(models.Model):
                 description = item['Description']
                 usage = item['Usage']
                 proddate = item['ProductionDate']
-
+                ownerid = item['OwnerID']
 
                 self.notes = the_note
                 #self.vin_id = vin
@@ -472,6 +476,7 @@ class ThomasFleetVehicle(models.Model):
                 self.license_plate = plate
                 self.production_date = proddate
                 self.pulled_protractor_data = True
+                self.protractor_owner_guid = ownerid
                 # "Usage": int(self.odometer),
 
                 result ={'warning': {
@@ -481,7 +486,7 @@ class ThomasFleetVehicle(models.Model):
                 return result
 
     @api.depends('stored_protractor_guid')
-    def _get_protractor_notes(self):
+    def _get_protractor_notes_and_owner(self):
         the_resp = "NO VIN"
         if self.vin_id:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
@@ -498,12 +503,15 @@ class ThomasFleetVehicle(models.Model):
             logging.info(response.text)
             data = response.json()
             the_note=""
+            the_ownerID=""
+
             for item in data['ItemCollection']:
                 the_note = item['Note']
+                the_ownerID = item['OwnerID']
 
             for record in self:
                 record.notes = the_note
-
+                record.protractor_owner_guid = the_ownerID
 
 
 
