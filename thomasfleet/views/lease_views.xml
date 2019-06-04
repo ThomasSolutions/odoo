@@ -136,10 +136,6 @@
 
     <menuitem name="Work Orders" action="thomaslease_lease_action" parent="work_orders_main" id="thomasfleet_workorder_menu" />
 
-    <menuitem name="Invoices"  id="invoices_main" sequence="2"/>
-
-    <menuitem name="Invoices" action="thomaslease_lease_action" parent="invoices_main" id="thomasfleet_invoices_menu" />
-
 
   </data>
 </odoo>

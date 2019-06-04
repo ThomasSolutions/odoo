@@ -21,6 +21,7 @@
                             <field name="commercial_partner_id" invisible="1"/>
                             <label for="qc_check"/><field name="qc_check" />
                             <field name="protractor_guid"/>
+                            <field name="protractor_search_name"/>
                             <button name="find_protractor_guid" type="object" string="Get Protractor ID" class="oe_highlight" />
                             <field name="company_type" widget="radio"
                                 class="oe_edit_only"

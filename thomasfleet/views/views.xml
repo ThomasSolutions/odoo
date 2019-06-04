@@ -42,25 +42,25 @@
                             type="object"
                             class="oe_stat_button"
                             icon="fa-book"
-                            help="show all the Lease Agreements for this vehicle"
+                            help="Show all the Lease Agreements for this vehicle"
                             groups="fleet.fleet_group_manager">
                            <field name="lease_agreements_count" widget="statinfo" string="Lease Agreements"/>
                         </button>
                         <button name="act_get_invoices"
+                            string="Service Invoices"
                             type="object"
                             class="oe_stat_button"
                             icon="fa-wrench"
-                            help="show all the Protractor Service Invoices for this vehicle"
+                            help="Show all the Protractor Service Invoices for this vehicle"
                             groups="fleet.fleet_group_manager">
-                            Service Items
                         </button>
                        <button name="act_show_vehicle_photos"
                             type="object"
                             class="oe_stat_button"
                             icon="fa-flask"
-                            help="show all the Photographs for this vehicle"
-                            groups="fleet.fleet_group_manager">
-                           Vehicle Pictures
+                            help="Show all the Photographs for this vehicle"
+                            groups="fleet.fleet_group_manager"
+                            string="Vehicle Pictures">
                         </button>
                         <button name="return_action_to_open"
                             type="object"
@@ -462,7 +462,7 @@
     </record>
 
          <record id='thomas_lease_agreements_action' model='ir.actions.act_window'>
-        <field name="name">Vehicles Lease Agreements</field>
+        <field name="name">Vehicle Lease Agreements</field>
         <field name="res_model">thomaslease.lease</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
@@ -693,45 +693,50 @@
         </field>
     </record>
 
-    <record id='thomas_invoice_view_form' model='ir.ui.view'>
-        <field name="name">thomasfleet.invoice.form</field>
+  <record id='thomas_invoice_view_form' model='ir.ui.view'>
+        <field name="name">Invoice Details</field>
         <field name="model">thomasfleet.invoice</field>
         <field name="arch" type="xml">
-            <form string="Invoice">
+        <form string="Invoice">
                <sheet>
                    <group>
                        <field name="vehicle_id"/>
                        <field name="workOrderNumber"/>
                        <field name="invoiceNumber"/>
-                   </group>
-                   <group>
-                   <field name="invoice_details">
-                           <tree>
-                               <field name="title"/>
-                               <field name="description"/>
+                       <field name="partsTotal"/>
+                       <field name="subletTotal"/>
+                       <field name="grandTotal"/>
+                       <field name="laborTotal"/>
+                       <field name="netTotal"/>
+                       <field name="invoice_details" string="Details" nolabel="1" widget="one2many_list" mode="tree">
+                        <tree>
+                            <field name="title"/>
+                            <field name="description"/>
+                            <field name="line_items" string="Line Items" nolabel="1" widget="one2many_list">
+                            <tree>
+                                <field name="complete"/>
+                                    <field name="rank"/>
+                                    <field name="type"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit"/>
+                                    <field name="rate_code"/>
+                                    <field name="price"/>
+                                    <field name="price_unit"/>
+                                    <field name="minimum_charge"/>
+                                    <field name="total"/>
+                                    <field name="discount"/>
+                                    <field name="extended_total"/>
+                                    <field name="total_cost"/>
+                                    <field name="other_charge_code"/>
+                                    <field name="tags"/>
+                                    <field name="flag"/>
+                                    <field name="technician_name"/>
+                                    <field name="service_advisor"/>
+                                </tree>
+                            </field>
                            </tree>
-                               <field name="line_items">
-                                   <tree>
-                                        <field name="complete"/>
-                                        <field name="rank"/>
-                                        <field name="type"/>
-                                        <field name="description"/>
-                                   </tree>
-                               </field>
-
                        </field>
-
-                      <table  class="table table-condensed">
-                           <thead>
-                                <tr><th>Title</th><th>Description</th></tr>
-                            </thead>
-                            <tbody>
-                                 <tr t-foreach="record.invoice_details.raw_value" t-as="det" >
-                                    <td><t t-esc="det.title.raw_value" /></td>
-                                    <td><t t-esc="det.description.raw_value" /></td>
-                                </tr>
-                            </tbody>
-                       </table>
                    </group>
                </sheet>
             </form>
@@ -743,17 +748,17 @@
         <field name="model">thomasfleet.invoice</field>
         <field name="arch" type="xml">
             <tree string="Invoice" create="false" edit="false" delete="false">
+                <!--<button name="act_get_invoice_details"
+                            type="object"
+                            class="oe_stat_button" string="View Details">
+                </button>-->
                 <field name="invoiceDate"/>
                 <field name="technichan"/>
                 <field name="serviceAdvisor"/>
                 <field name="lastModifiedBy"/>
                 <field name="workOrderNumber"/>
                 <field name="invoiceNumber"/>
-                <field name="invoice_guid"/>
-                <button name="act_get_invoice_details"
-                            type="object"
-                            class="oe_stat_button" string="Details">
-                </button>
+             <!--   <field name="invoice_guid"/>-->
                 <field name="partsTotal" sum="Parts Total"/>
                 <field name="laborTotal" sum="Labor Total"/>
                 <field name="subletTotal" sum="Sublet Total"/>
@@ -763,32 +768,30 @@
         </field>
     </record>
 
-    <record id='thomas_invoice_details_view_tree' model='ir.ui.view'>
+  <!--<record id='thomas_invoice_details_view_tree' model='ir.ui.view'>
         <field name="name">thomasfleet.invoice_details.tree</field>
         <field name="model">thomasfleet.invoice_details</field>
         <field name="arch" type="xml">
             <tree string="Invoice Details" create="false" edit="false" delete="false">
+                <button name="act_get_invoice_details_line" type="object" class="oe_stat_button" string="View Item Details"/>
                 <field name="invoice_number"/>
                 <field name="work_order_number"/>
                 <field name="title"/>
                 <field name="description"/>
-                <button name="act_get_invoice_details_line"
-                            type="object"
-                            class="oe_stat_button" string="Details">
-                </button>
-                <!--<field name="line_items">
+
+                <field name="line_items">
                            <tree>
                                     <field name="complete"/>
                                     <field name="rank"/>
                                     <field name="type"/>
                                     <field name="description"/>
                            </tree>
-                </field>-->
+                </field>
             </tree>
         </field>
-    </record>
+    </record>-->
 
-    <record id='thomas_invoice_details_view_form' model='ir.ui.view'>
+<record id='thomas_invoice_details_view_form' model='ir.ui.view'>
         <field name="name">thomasfleet.invoice_details.form</field>
         <field name="model">thomasfleet.invoice_details</field>
         <field name="arch" type="xml">
@@ -797,13 +800,28 @@
                    <group>
                        <field name="title"/>
                        <field name="description"/>
-                       <field name="line_items">
-                           <tree>
+                       <field name="line_items" nolabel="1" widget="one2many_list" mode="tree">
+                           <tree string="Invoice Line Item Details" create="false" edit="false" delete="false">
                                     <field name="complete"/>
                                     <field name="rank"/>
                                     <field name="type"/>
                                     <field name="description"/>
-                           </tree>
+                                    <field name="quantity"/>
+                                    <field name="unit"/>
+                                    <field name="rate_code"/>
+                                    <field name="price"/>
+                                    <field name="price_unit"/>
+                                    <field name="minimum_charge"/>
+                                    <field name="total"/>
+                                    <field name="discount"/>
+                                    <field name="extended_total"/>
+                                    <field name="total_cost"/>
+                                    <field name="other_charge_code"/>
+                                    <field name="tags"/>
+                                    <field name="flag"/>
+                                    <field name="technician_name"/>
+                                    <field name="service_advisor"/>
+                                </tree>
                         </field>
                    </group>
                </sheet>
@@ -811,41 +829,13 @@
         </field>
     </record>
 
-    <record id='thomas_invoice_details_line_view_tree' model='ir.ui.view'>
-        <field name="name">thomasfleet.invoice_details_line.tree</field>
-        <field name="model">thomasfleet.invoice_details_line</field>
-        <field name="arch" type="xml">
-            <tree string="Invoice Line Item Details" create="false" edit="false" delete="false">
-                <field name="work_order_number"/>
-                <field name="invoice_number"/>
-                <field name="complete"/>
-                <field name="rank"/>
-                <field name="type"/>
-                <field name="description"/>
-                <field name="quantity"/>
-                <field name="unit"/>
-                <field name="rate_code"/>
-                <field name="price"/>
-                <field name="price_unit"/>
-                <field name="minimum_charge"/>
-                <field name="total"/>
-                <field name="discount"/>
-                <field name="extended_total"/>
-                <field name="total_cost"/>
-                <field name="other_charge_code"/>
-                <field name="tags"/>
-                <field name="flag"/>
-                <field name="technician_name"/>
-                <field name="service_advisor"/>
-            </tree>
-        </field>
-    </record>
 
     <record id='thomas_invoice_action' model='ir.actions.act_window'>
         <field name="name">Invoices</field>
         <field name="res_model">thomasfleet.invoice</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
+
         <field name="help" type="html">
           <p class="oe_view_nocontent_create">
             No Invoices Found
@@ -855,11 +845,12 @@
         </field>
     </record>
 
-    <record id='thomas_invoice_details_action' model='ir.actions.act_window'>
+   <record id='thomas_invoice_details_action' model='ir.actions.act_window'>
         <field name="name">Details</field>
         <field name="res_model">thomasfleet.invoice_details</field>
         <field name="view_type">form</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">form</field>
+       <field name="target">current</field>
         <field name="help" type="html">
           <p class="oe_view_nocontent_create">
             No Invoices Found
@@ -869,8 +860,8 @@
         </field>
     </record>
 
-    <record id='thomas_invoice_details_line_action' model='ir.actions.act_window'>
-        <field name="name">Details</field>
+   <!-- <record id='thomas_invoice_details_line_action' model='ir.actions.act_window'>
+        <field name="name">Line Details</field>
         <field name="res_model">thomasfleet.invoice_details_line</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree</field>
@@ -881,7 +872,7 @@
            No Invoices Found
           </p>
         </field>
-    </record>
+    </record>-->
 
     <record id='thomas_model_trims_action' model='ir.actions.act_window'>
         <field name="name">Model Trims</field>
@@ -1016,10 +1007,13 @@
 
     <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="8"/>
 
-
-      <record model="ir.ui.menu" id="fleet.fleet_vehicles">
+    <record model="ir.ui.menu" id="fleet.fleet_vehicles">
       <field name="name">Assets</field>
     </record>
+
+    <menuitem name="Invoices"  id="invoices_main" sequence="2"/>
+
+    <menuitem name="Invoices" action="thomas_invoice_action" parent="invoices_main" id="thomasfleet_invoices_menu" />
     <!--
     <record model="ir.ui.view" id="thomasfleet.list">
       <field name="name">thomasfleet list</field>

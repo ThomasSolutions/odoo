@@ -105,7 +105,7 @@ class ThomasFleetVehicle(models.Model):
 
     #plate registration?
     unit_no = fields.Char("Unit #", default=default_unit_no, required=True)
-    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service History')
+    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service Invoices')
     lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
@@ -415,7 +415,7 @@ class ThomasFleetVehicle(models.Model):
             }
             response = requests.request("GET", url, headers=headers)
 
-            logging.info(response.text)
+            #logging.info(response.text)
             data = response.json()
             the_note = ""
 
@@ -532,7 +532,9 @@ class ThomasFleetVehicle(models.Model):
         }
 
         response = requests.request("GET", url, headers=headers, params=querystring)
+        print("INVOICE DATA " + response.text)
         data = response.json()
+
         updatedInvoices = []
         invoices = self.protractor_invoices
 
@@ -573,8 +575,11 @@ class ThomasFleetVehicle(models.Model):
                 #print(uName)
                 inv['lastModifiedBy'] = uName[1]
 
-            invoiceNotFound=True
 
+            invoiceNotFound=True
+            invObj = self.env['thomasfleet.invoice'].create(inv)
+            invDetsArr = invObj.get_invoice_details_rest()
+            inv['invoice_details'] = invDetsArr
             for invoice in invoices:
                 if invoice.invoiceNumber == item['InvoiceNumber']:
                     updatedInvoices.append((1, invoice.id, inv))
@@ -587,6 +592,10 @@ class ThomasFleetVehicle(models.Model):
 
         print("Updated Invoices" + str(updatedInvoices))
         self.update({'protractor_invoices': updatedInvoices})
+
+
+
+
 
     @api.multi
     def act_show_vehicle_photos(self):
@@ -632,6 +641,8 @@ class ThomasFleetVehicle(models.Model):
                     #inv.unlink()
 
         self._get_protractor_invoices()
+
+
         #for rec in self:
             #for inv in rec.protractor_invoices:
                 #inv.get_invoice_details()
@@ -748,6 +759,82 @@ class ThomasFleetInvoiceClass(models.Model):
     netTotal=fields.Float('Net Total')
     invoice_guid = fields.Char('Invoice Guid')
 
+    def get_invoice_details_rest(self):
+        url = "https://integration.protractor.com/IntegrationServices/1.0/Invoice/" + str(self.invoice_guid)
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers)
+        data = response.json()
+        # inv_det_model = self.env['thomasfleet.invoice_details']
+        for invDets in self.invoice_details:
+            for invDetLine in invDets:
+                invDetLine.unlink()
+            invDets.unlink()
+        # recs = inv_det_model.search(['invoice_id','=', self.id])
+
+        sp_lines = []
+        '''
+        for r in recs:
+            r.unlink()
+
+        inv_det_line_model = self.env['thomasfleet.invoice_details_line']
+
+        l_recs = inv_det_line_model.search(['invoice_id','=', self.id])
+
+        for l in l_recs:
+            l.unlink()
+        '''
+
+        work_order_num = data['WorkOrderNumber']
+        inv_num = data['InvoiceNumber']
+        inv_guid = data['ID']
+
+        for sp in data['ServicePackages']['ItemCollection']:
+            inv_detail = {'title': sp['ServicePackageHeader']['Title'],
+                          'description': sp['ServicePackageHeader']['Description'],
+                          'invoice_number': inv_num,
+                          'work_order_number': work_order_num,
+                          'invoice_guid': inv_guid
+                          }
+
+            for spd in sp['ServicePackageLines']['ItemCollection']:
+                inv_detail_line = {'invoice_number': inv_num,
+                                   'work_order_number': work_order_num,
+                                   'invoice_guid': inv_guid,
+                                   'complete': spd.get('Completed'),
+                                   'rank': spd.get('Rank'),
+                                   'type': spd.get('Type'),
+                                   'description': spd.get('Description'),
+                                   'quantity': spd.get('Quantity'),
+                                   'unit': spd.get('Unit'),
+                                   'rate_code': spd.get('Rate Code'),
+                                   'price': spd.get('Price'),
+                                   'price_unit': spd.get('PriceUnit'),
+                                   'minimum_charge': spd.get('Minimum Charge'),
+                                   'total': spd.get('Total'),
+                                   'discount': spd.get('Discount'),
+                                   'extended_total': spd.get('Exteneded Total'),
+                                   'total_cost': spd.get('Total Cost'),
+                                   'other_charge_code': spd.get('Other Charge Code'),
+                                   'tags': spd.get('Tags'),
+                                   'flag': spd.get('Flag'),
+                                   'technician_name': spd.get('Technician'),
+                                   'service_advisor': spd.get('Service Advisor')
+                                   }
+
+                sp_lines.append((0, 0, inv_detail_line))
+
+            inv_detail['line_items'] = sp_lines
+
+        return [(0, 0, inv_detail)]
 
     def get_invoice_details(self):
 
@@ -764,20 +851,26 @@ class ThomasFleetInvoiceClass(models.Model):
 
         response = requests.request("GET", url, headers=headers)
         data = response.json()
-        print(data)
-        inv_det_model = self.env['thomasfleet.invoice_details']
-        recs = inv_det_model.search([])
-        sp_lines = []
+        #inv_det_model = self.env['thomasfleet.invoice_details']
+        for invDets in self.invoice_details:
+            for invDetLine in invDets:
+                invDetLine.unlink()
+            invDets.unlink()
+        #recs = inv_det_model.search(['invoice_id','=', self.id])
 
+        sp_lines = []
+        '''
         for r in recs:
             r.unlink()
 
         inv_det_line_model = self.env['thomasfleet.invoice_details_line']
 
-        l_recs = inv_det_line_model.search([])
+        l_recs = inv_det_line_model.search(['invoice_id','=', self.id])
 
         for l in l_recs:
             l.unlink()
+        '''
+
         work_order_num = data['WorkOrderNumber']
         inv_num = data['InvoiceNumber']
         inv_guid = data['ID']
@@ -820,6 +913,7 @@ class ThomasFleetInvoiceClass(models.Model):
             inv_detail['line_items']= sp_lines
             self.invoice_details = [(0, 0, inv_detail)]
 
+
             #inv_det_model.create(inv_detail)
             #i_details = []
             #i_details.append((0,0,the_details))
@@ -829,7 +923,7 @@ class ThomasFleetInvoiceClass(models.Model):
 
     @api.multi
     def act_get_invoice_details(self):
-
+        print("FIRED OF INVOICE DETAILS ACTION")
         for rec in self:
             if rec.invoice_details:  # don't add invoices right now if there are some
                 for inv_det in rec.invoice_details:
