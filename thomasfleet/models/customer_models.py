@@ -8,12 +8,34 @@ class ThomasContact(models.Model):
 
     _inherit = 'res.partner'
 
-    department = fields.Char(string='Department')
+    #department = fields.Char(string='Department')
     qc_check = fields.Boolean(string='Data Accuracy Validation')
     lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts')
     documents = fields.One2many('thomasfleet.customer_document', 'customer_id', 'Customer Docucments')
-    protractor_guid = fields.Char(string='Protractor GUID' , readonly=True) #,compute='_compute_protractor_guid')
+    department = fields.Many2one('thomasfleet.customer_department','Department')
+    protractor_guid = fields.Char(string='Protractor GUID', readonly=True) #,compute='_compute_protractor_guid')
     protractor_search_name = fields.Char(string="Search Name", compute='_compute_protractor_search_name')
+    ap_contact = fields.Boolean(string="Accounts Payable Contact")
+    po_contact = fields.Boolean(string="Purchasing Contact")
+    ops_contact = fields.Boolean(string="Operations Contact")
+    aggregate_invoicing= fields.Boolean(string="Aggregate Invoices")
+    lease_agreement_ap_ids = fields.Many2many(
+        'thomaslease.lease',
+        string='Lease Agreements',
+        relation='lease_agreement_res_partner_ap_rel'  # optional
+    )
+    lease_agreement_po_ids = fields.Many2many(
+        'thomaslease.lease',
+        string='Lease Agreements',
+        relation='lease_agreement_res_partner_po_rel'  # optional
+
+    )
+    lease_agreement_ops_ids = fields.Many2many(
+        'thomaslease.lease',
+        string='Lease Agreements',
+        relation='lease_agreement_res_partner_ops_rel'  # optional
+
+    )
 
     @api.multi
     def find_protractor_guid(self):
@@ -75,3 +97,9 @@ class ThomasCustomerDocument(models.Model):
     type = fields.Selection([('insurance', 'Proof of Insurance'), ('certification', 'Certification')])
     expiration = fields.Date('Expiration Date')
     document = fields.Binary("Document", attachment=True)
+
+class ThomaseDepartment(models.Model):
+    _name = 'thomasfleet.customer_department'
+
+    name = fields.Char("Name")
+    description = fields.Char("Description")

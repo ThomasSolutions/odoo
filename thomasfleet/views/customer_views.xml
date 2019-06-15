@@ -65,7 +65,7 @@
                                 <field name="category_id" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}" placeholder="Tags..."/>
                             </group>
                             <group>
-                                <field name="department" />
+                                <field name="department" options='{"no_open": True}'/>
                                 <field name="function" placeholder="e.g. Sales Director"
                                     attrs="{'invisible': [('is_company','=', True)]}"/>
                                 <field name="phone" widget="phone"/>
@@ -169,6 +169,9 @@
                                                         attrs="{'invisible': [('type','!=', 'contact')]}"/>
                                                     <field name="function" placeholder="e.g. Sales Director"
                                                         attrs="{'invisible': [('type','!=', 'contact')]}"/>
+                                                    <field name="po_contact"/>
+                                                    <field name="ap_contact"/>
+                                                    <field name="ops_contact"/>
                                                     <field name="email"/>
                                                     <field name="phone" widget="phone"/>
                                                     <field name="mobile" widget="phone"/>
@@ -191,8 +194,6 @@
                                 <field name="lease_agreements" context="{'lease':True}" >
                                      <tree string="Lease Agreements">
                                         <field name="vehicle_id" context="{'lease':True}"/>
-                                        <field name="contact_ap_id"/>
-                                        <field name="contact_driver_id"/>
                                         <field name="lease_number"/>
                                         <field name="lease_start_date"/>
                                      </tree>

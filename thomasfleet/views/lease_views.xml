@@ -19,17 +19,39 @@
                             </group>
                             <group string="Customer">
                                 <field name="customer_id" domain="[('is_company', '=', True)]"/>
-                                <field name="contact_ap_id"/>
-                                <field name="contact_driver_id"/>
+                                <field name="ap_contact_ids">
+                                        <tree>
+                                           <field name="name"></field>
+                                           <field name="email"></field>
+                                        </tree>
+                                </field>
+                                <field name="po_contact_ids">
+                                        <tree>
+                                           <field name="name"></field>
+                                           <field name="email"></field>
+                                        </tree>
+                                </field>
+                                <field name="ops_contact_ids">
+                                        <tree>
+                                           <field name="name"></field>
+                                           <field name="email"></field>
+                                        </tree>
+                                </field>
                             </group>
                             <group string="Lease Details">
-                                 <field name="lease_number"/>
+                                <field name="lease_number"/>
+                                <field name="lease_notes"/>
+                                <field name="contract_number"/>
                                 <field name="po_number"/>
+                                <field name="po_comments"/>
                                 <field name="lease_status"/>
                                 <field name="lease_start_date"/>
                                 <field name="min_lease_end_date"/>
+                                <field name="lease_return_date"/>
                                 <field name="monthly_mileage"/>
                                 <field name="mileage_overage_rate"/>
+                                <field name="additional_billing"/>
+                                <field name="billing_notes"/>
                             </group>
                         </group>
                         <field name="inclusions">
@@ -51,6 +73,9 @@
 
                         <group string="Payments">
                             <field name="monthly_rate"/>
+                            <field name="payment_method"/>
+                            <field name="daily_rate"/>
+                            <field name="weekly_rate"/>
                             <p>Inclusions and Accessories charges + others</p>
                         </group>
                     </group>
@@ -68,8 +93,6 @@
                 <field name="lease_number"/>
                 <field name="lease_start_date"/>
                 <field name="customer_id" domain="[('is_company', '=', True)]"/>
-                <field name="contact_ap_id"/>
-                <field name="contact_driver_id"/>
             </tree>
         </field>
     </record>

@@ -11,22 +11,46 @@ class ThomasLease(models.Model):
     _name = 'thomaslease.lease'
     lease_number = fields.Char('Lease ID',readonly=True)
     po_number = fields.Char("Purchase Order #")
+    po_comments= fields.Char("Purchase Order Comments")
+    contract_number = fields.Char("Contract #")
     lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
     lease_start_date = fields.Date("Rental Period is from")
+    lease_return_date = fields.Date("Rental Returned on")
+    billing_notes = fields.Char("Billing Notes")
     min_lease_end_date = fields.Date("To")
     monthly_rate = fields.Float("Monthly Rate")
+    weekly_rate=fields.Float("Weekly Rate")
+    daily_rate=fields.Float("Daily Rate")
     monthly_mileage = fields.Integer("Monthly Mileage")
     mileage_overage_rate =fields.Float("Additional Mileage Charge")
     customer_id = fields.Many2one("res.partner", "Customer")
-    contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
-    contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
+    #contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
+    #contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
+    #contact_three=fields.Many2one("res.partner", "Contact #3", domain="[('parent_id','=',customer_id)]")
+    #contact_four=fields.Many2one("res.partner", "Contact #4", domain="[('parent_id','=',customer_id)]")
+    #contact_five=fields.Many2one("res.partner", "Contact #5", domain="[('parent_id','=',customer_id)]")
+
+    ap_contact_ids = fields.Many2many('res.partner',string='Accounts Payable Contacts',
+                                      relation='lease_agreement_res_partner_ap_rel',
+                                      domain="[('parent_id','=',customer_id)]")
+    po_contact_ids = fields.Many2many('res.partner', string='Purchasing Contacts',
+                                      relation='lease_agreement_res_partner_po_rel',
+                                      domain="[('parent_id','=',customer_id)]")
+    ops_contact_ids = fields.Many2many('res.partner', string='Operations Contacts',
+                                       relation='lease_agreement_res_partner_ops_rel',
+                                       domain="[('parent_id','=',customer_id)]")
+
     #unit_no = fields.Many2one("fleet.vehicle.unit_no", "Unit No")
     unit_no = fields.Char('Unit #',related="vehicle_id.unit_no",readonly=True)
     inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True)
     accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True)
    # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
     inclusions_discount = fields.Float('Inclusion Discount')
+    lease_notes=fields.Char("Lease Notes")
+    additional_billing = fields.Char("Additional Billing")
+    payment_method = fields.Char("Payment Method")
+
     #inclusion_rate= fields.float(compute="_calIncRate",string='Inclusion Rate')
     #accessories_base_rate = fields.Float(compute="_calcBaseAccRate", string="Accessor List Rate")
    # accessory_discount=fields.float('Accessor Discount')

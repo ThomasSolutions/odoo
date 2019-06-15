@@ -171,6 +171,21 @@ class ThomasFleetVehicle(models.Model):
             print("Context is none")
             return super(ThomasFleetVehicle, self).name_get()
 
+    @api.model
+    def _name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
+
+        args = [] if args is None else args.copy()
+        if not (name == '' and operator == 'ilike'):
+            args += ['|',
+                ('name', operator, name),
+                ('unit_no', operator, name)]
+
+        return super(ThomasFleetVehicle, self)._name_search(
+            name='', args=args, operator='ilike',
+            limit=limit, name_get_uid=name_get_uid)
+
+
+
     @api.depends('unit_no')
     def _getInteger(self):
         for rec in self:
