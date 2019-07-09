@@ -151,13 +151,49 @@
           </p>
         </field>
     </record>
+
+     <act_window name="Generate Lease Invoices"
+                res_model="thomaslease.lease.invoice.wizard"
+                src_model="thomaslease.lease"
+                view_mode="form"
+                multi="True"
+                target="new"
+                key2="client_action_multi"
+                id="action_generate_lease_invoices"
+               />
+
+      <record id='lease_invoice_wizard_form' model='ir.ui.view'>
+       <field name='name'>Lease Invoice wizard form view</field>
+       <field name='model'>thomaslease.lease.invoice.wizard</field>
+       <field name='arch' type='xml'>
+         <form string="Generate Lease Invoices">
+           <sheet>
+             <group>
+               <field name="invoice_date"/>
+               <field name="invoice_due_date"/>
+               <field name='lease_ids'/>
+             </group>
+           </sheet>
+           <footer>
+             <button name='record_lease_invoices'
+                     string='OK'
+                     class='btn-primary'
+                     type='object'/>
+             <button string='Cancel'
+                     class='btn-default'
+                     special='cancel'/>
+      </footer>
+    </form>
+  </field>
+</record>
+
     <menuitem name="Lease Agreements"  id="lease_agreements_main" sequence="2"/>
 
     <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main" id="thomaslease_lease_menu" />
 
-    <menuitem name="Work Orders"  id="work_orders_main" sequence="2"/>
+    <menuitem name="Invoicing"  id="work_orders_main" sequence="2"/>
 
-    <menuitem name="Work Orders" action="thomaslease_lease_action" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+    <menuitem name="Invoicing" action="thomaslease_lease_action" parent="work_orders_main" id="thomasfleet_workorder_menu" />
 
 
   </data>
