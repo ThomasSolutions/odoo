@@ -19,7 +19,7 @@
     'version': '0.53',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'fleet'],
+    'depends': ['base','fleet'],
 
     # always loaded
     'data': [

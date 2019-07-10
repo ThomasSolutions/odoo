@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-
+from datetime import date, datetime, timedelta
+from dateutil import relativedelta
 
 class ThomasLease(models.Model):
 
@@ -93,6 +94,59 @@ class ThomasLease(models.Model):
         record.lease_number = str(record.customer_id.name)+"_"+str(record.unit_no)+"_"+str(record.lease_start_date)+"_"+str(aCount)
 
         return record
+
+class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
+
+    def _default_lease_ids(self):
+        #for the_id in self.env.context.get('active_ids'):
+        #    print(the_id.name)
+        return self.env.context.get('active_ids')
+
+    def _default_invoice_date(self):
+        return datetime.now()
+
+    def _default_invoice_due_date(self):
+        dt2 = datetime.now() + relativedelta.relativedelta(months=+1)
+        return dt2
+
+    _name = 'thomaslease.lease.invoice.wizard'
+    lease_ids = fields.Many2many('thomaslease.lease', string="Lease", default=_default_lease_ids)
+    invoice_date = fields.Date(string="Invoice Date", default=_default_invoice_date)
+    invoice_due_date = fields.Date(string="Invoice Due Date", default=_default_invoice_due_date)
+
+    @api.multi
+    def record_lease_invoices(self):
+        accounting_invoice = self.env['account.invoice']
+        for wizard in self:
+            print("WIZARD")
+            leases = wizard.lease_ids
+            for lease in leases:
+                # determine if an invoice already exists for the lease and don't create again...warn user
+                aLease = self.env['thomaslease.lease'].browse(lease)
+
+                print("Accounting Invoice Create " + str(wizard.invoice_date) + " : " + str(aLease.id))
+                product = self.env['product.product'].search([('name', '=', 'Lease')])
+
+
+                line = self.env['account.invoice.line']
+                line_ids=[]
+                line_id ={
+                    'product_id': product.id,
+                    'price_unit': aLease.id.monthly_rate,
+                    'quantity': 1,
+                    'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
+                    'account_id': product.property_account_income_id.id
+                }
+                line_ids.append((0,0,line_id))
+                accounting_invoice.create({
+                    'partner_id':aLease.id.customer_id.id,
+                    'vechicle_id': aLease.id.vehicle_id.id,
+                    'date_invoice': wizard.invoice_date,
+                    'date_due' : wizard.invoice_due_date,
+                    'type': 'out_invoice',
+                    'invoice_line_ids': line_ids
+                })
+                # accounting_invoice.create({}) need to match customer to accounting invoice etc
 '''
     @api.depends('customer_id', 'unit_no','lease_start_date')
     def _calcLeaseNumber(self):

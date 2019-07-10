@@ -195,13 +195,18 @@ class ThomasFleetVehicle(models.Model):
     @api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
         for record in self:
-            print('Computing GUID' + str(record.stored_protractor_guid))
+            print('Computing GUID ' + str(record.stored_protractor_guid))
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
-                print('Retrieved GUID' + guid['id'])
-                record.with_context(skip_update=True).write({'stored_protractor_guid': guid['id']})
+
                 #record.stored_protractor_guid = guid['id']
-                record.protractor_guid = guid['id']
+                if guid:
+                    print('Retrieved GUID' + guid['id'])
+                    record.protractor_guid = guid['id']
+                    record.with_context(skip_update=True).write({'stored_protractor_guid': guid['id']})
+                else:
+                    print("Could NOT Retrieve GUID")
+                    record.protractor_guid = 'Unable to locate Unit by VIN in Protractor'
             else:
                 record.protractor_guid = record.stored_protractor_guid
 
@@ -311,7 +316,7 @@ class ThomasFleetVehicle(models.Model):
     def get_protractor_id(self):
         print("IN GET PROTRACTOR ID for" + str(self.vin_id))
        # self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
-        the_resp = "NO VIN"
+        the_resp = False
         if self.vin_id:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
             headers = {
@@ -462,7 +467,7 @@ class ThomasFleetVehicle(models.Model):
                 self.model_year = year
                 self.odometer = int(usage)
 
-                the_brand = self.env['fleet.vehicle.model.brand'].search([('name', '=', themake)])
+                the_brand = self.env['fleet.vehicle.model.brand'].search([('name', '=ilike', themake)])
                 if the_brand:
                     self.brand_id = the_brand.id
                 else:
@@ -470,20 +475,20 @@ class ThomasFleetVehicle(models.Model):
                     the_new_brand = self.env['fleet.vehicle.model.brand'].create(brand_data)
                     self.brand_id = the_new_brand.id
 
-                the_model = self.env['fleet.vehicle.model'].search([('brand_id', '=', the_brand.id),('name', '=', themodel)])
+                the_model = self.env['fleet.vehicle.model'].search([('brand_id', '=', the_brand.id),('name', '=ilike', themodel)])
                 if the_model:
                     self.model_id = the_model.id
                 else:
-                    model_data={'name': themodel, 'brand_id':the_brand.id}
+                    model_data={'name': themodel, 'brand_id':self.brand_id.id}
                     the_new_model = self.env['fleet.vehicle.model'].create(model_data)
                     self.model_id = the_new_model.id
 
-                the_trim = self.env['thomasfleet.trim'].search([('brand_id', '=', the_brand.id),('model_id', '=', the_model.id),('name', '=', thesubmodel)])
+                the_trim = self.env['thomasfleet.trim'].search([('brand_id', '=', the_brand.id),('model_id', '=', the_model.id),('name', '=ilike', thesubmodel)])
                 if the_trim:
                     print("Found Trim "+ the_trim.name)
                     self.trim_id = the_trim.id
                 else:
-                    trim_data = {'name':thesubmodel, 'model_id':the_model.id, 'brand_id': the_brand.id}
+                    trim_data = {'name':thesubmodel, 'model_id':self.model_id.id, 'brand_id': self.brand_id.id}
                     the_new_trim = self.env['thomasfleet.trim'].create(trim_data)
                     self.trim_id = the_new_trim.id
 
@@ -954,6 +959,10 @@ class ThomasFleetInvoiceClass(models.Model):
         )
         return res
 
+    @api.multi
+    def generate_account_invoices(self):
+        print ("Genearting Account Invoices")
+
 
 class ThomasFleetInvoiceDetails(models.Model):
     _name = 'thomasfleet.invoice_details'
@@ -1037,3 +1046,17 @@ class ThomasFleetAccessory(models.Model):
     #     @api.depends('value')
     #     def _value_pc(self):
     #         self.value2 = float(self.value) / 100
+class ThomasFleetMXInvoiceWizard(models.TransientModel):
+    _name = 'thomasfleet.mx.invoice.wizard'
+    lease_ids = fields.Many2many('thomaslease.lease', string="Lease")
+    invoice_date = fields.Date(string="Invoice Date")
+
+    @api.multi
+    def record_lease_invoices(self):
+        accounting_invoice = self.env['account.invoice']
+        for wizard in self:
+            leases = wizard.lease_ids
+            for lease in leases:
+                #determine if an invoice already exists for the lease and don't create again...warn user
+                print("Accounting Invoice Create " +str(wizard.invoice_date) + " : "+ lease.id)
+                #accounting_invoice.create({}) need to match customer to accounting invoice etc
