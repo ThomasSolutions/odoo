@@ -758,6 +758,7 @@ class ThomasFleetInclusions(models.Model):
     name = fields.Char('Inclusion')
     description = fields.Char('Description')
     inclusion_cost= fields.Float('Cost')
+    inclusion_charge=fields.Float('Monthly Rate')
 
 class ThomasFleetInvoiceClass(models.Model):
     _name = 'thomasfleet.invoice'
@@ -1035,6 +1036,7 @@ class ThomasFleetAccessory(models.Model):
     description = fields.Char('Description')
     unit_no = fields.Char('Accessory #')
     thomas_purchase_price = fields.Float('Thomas Purchase Price')
+    accessory_charge = fields.Float('Monthly Rate')
     purchase_date = fields.Date('Purchase Date')
     type = fields.Many2one('thomasfleet.accessory_type', 'Accessory Type')
     #fields.Selection([('plow','Plow'),('transponder','Transponder')],'Accessory Type')

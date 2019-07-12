@@ -59,6 +59,7 @@
                                     <field name="name"/>
                                     <field name="description"/>
                                     <field name="inclusion_cost"/>
+                                    <field name="inclusion_charge"/>
                                 </tree>
                         </field>
                          <field name="accessories">
@@ -71,7 +72,7 @@
                                 </tree>
                          </field>
 
-                        <group string="Payments">
+                        <group string="Rates">
                             <field name="monthly_rate"/>
                             <field name="payment_method"/>
                             <field name="daily_rate"/>
@@ -191,9 +192,8 @@
 
     <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main" id="thomaslease_lease_menu" />
 
-    <menuitem name="Invoicing"  id="work_orders_main" sequence="2"/>
 
-    <menuitem name="Invoicing" action="thomaslease_lease_action" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+
 
 
   </data>

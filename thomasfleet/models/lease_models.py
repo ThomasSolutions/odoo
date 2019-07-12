@@ -144,7 +144,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'date_invoice': wizard.invoice_date,
                     'date_due' : wizard.invoice_due_date,
                     'type': 'out_invoice',
-                    'invoice_line_ids': line_ids
+                    'invoice_line_ids': line_ids,
+
                 })
                 # accounting_invoice.create({}) need to match customer to accounting invoice etc
 '''

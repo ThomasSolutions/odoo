@@ -586,6 +586,7 @@
                         <field name="name"/>
                         <field name="description"/>
                         <field name="inclusion_cost"/>
+                        <field name="inclusion_charge"/>
                     </group>
                    </sheet>
             </form>
@@ -638,9 +639,10 @@
         <field name="model">thomasfleet.inclusions</field>
         <field name="arch" type="xml">
             <tree string="Inclusions" editable="top">
-                <field name="name" />
-                <field name="description" invisible="1"/>
+                <field name="name"/>
+                <field name="description"/>
                 <field name="inclusion_cost"/>
+                <field name="inclusion_charge"/>
             </tree>
         </field>
     </record>
@@ -957,6 +959,7 @@
                         <field name="name"/>
                         <field name="unit_no"/>
                         <field name="thomas_purchase_price"/>
+                        <field name="accessory_charge"/>
                         <field name="purchase_date"/>
                         <field name="type"/>
                         <field name="description" invisible="1"/>
@@ -975,6 +978,7 @@
                 <field name="name"/>
                 <field name="unit_no"/>
                 <field name="thomas_purchase_price"/>
+                <field name="accessory_charge"/>
                 <field name="purchase_date"/>
                 <field name="type"/>
                 <field name="description" invisible="1"/>
@@ -1062,6 +1066,22 @@
     </record>
 
     <menuitem action="thomas_fueltype_action" parent="fleet.fleet_configuration" id="thomas_fueltype_menu" sequence="8"/>
+
+    <record id='thomas_inclusions_action' model='ir.actions.act_window'>
+        <field name="name">Inclusions</field>
+        <field name="res_model">thomasfleet.inclusions</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a new inclusion.
+          </p><p>
+            Each vehicle can have one or more inclusions
+          </p>
+        </field>
+    </record>
+
+    <menuitem action="thomas_inclusions_action" parent="fleet.fleet_configuration" id="thomas_inclusions_menu" sequence="9"/>
 
     <record model="ir.ui.menu" id="fleet.fleet_vehicles">
       <field name="name">Assets</field>
