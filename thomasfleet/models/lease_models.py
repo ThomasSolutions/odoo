@@ -28,6 +28,8 @@ class ThomasLease(models.Model):
     #contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
     #contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
+    unit_slug = fields.Char("Unit",related="vehicle_id.unit_slug", readonly=True)
+    product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
     #contact_three=fields.Many2one("res.partner", "Contact #3", domain="[('parent_id','=',customer_id)]")
     #contact_four=fields.Many2one("res.partner", "Contact #4", domain="[('parent_id','=',customer_id)]")
     #contact_five=fields.Many2one("res.partner", "Contact #5", domain="[('parent_id','=',customer_id)]")
@@ -125,6 +127,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 aLease = self.env['thomaslease.lease'].browse(lease)
 
                 print("Accounting Invoice Create " + str(wizard.invoice_date) + " : " + str(aLease.id))
+
+                #look up product
                 product = self.env['product.product'].search([('name', '=', 'Lease')])
 
 
@@ -147,6 +151,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'invoice_line_ids': line_ids,
 
                 })
+
+
                 # accounting_invoice.create({}) need to match customer to accounting invoice etc
 '''
     @api.depends('customer_id', 'unit_no','lease_start_date')
