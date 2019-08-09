@@ -192,10 +192,13 @@ class ThomasFleetVehicle(models.Model):
             rec.unitInt = int(rec.unit_no)
 
     # accessories = fields.Many2many()
-    @api.depends('stored_protractor_guid')
+    #@api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
+        if self:
+            print('HERE IS THE STORED PGUID:' + str(self.stored_protractor_guid))
+
         for record in self:
-            print('Computing GUID ' + str(record.stored_protractor_guid))
+           # print('Computing GUID ' + str(record.stored_protractor_guid))
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
 
@@ -203,7 +206,8 @@ class ThomasFleetVehicle(models.Model):
                 if guid:
                     print('Retrieved GUID' + guid['id'])
                     record.protractor_guid = guid['id']
-                    record.with_context(skip_update=True).write({'stored_protractor_guid': guid['id']})
+                    #record.with_context(skip_update=True).stored_protractor_guid = guid['id']
+                    record.with_context(skip_update=True).update({'stored_protractor_guid': guid['id']})
                 else:
                     print("Could NOT Retrieve GUID")
                     record.protractor_guid = 'Unable to locate Unit by VIN in Protractor'
@@ -359,7 +363,7 @@ class ThomasFleetVehicle(models.Model):
         print("Loop Breaker" + str(self.env.context.get('skip_update')))
         if self.env.context.get('skip_update'):
             print("BUSTING OUT")
-            return
+
         else:
             print("updating protractor")
             self.update_protractor()
