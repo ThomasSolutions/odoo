@@ -59,25 +59,36 @@
                                 <field name="lease_return_date"/>
                                 <field name="monthly_mileage"/>
                                 <field name="mileage_overage_rate"/>
+                                <field name="payment_method"/>
                                 <field name="additional_billing"/>
                                 <field name="billing_notes"/>
                             </group>
 
-                        <group string="Products" colspan="4">
-                             <field name="product_ids">
-                                    <tree>
-                                        <field name="name"></field>
+
+                             <field name="lease_lines">
+                                    <tree editable="bottom">
+                                        <field name="product_id"></field>
                                         <field name="description"></field>
+                                        <field name="price"></field>
+                                        <field name="tax"></field>
+                                        <field name="tax_amount"></field>
+                                        <field name="total"></field>
                                     </tree>
                              </field>
-                        </group>
-                        <group string="Rates" colspan="4">
+
+                       <!-- <group string="Rates" colspan="4">
                             <field name="monthly_rate"/>
-                            <field name="payment_method"/>
                             <field name="daily_rate"/>
                             <field name="weekly_rate"/>
-                            <p>Inclusions and Accessories charges + others</p>
-                        </group>
+                        </group>-->
+                         <group class="oe_subtotal_footer oe_right" colspan="2" name="lease_total">
+                                <field name="monthly_rate" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                <field name="monthly_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="monthly_total" />
+                                </div>
+                                <field name="monthly_total" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                         </group>
                     </group>
                 </sheet>
             </form>
