@@ -207,6 +207,7 @@
                                     <group string="Sale" name="sale">
                                         <field name="customer"/>
                                         <field name="user_id"/>
+                                        <field name="aggregate_invoicing"/>
                                     </group>
                                     <group string="Purchase" name="purchase">
                                         <field name="supplier"/>

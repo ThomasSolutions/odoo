@@ -5,40 +5,49 @@
         <field name="model">thomaslease.lease</field>
         <field name="arch" type="xml">
             <form string="Lease Agreements">
-                 <header>
+                <!-- <header>
                     <button name="do_something_with_the_record"
                     string="Stage 1" type="object" class="btn-primary" />
                     <button name="do_something_else" string="Stage 2" />
                     <field name="lease_status"  widget="statusbar"/>
-                </header>
+                </header>-->
                 <sheet>
                     <group>
-                        <group col="3" colspan="4">
-                            <group string="Unit">
+                            <div colspan="4" class="oe_title">
+                            <h1>
+                                <field name="lease_number" class="oe_read_only"/><br/>
+                                 <field name="unit_slug" context="{'lease':True}"/>
+                             </h1>
+                               </div>
+                           <group>
+                               <group string="Unit">
                                 <field name="vehicle_id" context="{'lease':True}"/>
-                            </group>
-                            <group string="Customer">
-                                <field name="customer_id" domain="[('is_company', '=', True)]"/>
-                                <field name="ap_contact_ids">
-                                        <tree>
-                                           <field name="name"></field>
-                                           <field name="email"></field>
-                                        </tree>
+                                <field name="inclusions" widget="many2many_tags">
+                                   <!-- <tree>
+                                        <field name="name"/>
+                                        -<field name="description"/>
+                                        <field name="inclusion_cost"/>
+                                        <field name="inclusion_charge"/>
+                                    </tree>-->
                                 </field>
-                                <field name="po_contact_ids">
-                                        <tree>
-                                           <field name="name"></field>
-                                           <field name="email"></field>
-                                        </tree>
+                                <field name="accessories" widget="many2many_tags">
+                                    <!--<tree>
+                                        <field name="unit_no"/>
+                                        <field name="name"/>
+                                        <field name="description"/>
+                                        <field name="type"/>
+                                        <field name="thomas_purchase_price"/>
+                                    </tree>-->
                                 </field>
-                                <field name="ops_contact_ids">
-                                        <tree>
-                                           <field name="name"></field>
-                                           <field name="email"></field>
-                                        </tree>
-                                </field>
-                            </group>
-                            <group string="Lease Details">
+                               </group>
+                                <group string="Customer Details">
+                                    <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                                    <field name="ap_contact_ids" widget="many2many_tags"/>
+                                    <field name="po_contact_ids"  widget="many2many_tags"/>
+                                    <field name="ops_contact_ids"  widget="many2many_tags"/>
+                                </group>
+                           </group>
+                            <group  string="Lease Details">
                                 <field name="lease_number"/>
                                 <field name="lease_notes"/>
                                 <field name="contract_number"/>
@@ -53,26 +62,16 @@
                                 <field name="additional_billing"/>
                                 <field name="billing_notes"/>
                             </group>
-                        </group>
-                        <field name="inclusions">
-                                <tree>
-                                    <field name="name"/>
-                                    <field name="description"/>
-                                    <field name="inclusion_cost"/>
-                                    <field name="inclusion_charge"/>
-                                </tree>
-                        </field>
-                         <field name="accessories">
-                                <tree>
-                                    <field name="unit_no"/>
-                                    <field name="name"/>
-                                    <field name="description"/>
-                                    <field name="type"/>
-                                    <field name="thomas_purchase_price"/>
-                                </tree>
-                         </field>
 
-                        <group string="Rates">
+                        <group string="Products" colspan="4">
+                             <field name="product_ids">
+                                    <tree>
+                                        <field name="name"></field>
+                                        <field name="description"></field>
+                                    </tree>
+                             </field>
+                        </group>
+                        <group string="Rates" colspan="4">
                             <field name="monthly_rate"/>
                             <field name="payment_method"/>
                             <field name="daily_rate"/>
