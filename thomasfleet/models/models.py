@@ -252,7 +252,16 @@ class ThomasFleetVehicle(models.Model):
             record.lease_agreements_count = Agreements.search_count([('vehicle_id', '=', record.id)])
 
     def update_protractor(self):
-        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+self.stored_protractor_guid
+        url = " "
+        if self.stored_protractor_guid:
+            url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+self.stored_protractor_guid
+
+        else:
+            if self.protractor_guid:
+                url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + self.protractor_guid
+            else:
+                url = "bad guid"
+
         vin = self.vin_id
         plateReg = "ON"
         unit = self.unit_no

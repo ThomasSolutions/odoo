@@ -164,6 +164,7 @@
                             <field name="qc_check"/>
                             <field name="fin_check"/>
                             <field name="protractor_guid"/>
+                            <field name="stored_protractor_guid"/>
                             <field name="protractor_owner_guid"/>
                             <field name="warranty_start_date"/>
                             <field name="charge_code"/>
