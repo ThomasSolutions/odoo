@@ -22,14 +22,17 @@ class ThomasLease(models.Model):
     monthly_rate = fields.Float("Monthly Rate")
     weekly_rate=fields.Float("Weekly Rate")
     daily_rate=fields.Float("Daily Rate")
-    monthly_mileage = fields.Integer("Monthly Mileage")
-    mileage_overage_rate =fields.Float("Additional Mileage Charge")
+    monthly_tax =fields.Float("Tax(HST-13%)")
+    monthly_total= fields.Float("Monthly Lease Total")
+    monthly_mileage = fields.Integer("Monthly Mileage Allowance")
+    mileage_overage_rate =fields.Float("Additional Mileage Rate")
     customer_id = fields.Many2one("res.partner", "Customer")
     #contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
     #contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
     unit_slug = fields.Char("Unit",related="vehicle_id.unit_slug", readonly=True)
-    product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
+    lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', copy=True, auto_join=True)
+    #product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
     #contact_three=fields.Many2one("res.partner", "Contact #3", domain="[('parent_id','=',customer_id)]")
     #contact_four=fields.Many2one("res.partner", "Contact #4", domain="[('parent_id','=',customer_id)]")
     #contact_five=fields.Many2one("res.partner", "Contact #5", domain="[('parent_id','=',customer_id)]")
@@ -58,6 +61,16 @@ class ThomasLease(models.Model):
     #accessories_base_rate = fields.Float(compute="_calcBaseAccRate", string="Accessor List Rate")
    # accessory_discount=fields.float('Accessor Discount')
     #accessory_rate =fields.float(compute="_caclAccRate",string='Accessory Rate')
+    @api.onchange("lease_lines")
+    def update_totals(self):
+        self.monthly_rate = 0
+        tax = 0
+        for line in self.lease_lines:
+            self.monthly_rate = self.monthly_rate+ line.price
+            tax = tax + (line.price * 0.13)
+
+        self.monthly_tax = tax
+        self.monthly_total = self.monthly_rate + self.monthly_tax
 
 
     @api.multi
@@ -97,6 +110,39 @@ class ThomasLease(models.Model):
 
         return record
 
+class ThomasFleetLeaseLine(models.Model):
+    _name = 'thomaslease.lease_line'
+
+    @api.depends('product_id')
+    def default_description(self):
+        return self.product_id.description_sale
+
+    @api.depends('product_id')
+    def default_price(self):
+        return self.product_id.list_price
+
+    @api.depends('price','tax')
+    def default_total(self):
+        return self.price * (1 + (float(self.tax)/100))
+
+
+    lease_id = fields.Many2one('thomaslease.lease', string='Lease Reference', required=True, ondelete='cascade', index=True, copy=False)
+    product_id = fields.Many2one('product.product', string='Product', change_default=True, ondelete='restrict', required=True)
+    description = fields.Char(string="Description", default=default_description)
+    price = fields.Float(string="Price", default=default_price)
+    tax = fields.Char(string="Tax Rate %", default="13")
+    tax_amount = fields.Float(string="Tax Amount")
+    total = fields.Float(string="Total", default=default_total)
+
+    @api.onchange('product_id','price','tax')
+    def update_line(self):
+        self.description = self.product_id.description_sale
+        self.price = self.product_id.list_price
+        self.tax_amount = self.product_id.list_price * (float(self.tax)/100)
+        self.total = self.price * (1 + (float(self.tax)/100))
+
+
+
 class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def _default_lease_ids(self):
@@ -129,22 +175,26 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 print("Accounting Invoice Create " + str(wizard.invoice_date) + " : " + str(aLease.id))
 
                 #look up product
-                product = self.env['product.product'].search([('name', '=', 'Lease')])
+                for line in aLease.id.lease_lines:
+                    productA = self.env['product.product'].search([('name', '=', 'Lease')])
+                    product = line.product_id
 
+                    #line = self.env['account.invoice.line']
+                    line_ids=[]
+                    line_id ={
+                        'product_id': product.id,
+                        'taxes': product.taxes_id,
+                        'price_unit': line.total,
+                        'quantity': 1,
+                        'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
+                        'account_id': product.property_account_income_id.id,
 
-                line = self.env['account.invoice.line']
-                line_ids=[]
-                line_id ={
-                    'product_id': product.id,
-                    'price_unit': aLease.id.monthly_rate,
-                    'quantity': 1,
-                    'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
-                    'account_id': product.property_account_income_id.id
-                }
-                line_ids.append((0,0,line_id))
+                    }
+                    line_ids.append((0,0,line_id))
+
                 accounting_invoice.create({
                     'partner_id':aLease.id.customer_id.id,
-                    'vechicle_id': aLease.id.vehicle_id.id,
+                    'vehicle_id': aLease.id.vehicle_id.id,
                     'date_invoice': wizard.invoice_date,
                     'date_due' : wizard.invoice_due_date,
                     'type': 'out_invoice',
