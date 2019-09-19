@@ -173,17 +173,19 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 aLease = self.env['thomaslease.lease'].browse(lease)
 
                 print("Accounting Invoice Create " + str(wizard.invoice_date) + " : " + str(aLease.id))
-
+                line_ids = []
+                tax_ids = []
                 #look up product
                 for line in aLease.id.lease_lines:
                     productA = self.env['product.product'].search([('name', '=', 'Lease')])
                     product = line.product_id
 
                     #line = self.env['account.invoice.line']
-                    line_ids=[]
+                    tax_ids.append((0,0,product.taxes_id))
+
                     line_id ={
                         'product_id': product.id,
-                        'taxes': product.taxes_id,
+                        'invoice_line_tax_ids': tax_ids,
                         'price_unit': line.total,
                         'quantity': 1,
                         'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
