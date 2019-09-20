@@ -29,6 +29,8 @@ access_thomasfleet_asset_photo_set_user,thomasfleet.asset_photo_set.user,model_t
 access_thomasfleet_asset_photo_set_manager,thomasfleet.asset_photo_set.manager,model_thomasfleet_asset_photo_set,base.group_system,1,1,1,1
 access_thomasfleet_asset_photo_user,thomasfleet.asset_photo.user,model_thomasfleet_asset_photo,base.group_user,1,0,0,0
 access_thomasfleet_asset_photo_manager,thomasfleet.asset_photo.manager,model_thomasfleet_asset_photo,base.group_system,1,1,1,1
+access_thomasfleet_customer_department_user,thomasfleet.customer_department.user,model_thomasfleet_customer_department,base.group_user,1,0,0,0
+access_thomasfleet_customer_department_manager,thomasfleet.customer_department.manager,model_thomasfleet_customer_department,base.group_system,1,1,1,1
 access_thomaslease_lease_user,thomasfleet.lease.user,model_thomaslease_lease,base.group_user,1,0,0,0
 access_thomaslease_lease_manager,thomasfleet.lease.manager,model_thomaslease_lease,base.group_system,1,1,1,1
 access_thomaslease_lease_line_user,thomasfleet.lease.user,model_thomaslease_lease_line,base.group_user,1,0,0,0
