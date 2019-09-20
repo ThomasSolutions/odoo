@@ -66,8 +66,8 @@ class ThomasLease(models.Model):
         self.monthly_rate = 0
         tax = 0
         for line in self.lease_lines:
-            self.monthly_rate = self.monthly_rate+ line.price
-            tax = tax + (line.price * 0.13)
+            self.monthly_rate = self.monthly_rate + line.price
+            tax = tax + line.tax_amount
 
         self.monthly_tax = tax
         self.monthly_total = self.monthly_rate + self.monthly_tax
@@ -134,11 +134,16 @@ class ThomasFleetLeaseLine(models.Model):
     tax_amount = fields.Float(string="Tax Amount")
     total = fields.Float(string="Total", default=default_total)
 
-    @api.onchange('product_id','price','tax')
-    def update_line(self):
+    @api.onchange('product_id')
+    def update_product(self):
         self.description = self.product_id.description_sale
         self.price = self.product_id.list_price
         self.tax_amount = self.product_id.list_price * (float(self.tax)/100)
+        self.total = self.price * (1 + (float(self.tax)/100))
+
+    @api.onchange('price','tax')
+    def update_total(self):
+        self.tax_amount = self.price * (float(self.tax) / 100)
         self.total = self.price * (1 + (float(self.tax)/100))
 
 
@@ -181,28 +186,28 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     product = line.product_id
 
                     #line = self.env['account.invoice.line']
-                    tax_ids.append((0,0,product.taxes_id))
+                    #tax_ids.append((0,0,product.taxes_id))
 
                     line_id ={
                         'product_id': product.id,
-                        'invoice_line_tax_ids': tax_ids,
                         'price_unit': line.total,
                         'quantity': 1,
                         'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
-                        'account_id': product.property_account_income_id.id,
-
+                        'invoice_line_tax_ids': product.taxes_id,
+                        'account_id': product.property_account_income_id.id
                     }
                     line_ids.append((0,0,line_id))
 
-                accounting_invoice.create({
+                    a_invoice = accounting_invoice.create({
                     'partner_id':aLease.id.customer_id.id,
                     'vehicle_id': aLease.id.vehicle_id.id,
                     'date_invoice': wizard.invoice_date,
                     'date_due' : wizard.invoice_due_date,
                     'type': 'out_invoice',
-                    'invoice_line_ids': line_ids,
+                    'invoice_line_ids': line_ids
+                    })
 
-                })
+
 
 
                 # accounting_invoice.create({}) need to match customer to accounting invoice etc
