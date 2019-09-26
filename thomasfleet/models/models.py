@@ -417,7 +417,7 @@ class ThomasFleetVehicle(models.Model):
 
         print("after create")
         guid= res.get_protractor_id()
-        print("GUID UDPATE VALUE" + str(guid['update']))
+        #print("GUID UDPATE VALUE" + str(guid['update']))
         if guid['update']:
             self = self.with_context(skip_update=False)
             res.with_context(self).stored_protractor_guid = guid['id']

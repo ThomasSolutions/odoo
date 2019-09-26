@@ -129,6 +129,7 @@ class ThomasFleetLeaseLine(models.Model):
     lease_id = fields.Many2one('thomaslease.lease', string='Lease Reference', required=True, ondelete='cascade', index=True, copy=False)
     product_id = fields.Many2one('product.product', string='Product', change_default=True, ondelete='restrict', required=True)
     description = fields.Char(string="Description", default=default_description)
+    tax_id = fields.Many2many('account.tax', string='Taxes', domain=['|', ('active', '=', False), ('active', '=', True)])
     price = fields.Float(string="Price", default=default_price)
     tax = fields.Char(string="Tax Rate %", default="13")
     tax_amount = fields.Float(string="Tax Amount")
@@ -186,14 +187,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     product = line.product_id
 
                     #line = self.env['account.invoice.line']
-                    #tax_ids.append((0,0,product.taxes_id))
+                   # tax_ids.append((0,0,product.taxes_id))
 
                     line_id ={
                         'product_id': product.id,
                         'price_unit': line.total,
                         'quantity': 1,
                         'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
-                        'invoice_line_tax_ids': product.taxes_id,
+                        'invoice_line_tax_ids': product.taxes_id.ids,
                         'account_id': product.property_account_income_id.id
                     }
                     line_ids.append((0,0,line_id))
@@ -204,8 +205,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'date_invoice': wizard.invoice_date,
                     'date_due' : wizard.invoice_due_date,
                     'type': 'out_invoice',
+                    'state': 'draft',
                     'invoice_line_ids': line_ids
                     })
+
+                    a_invoice.compute_taxes()
+
 
 
 
