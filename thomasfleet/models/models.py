@@ -418,14 +418,15 @@ class ThomasFleetVehicle(models.Model):
         print("after create")
         guid= res.get_protractor_id()
         #print("GUID UDPATE VALUE" + str(guid['update']))
-        if guid['update']:
-            self = self.with_context(skip_update=False)
-            res.with_context(self).stored_protractor_guid = guid['id']
-        else:
-            res.stored_protractor_guid = guid['id']
+        if guid:
+            if guid['update']:
+                self = self.with_context(skip_update=False)
+                res.with_context(self).stored_protractor_guid = guid['id']
+            else:
+                res.stored_protractor_guid = guid['id']
 
 
-        print("UPDATED CONTEXT" + str(self.env.context.get('skip_update')))
+        #print("UPDATED CONTEXT" + str(self.env.context.get('skip_update')))
 
 
         print("after setting guid")
