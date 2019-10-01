@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, tools
+from odoo import models, fields, api, tools, exceptions
 import logging, pprint,requests,json,uuid,jsonpath
 from datetime import date, datetime
 
@@ -189,7 +189,14 @@ class ThomasFleetVehicle(models.Model):
     @api.depends('unit_no')
     def _getInteger(self):
         for rec in self:
-            rec.unitInt = int(rec.unit_no)
+            try:
+                int(rec.unit_no)
+                rec.unitInt = int(rec.unit_no)
+            except ValueError:
+                rec.unitInt = 0
+                raise models.ValidationError('Protractor Unit # ' + rec.unit_no
+                                             + ' is not valid (it must be an integer)')
+
 
     # accessories = fields.Many2many()
     #@api.depends('stored_protractor_guid')
