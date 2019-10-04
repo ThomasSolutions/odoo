@@ -106,9 +106,9 @@
                            <!-- <field name="make_name" class="oe_read_only"/>
                             <field name="model_name" class="oe_read_only"/>
                             <field name="trim_name" class="oe_read_only"/>-->
-                            <field name="brand_id"  options="{'no_open':True}"/>
-                            <field name="model_id"  options="{'no_open':True}"/>
-                            <field name="trim_id"  options="{'no_open':True}"/>
+                            <field name="brand_id"  options="{'no_open':True, 'no_create_edit': True}"/>
+                            <field name="model_id"  options="{'no_open':True, 'no_create_edit': True}"/>
+                            <field name="trim_id"  options="{'no_open':True, 'no_create_edit': True}"/>
                             <field name="unitInt" invisible="1"/>
                             <field name="model_year"/>
                             <field name="engine"/>
@@ -300,7 +300,7 @@
             </xpath>
         </field>
     </record>
-      <record id="thomas_vehicle_view_search" model="ir.ui.view">
+    <record id="thomas_vehicle_view_search" model="ir.ui.view">
         <field name="name">thomas.vehicle.search</field>
         <field name="model">fleet.vehicle</field>
         <field name="inherit_id" ref="fleet.fleet_vehicle_view_search"></field>

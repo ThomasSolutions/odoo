@@ -41,13 +41,15 @@
                                 </field>
                                </group>
                                 <group string="Customer Details">
-                                    <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                                    <!--<field name="customer_id" domain="[('is_company', '=', True)]"/>-->
+                                    <field name="customer_id"/>
                                     <field name="ap_contact_ids" widget="many2many_tags"/>
                                     <field name="po_contact_ids"  widget="many2many_tags"/>
                                     <field name="ops_contact_ids"  widget="many2many_tags"/>
                                 </group>
                            </group>
                             <group  string="Lease Details">
+                                <field name="additional_charges"/>
                                 <field name="lease_number"/>
                                 <field name="lease_notes"/>
                                 <field name="contract_number"/>
@@ -55,11 +57,13 @@
                                 <field name="po_comments"/>
                                 <field name="lease_status"/>
                                 <field name="lease_start_date"/>
+                                <field name="billing_start_date"/>
                                 <field name="min_lease_end_date"/>
                                 <field name="lease_return_date"/>
                                 <field name="monthly_mileage"/>
                                 <field name="mileage_overage_rate"/>
-                                <field name="payment_method"/>
+                                <field name="preferred_payment"/>
+                                <field name="last_invoice_date" class="oe_read_only"/>
                                 <field name="additional_billing"/>
                                 <field name="billing_notes"/>
                             </group>
@@ -70,8 +74,7 @@
                                         <field name="product_id"></field>
                                         <field name="description"></field>
                                         <field name="price"></field>
-                                        <field name="tax_id" widget="many2many_tags" options="{'no_create': True}"/>
-                                        <field name="tax"></field>
+                                        <field name="tax_id"></field>
                                         <field name="tax_amount"></field>
                                         <field name="total"></field>
                                     </tree>
@@ -92,6 +95,10 @@
                          </group>
                     </group>
                 </sheet>
+                 <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                </div>
             </form>
         </field>
     </record>
@@ -102,9 +109,14 @@
         <field name="arch" type="xml">
             <tree string="Lease Agreements">
                 <field name="vehicle_id" context="{'lease':True}"/>
+                <field name="customer_id"/>
+                <field name="po_number"/>
                 <field name="lease_number"/>
                 <field name="lease_start_date"/>
-                <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                <field name="lease_status"/>
+                <field name="additional_charges"/>
+                <field name="last_invoice_date"/>
+                <!--<field name="last_invoice_age"/>-->
             </tree>
         </field>
     </record>
@@ -141,15 +153,17 @@
                 <field name="vehicle_id" context="{'lease':True}"/>
                 <field name="customer_id"  domain="[('is_company', '=', True)]"/>
                 <field name="lease_number"/>
+                <field name="po_number"/>
                 <group expand="0" string="Group By">
                    <filter name="groupby_vehicle_id" context="{'group_by' : 'vehicle_id'}" string="Vehicle"/>
                     <filter name="groupby_customer" context="{'group_by' : 'customer_id'}" string="Customer"/>
+                    <filter name="groupby_po_number" context="{'group_by' : 'po_number'}" string="PO Number"/>
+                    <filter name="groupby_last_invoice_date" context="{'group_by' : 'last_invoice_date'}" string="Last Invoice Date"/>
+                    <filter name="groupby_additional_charges" context="{'group_by' : 'additional_charges'}" string="Additional Charges"/>
                 </group>
             </search>
         </field>
     </record>
-
-
 
     <record id='thomaslease_lease_action' model='ir.actions.act_window'>
         <field name="name">Lease Agreements</field>
