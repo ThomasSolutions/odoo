@@ -9,6 +9,8 @@ class ThomasContact(models.Model):
     _inherit = 'res.partner'
 
     #department = fields.Char(string='Department')
+    user_id = fields.Many2one('res.users', string='Thomas Contact',
+                              help='The internal user that is in charge of communicating with this contact if any.')
     qc_check = fields.Boolean(string='Data Accuracy Validation')
     lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts')
     documents = fields.One2many('thomasfleet.customer_document', 'customer_id', 'Customer Docucments')
@@ -19,6 +21,12 @@ class ThomasContact(models.Model):
     po_contact = fields.Boolean(string="Purchasing Contact")
     ops_contact = fields.Boolean(string="Operations Contact")
     aggregate_invoicing= fields.Boolean(string="Aggregate Invoices")
+    preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
+                                                  string='Invoice Delivery',default='email')
+    preferred_payment = fields.Selection([('credit card','Credit Card'),('pad1', 'PAD with Invoice Sent'),
+                                                     ('pad2', 'PAD no Invoice Sent'), ('customer','Customer')],
+                                         string='Preferred Payment Method',
+                                         default='customer')
     lease_agreement_ap_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',

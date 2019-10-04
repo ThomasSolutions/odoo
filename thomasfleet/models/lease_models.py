@@ -5,9 +5,26 @@ from datetime import date, datetime, timedelta
 from dateutil import relativedelta
 
 class ThomasLease(models.Model):
+    _inherit = 'mail.thread'
 
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
+
+    @api.depends('customer_id')
+    @api.one
+    def _set_preferred_billing_default(self):
+        return self.env['res.partner'].search([('id','=', self.customer_id)]).preferred_payment
+
+    @api.onchange("lease_start_date")
+    def set_billing_start_date(self):
+        print("Setting Billing Start Date")
+        if not self.billing_start_date:
+            self.billing_start_date = self.lease_start_date
+
+    @api.onchange("customer_id")
+    def set_preferred_payment(self):
+        print("Setting Payment Start Date")
+        #self.preferred_payment = self.env['res.partner'].search([('id', '=', self.customer_id)]).preferred_payment
 
     _name = 'thomaslease.lease'
     lease_number = fields.Char('Lease ID',readonly=True)
@@ -16,6 +33,10 @@ class ThomasLease(models.Model):
     contract_number = fields.Char("Contract #")
     lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
     lease_start_date = fields.Date("Rental Period is from")
+    billing_start_date = fields.Date("Billing Started on")
+    preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
+                                                     ('pad2', 'PAD no Invoice Sent'), ('customer', 'Customer')],
+                                         )
     lease_return_date = fields.Date("Rental Returned on")
     billing_notes = fields.Char("Billing Notes")
     min_lease_end_date = fields.Date("To")
@@ -27,15 +48,12 @@ class ThomasLease(models.Model):
     monthly_mileage = fields.Integer("Monthly Mileage Allowance")
     mileage_overage_rate =fields.Float("Additional Mileage Rate")
     customer_id = fields.Many2one("res.partner", "Customer")
-    #contact_ap_id =fields.Many2one("res.partner", "Invoicing Contact", domain="[('parent_id','=',customer_id)]")
-    #contact_driver_id = fields.Many2one("res.partner", "Driver", domain="[('parent_id','=',customer_id)]")
+
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
     unit_slug = fields.Char("Unit",related="vehicle_id.unit_slug", readonly=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', copy=True, auto_join=True)
     #product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
-    #contact_three=fields.Many2one("res.partner", "Contact #3", domain="[('parent_id','=',customer_id)]")
-    #contact_four=fields.Many2one("res.partner", "Contact #4", domain="[('parent_id','=',customer_id)]")
-    #contact_five=fields.Many2one("res.partner", "Contact #5", domain="[('parent_id','=',customer_id)]")
+
 
     ap_contact_ids = fields.Many2many('res.partner',string='Accounts Payable Contacts',
                                       relation='lease_agreement_res_partner_ap_rel',
@@ -56,11 +74,23 @@ class ThomasLease(models.Model):
     lease_notes=fields.Char("Lease Notes")
     additional_billing = fields.Char("Additional Billing")
     payment_method = fields.Char("Payment Method")
+    last_invoice_date = fields.Date("Last Invoice On")
+    additional_charges = fields.Boolean("Additional Charges")
+    #last_invoice_age = fields.Integer("Last Invoice Age", compute='calc_invoice_age')
 
     #inclusion_rate= fields.float(compute="_calIncRate",string='Inclusion Rate')
     #accessories_base_rate = fields.Float(compute="_calcBaseAccRate", string="Accessor List Rate")
    # accessory_discount=fields.float('Accessor Discount')
     #accessory_rate =fields.float(compute="_caclAccRate",string='Accessory Rate')
+    @api.depends('last_invoice_date')
+    def calc_invoice_age(self):
+        for rec in self:
+            if rec.last_invoice_date:
+                age = datetime.now() - rec.last_invoice_date
+                rec.last_invoice_age = age.days
+            else:
+                rec.last_invoice_age = 0
+
     @api.onchange("lease_lines")
     def update_totals(self):
         self.monthly_rate = 0
@@ -121,6 +151,10 @@ class ThomasFleetLeaseLine(models.Model):
     def default_price(self):
         return self.product_id.list_price
 
+    @api.depends('product_id')
+    def default_taxes(self):
+        return self.product_id.taxes_id
+
     @api.depends('price','tax')
     def default_total(self):
         return self.price * (1 + (float(self.tax)/100))
@@ -129,7 +163,9 @@ class ThomasFleetLeaseLine(models.Model):
     lease_id = fields.Many2one('thomaslease.lease', string='Lease Reference', required=True, ondelete='cascade', index=True, copy=False)
     product_id = fields.Many2one('product.product', string='Product', change_default=True, ondelete='restrict', required=True)
     description = fields.Char(string="Description", default=default_description)
-    tax_id = fields.Many2many('account.tax', string='Taxes', domain=['|', ('active', '=', False), ('active', '=', True)])
+    tax_id = fields.Many2one('account.tax', string='Tax')
+    #fields.Many2many('account.tax', string='Taxes', domain=['|', ('active', '=', False), ('active', '=', True)])
+    tax_ids = fields.Many2many('account.tax', string='Taxes',domain=['|', ('active', '=', False), ('active', '=', True)])
     price = fields.Float(string="Price", default=default_price)
     tax = fields.Char(string="Tax Rate %", default="13")
     tax_amount = fields.Float(string="Tax Amount")
@@ -139,13 +175,19 @@ class ThomasFleetLeaseLine(models.Model):
     def update_product(self):
         self.description = self.product_id.description_sale
         self.price = self.product_id.list_price
-        self.tax_amount = self.product_id.list_price * (float(self.tax)/100)
-        self.total = self.price * (1 + (float(self.tax)/100))
+        self.tax_amount = self.product_id.list_price * (float(self.tax_id.amount)/100)
+        self.total = self.price * (1 + (float(self.tax_id.amount)/100))
+        self.tax_ids = self.product_id.taxes_id
+        if self.product_id.taxes_id:
+            self.tax_id = self.product_id.taxes_id[0]
+
+
+
 
     @api.onchange('price','tax')
     def update_total(self):
-        self.tax_amount = self.price * (float(self.tax) / 100)
-        self.total = self.price * (1 + (float(self.tax)/100))
+        self.tax_amount = self.price * (float(self.tax_id.amount) / 100)
+        self.total = self.price * (1 + (float(self.tax_id.amount)/100))
 
 
 
@@ -169,53 +211,108 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     invoice_due_date = fields.Date(string="Invoice Due Date", default=_default_invoice_due_date)
 
     @api.multi
-    def record_lease_invoices(self):
+    def record_normal_invoice(self, the_lease, the_wizard):
         accounting_invoice = self.env['account.invoice']
+
+        line_ids = []
+
+        for line in the_lease.id.lease_lines:
+            product = line.product_id
+            invoice_line = self.env['account.invoice.line']
+
+            # create the invoice line
+            line_id = invoice_line.create({
+                'product_id': product.id,
+                'price_unit': line.total,
+                'quantity': 1,
+                'name': 'Monthly Lease for Unit # ' + the_lease.id.vehicle_id.unit_no,
+                'invoice_line_tax_ids': line.tax_ids,
+                'account_id': product.property_account_income_id.id
+            })
+
+            # call set taxes to set them...otherwise the relationships aren't set properly
+            line_id._set_taxes()
+            line_ids.append(line_id.id)
+
+            a_invoice = accounting_invoice.create({
+                'partner_id': the_lease.id.customer_id.id,
+                'vehicle_id': the_lease.id.vehicle_id.id,
+                'date_invoice': the_wizard.invoice_date,
+                'date_due': the_wizard.invoice_due_date,
+                'type': 'out_invoice',
+                'state': 'draft',
+                'invoice_line_ids': [(6, 0, line_ids)]
+            })
+
+    @api.multi
+    def record_aggregate_invoice(self, customers, the_wizard):
+        for customer in customers:
+            accounting_invoice = self.env['account.invoice']
+            po_numbers = []
+
+            for lease in customer.lease_agreements:
+                po_numbers.append(lease.po_number)
+            #make po_number list unique
+            po_numbers = list(dict.fromkeys(po_numbers))
+            #find leases by PO
+            for po in po_numbers:
+                line_ids = []
+
+                leases = self.env['thomaslease.lease'].search([('po_number', '=', po),('customer_id', '=', customer.id)])
+                for lease in leases:
+                    print(lease.lease_number + " : " + str(lease.po_number))
+                    for line in lease.lease_lines:
+                        product = line.product_id
+                        invoice_line = self.env['account.invoice.line']
+
+                        # create the invoice line
+                        line_id = invoice_line.create({
+                            'product_id': product.id,
+                            'price_unit': line.total,
+                            'quantity': 1,
+                            'name': 'Monthly Lease for Unit # ' + lease.vehicle_id.unit_no,
+                            'invoice_line_tax_ids': line.tax_ids,
+                            'account_id': product.property_account_income_id.id
+                        })
+
+                        # call set taxes to set them...otherwise the relationships aren't set properly
+                        line_id._set_taxes()
+                        line_ids.append(line_id.id)
+
+                a_invoice = accounting_invoice.create({
+                    'partner_id': lease.customer_id.id,
+                    'vehicle_id': lease.vehicle_id.id,
+                    'date_invoice': the_wizard.invoice_date,
+                    'date_due': the_wizard.invoice_due_date,
+                    'type': 'out_invoice',
+                    'state': 'draft',
+                    'invoice_line_ids': [(6, 0, line_ids)]
+                })
+
+
+
+
+    @api.multi
+    def record_lease_invoices(self):
+        aggregate_customers =[]
+
         for wizard in self:
-            print("WIZARD")
             leases = wizard.lease_ids
             for lease in leases:
                 # determine if an invoice already exists for the lease and don't create again...warn user
-                aLease = self.env['thomaslease.lease'].browse(lease)
+                lease.last_invoice_date = wizard.invoice_date
+                a_lease = self.env['thomaslease.lease'].browse(lease)
+                if a_lease.id.customer_id.aggregate_invoicing:
 
-                print("Accounting Invoice Create " + str(wizard.invoice_date) + " : " + str(aLease.id))
-                line_ids = []
-                tax_ids = []
-                #look up product
-                for line in aLease.id.lease_lines:
-                    productA = self.env['product.product'].search([('name', '=', 'Lease')])
-                    product = line.product_id
+                    aggregate_customers.append(a_lease.id.customer_id)
+                    print("Aggregate Customer: " + a_lease.id.customer_id.name)
+                    #self.record_aggregate_invoice(a_lease,)
+                else:
+                    print("NORMAL INVOICING")
+                    self.record_normal_invoice(a_lease,wizard)
 
-                    #line = self.env['account.invoice.line']
-                   # tax_ids.append((0,0,product.taxes_id))
-
-                    line_id ={
-                        'product_id': product.id,
-                        'price_unit': line.total,
-                        'quantity': 1,
-                        'name': 'Monthly Lease for Unit # ' + aLease.id.vehicle_id.unit_no,
-                        'invoice_line_tax_ids': product.taxes_id.ids,
-                        'account_id': product.property_account_income_id.id
-                    }
-                    line_ids.append((0,0,line_id))
-
-                    a_invoice = accounting_invoice.create({
-                    'partner_id':aLease.id.customer_id.id,
-                    'vehicle_id': aLease.id.vehicle_id.id,
-                    'date_invoice': wizard.invoice_date,
-                    'date_due' : wizard.invoice_due_date,
-                    'type': 'out_invoice',
-                    'state': 'draft',
-                    'invoice_line_ids': line_ids
-                    })
-
-                    a_invoice.compute_taxes()
-
-
-
-
-
-                # accounting_invoice.create({}) need to match customer to accounting invoice etc
+            aggregate_customers =list(dict.fromkeys(aggregate_customers))
+            self.record_aggregate_invoice(aggregate_customers,wizard)
 '''
     @api.depends('customer_id', 'unit_no','lease_start_date')
     def _calcLeaseNumber(self):
