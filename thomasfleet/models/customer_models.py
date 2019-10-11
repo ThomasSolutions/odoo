@@ -20,7 +20,7 @@ class ThomasContact(models.Model):
     ap_contact = fields.Boolean(string="Accounts Payable Contact")
     po_contact = fields.Boolean(string="Purchasing Contact")
     ops_contact = fields.Boolean(string="Operations Contact")
-    aggregate_invoicing= fields.Boolean(string="Aggregate Invoices")
+    aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True)
     preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
                                                   string='Invoice Delivery',default='email')
     preferred_payment = fields.Selection([('credit card','Credit Card'),('pad1', 'PAD with Invoice Sent'),
