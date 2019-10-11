@@ -15,25 +15,25 @@ def dump_obj(obj):
 
 class ThomasAsset(models.Model):
     _name = 'thomas.asset'
-    unit_no = fields.Char('Unit #')
-    notes = fields.Text('Notes')
-    charge_code = fields.Char('Charge Code')
-    filed_as = fields.Char("File As")
-    company_acct = fields.Char("Company Acct")
-    asset_class = fields.Many2one('thomasfleet.asset_class', 'Asset Class')
-    insurance_class = fields.Many2one('thomasfleet.insurance_class', 'Insurance Class')
-    thomas_purchase_price = fields.Float('Thomas Purchase Price')
-    purchase_date = fields.Char('Purchase Date')
-    usage = fields.Char('Usage')
-    disposal_year = fields.Char('Disposal Year')
-    disposal_date = fields.Char('Disposal Date')
-    disposal_proceeds = fields.Float('Disposal Proceeds')
-    sold_to = fields.Char('Sold To')
-    betterment_cost = fields.Char("Betterment Cost")
-    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Status')
+    unit_no = fields.Char('Unit #', track_visibility='onchange')
+    notes = fields.Text('Notes', track_visibility='onchange')
+    charge_code = fields.Char('Charge Code', track_visibility='onchange')
+    filed_as = fields.Char("File As", track_visibility='onchange')
+    company_acct = fields.Char("Company Acct", track_visibility='onchange')
+    asset_class = fields.Many2one('thomasfleet.asset_class', 'Asset Class', track_visibility='onchange')
+    insurance_class = fields.Many2one('thomasfleet.insurance_class', 'Insurance Class', track_visibility='onchange')
+    thomas_purchase_price = fields.Float('Thomas Purchase Price', track_visibility='onchange')
+    purchase_date = fields.Char('Purchase Date', track_visibility='onchange')
+    usage = fields.Char('Usage', track_visibility='onchange')
+    disposal_year = fields.Char('Disposal Year', track_visibility='onchange')
+    disposal_date = fields.Char('Disposal Date', track_visibility='onchange')
+    disposal_proceeds = fields.Float('Disposal Proceeds', track_visibility='onchange')
+    sold_to = fields.Char('Sold To', track_visibility='onchange')
+    betterment_cost = fields.Char("Betterment Cost", track_visibility='onchange')
+    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Status', track_visibility='onchange')
    # lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
-    photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set')
-    inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions')
+    photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set', track_visibility='onchange')
+    inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions', track_visibility='onchange')
 
 
 
@@ -104,57 +104,60 @@ class ThomasFleetVehicle(models.Model):
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
 
     #plate registration?
-    unit_no = fields.Char("Unit #", default=default_unit_no, required=True)
+    unit_no = fields.Char("Unit #", default=default_unit_no, required=True, track_visibility='onchange')
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service Invoices')
     lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
+    lease_invoice_ids = fields.Many2many('account.invoice',string='Invoices',
+                                   relation='unit_lease_account_invoice_rel')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
+    lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
-    vin_id = fields.Char('V.I.N')
-    license_plate = fields.Char('License Plate', required=False)
-    brand_id = fields.Many2one(related='model_id.brand_id', string='Make')
+    vin_id = fields.Char('V.I.N', track_visibility='onchange')
+    license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
+    brand_id = fields.Many2one(related='model_id.brand_id', string='Make', track_visibility='onchange')
 
     model_id = fields.Many2one('fleet.vehicle.model', 'Model', required=True, help='Model of the vehicle',
-                               domain="[('brand_id','=',brand_id)]")
+                               domain="[('brand_id','=',brand_id)]",track_visibility='onchange')
 
     trim_id = fields.Many2one('thomasfleet.trim', string='Trim', help='Trim for the Model of the vehicle',
-                              domain="[('model_id','=',model_id)]")
+                              domain="[('model_id','=',model_id)]",track_visibility='onchange')
     location = fields.Many2one('thomasfleet.location')
     # fields.Selection([('hamilton', 'Hamilton'), ('selkirk', 'Selkirk'), ('niagara', 'Niagara')])
-    door_access_code = fields.Char('Door Access Code')
-    body_style = fields.Char('Body Style')
-    drive = fields.Char('Drive')
-    wheel_studs = fields.Char('Wheel Studs')
-    wheel_size = fields.Char('Wheel Size')
-    wheel_style = fields.Char('Wheel Style')
-    wheel_base = fields.Char('Wheel Base')
-    box_size = fields.Char('Box Size')
-    seat_material = fields.Many2one('thomasfleet.seatmaterial', 'Seat Material')
-    flooring = fields.Many2one('thomasfleet.floormaterial', 'Floor Material')
-    trailer_hitch = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Trailer Hitch', default='yes')
-    brake_controller = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Brake Controller', default='yes')
-    tires = fields.Char('Tires')
-    capless_fuel_filler = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Capless Fuel Filter', default='no')
-    bluetooth = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Bluetooth', default='yes')
-    navigation = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Navigation', default='no')
-    warranty_start_date = fields.Char('Warranty Start Date')
-    seat_belts = fields.Integer('# Seat Belts')
-    seats = fields.Integer('# Seats', help='Number of seats of the vehicle')
-    doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5)
+    door_access_code = fields.Char('Door Access Code', track_visibility='onchange')
+    body_style = fields.Char('Body Style', track_visibility='onchange')
+    drive = fields.Char('Drive', track_visibility='onchange')
+    wheel_studs = fields.Char('Wheel Studs', track_visibility='onchange')
+    wheel_size = fields.Char('Wheel Size', track_visibility='onchange')
+    wheel_style = fields.Char('Wheel Style', track_visibility='onchange')
+    wheel_base = fields.Char('Wheel Base', track_visibility='onchange')
+    box_size = fields.Char('Box Size', track_visibility='onchange')
+    seat_material = fields.Many2one('thomasfleet.seatmaterial', 'Seat Material', track_visibility='onchange')
+    flooring = fields.Many2one('thomasfleet.floormaterial', 'Floor Material', track_visibility='onchange')
+    trailer_hitch = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Trailer Hitch', default='yes', track_visibility='onchange')
+    brake_controller = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Brake Controller', default='yes', track_visibility='onchange')
+    tires = fields.Char('Tires', track_visibility='onchange')
+    capless_fuel_filler = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Capless Fuel Filter', default='no', track_visibility='onchange')
+    bluetooth = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Bluetooth', default='yes', track_visibility='onchange')
+    navigation = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Navigation', default='no', track_visibility='onchange')
+    warranty_start_date = fields.Char('Warranty Start Date', track_visibility='onchange')
+    seat_belts = fields.Integer('# Seat Belts', track_visibility='onchange')
+    seats = fields.Integer('# Seats', help='Number of seats of the vehicle', track_visibility='onchange')
+    doors = fields.Integer('# Doors', help='Number of doors of the vehicle', default=5, track_visibility='onchange')
     # fuel_type = fields.Selection([('gasoline', 'Gasoline'), ('diesel', 'Diesel')],'Fuel Type', default='gasoline')
-    notes = fields.Text(compute='_get_protractor_notes_and_owner', string='Protractor Notes')
-    rim_bolts = fields.Char('Rim Bolts')
-    engine = fields.Char('Engine')
-    fuel_type = fields.Many2one('thomasfleet.fueltype', 'Fuel Type')
-    fleet_status = fields.Many2one('fleet.vehicle.state', 'Fleet Status')
-    air_conditioning = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Air Conditioning', default='yes')
-    transmission = fields.Char("Transmission")
+    notes = fields.Text(compute='_get_protractor_notes_and_owner', string='Protractor Notes', track_visibility='onchange')
+    rim_bolts = fields.Char('Rim Bolts', track_visibility='onchange')
+    engine = fields.Char('Engine', track_visibility='onchange')
+    fuel_type = fields.Many2one('thomasfleet.fueltype', 'Fuel Type', track_visibility='onchange')
+    fleet_status = fields.Many2one('fleet.vehicle.state', 'Fleet Status', track_visibility='onchange')
+    air_conditioning = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Air Conditioning', default='yes', track_visibility='onchange')
+    transmission = fields.Char("Transmission", track_visibility='onchange')
     protractor_guid = fields.Char(compute='protractor_guid_compute')
     stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
-    accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories")
+    accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories", track_visibility='onchange')
     write_to_protractor = fields.Boolean(default=False)
-    production_date = fields.Char("Production Date")
+    production_date = fields.Char("Production Date", track_visibility='onchange')
     pulled_protractor_data = fields.Boolean(default=False,String="Got Data from Protractor")
     protractor_owner_guid = fields.Char(compute='_get_protractor_notes_and_owner', string= 'Protractor Owner ID')
 
@@ -253,10 +256,12 @@ class ThomasFleetVehicle(models.Model):
                 record.unit_slug = 'Unit # - '
 
     def _compute_thomas_counts(self):
-
-        Agreements = self.env['thomaslease.lease']
+        the_agreements = self.env['thomaslease.lease']
+        the_invoices = self.env['account.invoice']
         for record in self:
-            record.lease_agreements_count = Agreements.search_count([('vehicle_id', '=', record.id)])
+            record.lease_agreements_count = the_agreements.search_count([('vehicle_id', '=', record.id)])
+            record.lease_invoices_count = the_invoices.search_count([('vehicle_id', '=', record.id)])
+
 
     def update_protractor(self):
         url = " "
@@ -375,6 +380,8 @@ class ThomasFleetVehicle(models.Model):
 
         record = super(ThomasFleetVehicle,self).write(
             values)
+
+        #self.message_post(body=values)
 
         print("Loop Breaker" + str(self.env.context.get('skip_update')))
         if self.env.context.get('skip_update'):
@@ -663,6 +670,20 @@ class ThomasFleetVehicle(models.Model):
         """
         self.ensure_one()
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_lease_agreements_action')
+        res.update(
+            #context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
+            domain=[('vehicle_id', '=', self.id)]
+        )
+        print("Unit" + str(self.unit_no))
+
+        return res
+
+    def act_show_vehicle_lease_invoices(self):
+        """ This opens log view to view and add new log for this vehicle, groupby default to only show effective costs
+            @return: the costs log view
+        """
+        self.ensure_one()
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_lease_invoices_action')
         res.update(
             #context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
             domain=[('vehicle_id', '=', self.id)]

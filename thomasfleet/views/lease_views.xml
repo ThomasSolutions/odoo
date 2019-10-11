@@ -1,225 +1,262 @@
 <odoo>
-  <data>
+    <data>
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
-        <field name="name">thomaslease.lease.form</field>
-        <field name="model">thomaslease.lease</field>
-        <field name="arch" type="xml">
-            <form string="Lease Agreements">
-                <!-- <header>
-                    <button name="do_something_with_the_record"
-                    string="Stage 1" type="object" class="btn-primary" />
-                    <button name="do_something_else" string="Stage 2" />
-                    <field name="lease_status"  widget="statusbar"/>
-                </header>-->
-                <sheet>
-                    <group>
+            <field name="name">thomaslease.lease.form</field>
+            <field name="model">thomaslease.lease</field>
+            <field name="arch" type="xml">
+                <form string="Lease Agreements">
+                    <!-- <header>
+                        <button name="do_something_with_the_record"
+                        string="Stage 1" type="object" class="btn-primary" />
+                        <button name="do_something_else" string="Stage 2" />
+                        <field name="lease_status"  widget="statusbar"/>
+                    </header>-->
+                    <sheet>
+                        <group>
                             <div colspan="4" class="oe_title">
-                            <h1>
-                                <field name="lease_number" class="oe_read_only"/><br/>
-                                 <field name="unit_slug" context="{'lease':True}"/>
-                             </h1>
-                               </div>
-                           <group>
-                               <group string="Unit">
-                                <field name="vehicle_id" context="{'lease':True}"/>
-                                <field name="inclusions" widget="many2many_tags">
-                                   <!-- <tree>
-                                        <field name="name"/>
-                                        -<field name="description"/>
-                                        <field name="inclusion_cost"/>
-                                        <field name="inclusion_charge"/>
-                                    </tree>-->
-                                </field>
-                                <field name="accessories" widget="many2many_tags">
-                                    <!--<tree>
-                                        <field name="unit_no"/>
-                                        <field name="name"/>
-                                        <field name="description"/>
-                                        <field name="type"/>
-                                        <field name="thomas_purchase_price"/>
-                                    </tree>-->
-                                </field>
-                               </group>
+                                <h1>
+                                    <field name="lease_number" class="oe_read_only"/>
+                                    <br/>
+                                    <field name="unit_slug" context="{'lease':True}"/>
+                                </h1>
+                            </div>
+                            <group colspan="4">
+                                <group string="Unit">
+                                    <field name="vehicle_id" context="{'lease':True}"/>
+                                    <field name="inclusions" widget="many2many_tags">
+                                        <!-- <tree>
+                                             <field name="name"/>
+                                             -<field name="description"/>
+                                             <field name="inclusion_cost"/>
+                                             <field name="inclusion_charge"/>
+                                         </tree>-->
+                                    </field>
+                                    <field name="accessories" widget="many2many_tags">
+                                        <!--<tree>
+                                            <field name="unit_no"/>
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                            <field name="type"/>
+                                            <field name="thomas_purchase_price"/>
+                                        </tree>-->
+                                    </field>
+                                </group>
                                 <group string="Customer Details">
                                     <!--<field name="customer_id" domain="[('is_company', '=', True)]"/>-->
                                     <field name="customer_id"/>
                                     <field name="ap_contact_ids" widget="many2many_tags"/>
-                                    <field name="po_contact_ids"  widget="many2many_tags"/>
-                                    <field name="ops_contact_ids"  widget="many2many_tags"/>
+                                    <field name="po_contact_ids" widget="many2many_tags"/>
+                                    <field name="ops_contact_ids" widget="many2many_tags"/>
                                 </group>
-                           </group>
-                            <group  string="Lease Details">
-                                <field name="additional_charges"/>
-                                <field name="lease_number"/>
-                                <field name="lease_notes"/>
-                                <field name="contract_number"/>
-                                <field name="po_number"/>
-                                <field name="po_comments"/>
-                                <field name="lease_status"/>
-                                <field name="lease_start_date"/>
-                                <field name="billing_start_date"/>
-                                <field name="min_lease_end_date"/>
-                                <field name="lease_return_date"/>
-                                <field name="monthly_mileage"/>
-                                <field name="mileage_overage_rate"/>
-                                <field name="preferred_payment"/>
-                                <field name="last_invoice_date" class="oe_read_only"/>
-                                <field name="additional_billing"/>
-                                <field name="billing_notes"/>
                             </group>
-
-
-                             <field name="lease_lines">
-                                    <tree editable="bottom">
-                                        <field name="product_id"></field>
-                                        <field name="description"></field>
-                                        <field name="price"></field>
-                                        <field name="tax_id"></field>
-                                        <field name="tax_amount"></field>
-                                        <field name="total"></field>
-                                    </tree>
-                             </field>
-
-                       <!-- <group string="Rates" colspan="4">
-                            <field name="monthly_rate"/>
-                            <field name="daily_rate"/>
-                            <field name="weekly_rate"/>
-                        </group>-->
-                         <group class="oe_subtotal_footer oe_right" colspan="2" name="lease_total">
-                                <field name="monthly_rate" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <field name="monthly_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                                    <label for="monthly_total" />
-                                </div>
-                                <field name="monthly_total" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                          </group>
+                            <notebook>
+                                <page string="Lease Details">
+                                    <group colpan="4">
+                                        <group>
+                                            <field name="additional_charges"/>
+                                            <field name="lease_number"/>
+                                            <field name="lease_notes"/>
+                                            <field name="contract_number"/>
+                                            <field name="po_number"/>
+                                            <field name="po_comments"/>
+                                            <field name="lease_status"  options="{'no_open':True, 'no_create_edit': True}"/>
+                                        </group>
+                                        <group>
+                                            <field name="lease_start_date"/>
+                                            <field name="billing_start_date"/>
+                                            <field name="min_lease_end_date"/>
+                                            <field name="lease_return_date"/>
+                                            <field name="monthly_mileage"/>
+                                            <field name="mileage_overage_rate"/>
+                                            <field name="preferred_payment"/>
+                                            <field name="last_invoice_date" class="oe_read_only"/>
+                                            <field name="additional_billing"/>
+                                            <field name="billing_notes"/>
+                                        </group>
+                                    </group>
+
+
+                                    <field name="lease_lines">
+                                        <tree editable="bottom">
+                                            <field name="product_id"></field>
+                                            <field name="description"></field>
+                                            <field name="price"></field>
+                                            <field name="tax_id"></field>
+                                            <field name="tax_amount"></field>
+                                            <field name="total"></field>
+                                        </tree>
+                                    </field>
+                                    <group class="oe_subtotal_footer oe_right" colspan="2" name="lease_total">
+                                        <field name="monthly_rate" widget='monetary'
+                                               options="{'currency_field': 'currency_id'}"/>
+                                        <field name="monthly_tax" widget='monetary'
+                                               options="{'currency_field': 'currency_id'}"/>
+                                        <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                            <label for="monthly_total"/>
+                                        </div>
+                                        <field name="monthly_total" nolabel="1" class="oe_subtotal_footer_separator"
+                                               widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                    </group>
+                                </page>
+                                <page string="Invoices">
+                                    <field name="invoice_ids" options="{'no_create': True}" readonly="1">
+                                        <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
+                                              string="Invoice">
+                                            <field name="partner_id" groups="base.group_user" string="Customer"/>
+                                            <field name="date_invoice"/>
+                                            <field name="number"/>
+                                            <field name="commercial_partner_id" invisible="1"/>
+                                            <field name="reference" invisible="1"/>
+                                            <field name="name" invisible="1"/>
+                                            <field name="journal_id" invisible="1"/>
+                                            <field name="company_id" groups="base.group_multi_company"
+                                                   options="{'no_create': True}"/>
+                                            <field name="user_id"/>
+                                            <field name="date_due"/>
+                                            <field name="origin"/>
+                                            <field name="amount_total_signed" string="Total" sum="Total"/>
+                                            <field name="residual_signed" string="Amount Due" sum="Amount Due"/>
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="company_currency_id" invisible="1"/>
+                                            <field name="state"/>
+                                            <field name="type" invisible="context.get('type',True)"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id='thomaslease_lease_view_tree' model='ir.ui.view'>
+            <field name="name">thomaslease.lease.tree</field>
+            <field name="model">thomaslease.lease</field>
+            <field name="arch" type="xml">
+                <tree string="Lease Agreements">
+                    <field name="vehicle_id" context="{'lease':True}"/>
+                    <field name="customer_id"/>
+                    <field name="po_number"/>
+                    <field name="lease_number"/>
+                    <field name="lease_start_date"/>
+                    <field name="lease_status"/>
+                    <field name="additional_charges"/>
+                    <field name="preferred_payment"/>
+                    <field name="last_invoice_date"/>
+                    <!--<field name="last_invoice_age"/>-->
+                </tree>
+            </field>
+        </record>
+
+        <record id='thomaslease_lease_view_kanban' model='ir.ui.view'>
+            <field name="name">thomaslease.lease.kanban</field>
+            <field name="model">thomaslease.lease</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click">
+                                <div>
+                                    <strong>
+                                        <field name="vehicle_id" context="{'lease':True}"/>
+                                        <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                                    </strong>
+                                </div>
+                                <div>
+                                    <span class="pull-right">
+                                        <field name="lease_number"/>
+                                        Km
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id='thomaslease_lease_view_search' model='ir.ui.view'>
+            <field name="name">thomaslease.lease.search</field>
+            <field name="model">thomaslease.lease</field>
+            <field name="arch" type="xml">
+                <search string="Lease Agreements">
+                    <field name="vehicle_id" context="{'lease':True}"/>
+                    <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                    <field name="lease_number"/>
+                    <field name="po_number"/>
+                    <group expand="0" string="Group By">
+                        <filter name="groupby_vehicle_id" context="{'group_by' : 'vehicle_id'}" string="Vehicle"/>
+                        <filter name="groupby_customer" context="{'group_by' : 'customer_id'}" string="Customer"/>
+                        <filter name="groupby_po_number" context="{'group_by' : 'po_number'}" string="PO Number"/>
+                        <filter name="groupby_last_invoice_date" context="{'group_by' : 'last_invoice_date'}"
+                                string="Last Invoice Date"/>
+                        <filter name="groupby_additional_charges" context="{'group_by' : 'additional_charges'}"
+                                string="Additional Charges"/>
+                         <filter name="groupby_lease_status" context="{'group_by' : 'lease_status'}" string="Lease Status"/>
+                         <filter name="groupby_payment_method" context="{'group_by' : 'preferred_payment'}" string="Payment Method"/>
                     </group>
-                </sheet>
-                 <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
-                </div>
-            </form>
-        </field>
-    </record>
+                </search>
+            </field>
+        </record>
 
-    <record id='thomaslease_lease_view_tree' model='ir.ui.view'>
-        <field name="name">thomaslease.lease.tree</field>
-        <field name="model">thomaslease.lease</field>
-        <field name="arch" type="xml">
-            <tree string="Lease Agreements">
-                <field name="vehicle_id" context="{'lease':True}"/>
-                <field name="customer_id"/>
-                <field name="po_number"/>
-                <field name="lease_number"/>
-                <field name="lease_start_date"/>
-                <field name="lease_status"/>
-                <field name="additional_charges"/>
-                <field name="last_invoice_date"/>
-                <!--<field name="last_invoice_age"/>-->
-            </tree>
-        </field>
-    </record>
+        <record id='thomaslease_lease_action' model='ir.actions.act_window'>
+            <field name="name">Lease Agreements</field>
+            <field name="res_model">thomaslease.lease</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="context">{"lease" : True}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a lease agreement.
+                </p>
+            </field>
+        </record>
 
-    <record id='thomaslease_lease_view_kanban' model='ir.ui.view'>
-        <field name="name">thomaslease.lease.kanban</field>
-        <field name="model">thomaslease.lease</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile">
-                <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <div>
-                                <strong>
-                                    <field name="vehicle_id" context="{'lease':True}"/>
-                                    <field name="customer_id" domain="[('is_company', '=', True)]"/>
-                                </strong>
-                            </div>
-                            <div>
-                                <span class="pull-right"><field name="lease_number"/> Km</span>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
+        <act_window name="Generate Lease Invoices"
+                    res_model="thomaslease.lease.invoice.wizard"
+                    src_model="thomaslease.lease"
+                    view_mode="form"
+                    multi="True"
+                    target="new"
+                    key2="client_action_multi"
+                    id="action_generate_lease_invoices"
+        />
 
-    <record id='thomaslease_lease_view_search' model='ir.ui.view'>
-        <field name="name">thomaslease.lease.search</field>
-        <field name="model">thomaslease.lease</field>
-        <field name="arch" type="xml">
-            <search string="Lease Agreements" >
-                <field name="vehicle_id" context="{'lease':True}"/>
-                <field name="customer_id"  domain="[('is_company', '=', True)]"/>
-                <field name="lease_number"/>
-                <field name="po_number"/>
-                <group expand="0" string="Group By">
-                   <filter name="groupby_vehicle_id" context="{'group_by' : 'vehicle_id'}" string="Vehicle"/>
-                    <filter name="groupby_customer" context="{'group_by' : 'customer_id'}" string="Customer"/>
-                    <filter name="groupby_po_number" context="{'group_by' : 'po_number'}" string="PO Number"/>
-                    <filter name="groupby_last_invoice_date" context="{'group_by' : 'last_invoice_date'}" string="Last Invoice Date"/>
-                    <filter name="groupby_additional_charges" context="{'group_by' : 'additional_charges'}" string="Additional Charges"/>
-                </group>
-            </search>
-        </field>
-    </record>
+        <record id='lease_invoice_wizard_form' model='ir.ui.view'>
+            <field name='name'>Lease Invoice wizard form view</field>
+            <field name='model'>thomaslease.lease.invoice.wizard</field>
+            <field name='arch' type='xml'>
+                <form string="Generate Lease Invoices">
+                    <sheet>
+                        <group>
+                            <field name="invoice_date"/>
+                            <field name="invoice_due_date"/>
+                            <field name='lease_ids'/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name='record_lease_invoices'
+                                string='OK'
+                                class='btn-primary'
+                                type='object'/>
+                        <button string='Cancel'
+                                class='btn-default'
+                                special='cancel'/>
+                    </footer>
+                </form>
+            </field>
+        </record>
 
-    <record id='thomaslease_lease_action' model='ir.actions.act_window'>
-        <field name="name">Lease Agreements</field>
-        <field name="res_model">thomaslease.lease</field>
-        <field name="view_type">form</field>
-        <field name="view_mode">tree,kanban,form</field>
-        <field name="context">{"lease" : True}</field>
-        <field name="help" type="html">
-          <p class="oe_view_nocontent_create">
-            Click to create a lease agreement.
-          </p>
-        </field>
-    </record>
+        <menuitem name="Lease Agreements" id="lease_agreements_main" sequence="2"/>
 
-     <act_window name="Generate Lease Invoices"
-                res_model="thomaslease.lease.invoice.wizard"
-                src_model="thomaslease.lease"
-                view_mode="form"
-                multi="True"
-                target="new"
-                key2="client_action_multi"
-                id="action_generate_lease_invoices"
-               />
-
-      <record id='lease_invoice_wizard_form' model='ir.ui.view'>
-       <field name='name'>Lease Invoice wizard form view</field>
-       <field name='model'>thomaslease.lease.invoice.wizard</field>
-       <field name='arch' type='xml'>
-         <form string="Generate Lease Invoices">
-           <sheet>
-             <group>
-               <field name="invoice_date"/>
-               <field name="invoice_due_date"/>
-               <field name='lease_ids'/>
-             </group>
-           </sheet>
-           <footer>
-             <button name='record_lease_invoices'
-                     string='OK'
-                     class='btn-primary'
-                     type='object'/>
-             <button string='Cancel'
-                     class='btn-default'
-                     special='cancel'/>
-      </footer>
-    </form>
-  </field>
-</record>
-
-    <menuitem name="Lease Agreements"  id="lease_agreements_main" sequence="2"/>
-
-    <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main" id="thomaslease_lease_menu" />
+        <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
+                  id="thomaslease_lease_menu"/>
 
 
-
-
-
-  </data>
+    </data>
 </odoo>
