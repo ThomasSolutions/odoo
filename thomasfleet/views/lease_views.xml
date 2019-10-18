@@ -1,5 +1,14 @@
 <odoo>
     <data>
+        <record id="open_lease_return_wizard_action" model="ir.actions.act_window">
+            <field name="name">Lease Return Wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">thomaslease.lease.return.wizard</field>
+            <field name="view_id" ref="lease_return_wizard_form"></field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
             <field name="name">thomaslease.lease.form</field>
             <field name="model">thomaslease.lease</field>
@@ -265,15 +274,7 @@
                     key2="client_action_multi"
                     id="action_open_lease_return"
         />
-        <record id="thomaslease_open_lease_return_wizard_action" model="ir.actions.act_window">
-            <field name="name">Lease Return Wizard</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">thomaslease.lease.return.wizard</field>
-            <field name="view_id" ref="lease_return_wizard_form"></field>
-            <field name="view_type">form</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-        </record>
+
 
         <record id='lease_invoice_wizard_form' model='ir.ui.view'>
             <field name='name'>Lease Invoice wizard form view</field>
