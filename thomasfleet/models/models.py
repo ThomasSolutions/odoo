@@ -121,7 +121,7 @@ class ThomasFleetVehicle(models.Model):
 
     trim_id = fields.Many2one('thomasfleet.trim', string='Trim', help='Trim for the Model of the vehicle',
                               domain="[('model_id','=',model_id)]",track_visibility='onchange')
-    location = fields.Many2one('thomasfleet.location')
+    location = fields.Many2one('thomasfleet.location', track_visibility='onchange')
     # fields.Selection([('hamilton', 'Hamilton'), ('selkirk', 'Selkirk'), ('niagara', 'Niagara')])
     door_access_code = fields.Char('Door Access Code', track_visibility='onchange')
     body_style = fields.Char('Body Style', track_visibility='onchange')
@@ -155,7 +155,7 @@ class ThomasFleetVehicle(models.Model):
     stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
-    accessories = fields.One2many('thomasfleet.accessory','vehicle_id', String="Accessories", track_visibility='onchange')
+    accessories = fields.One2many('thomasfleet.accessory','vehicle_id',String="Accessories", track_visibility='onchange')
     write_to_protractor = fields.Boolean(default=False)
     production_date = fields.Char("Production Date", track_visibility='onchange')
     pulled_protractor_data = fields.Boolean(default=False,String="Got Data from Protractor")
@@ -717,6 +717,11 @@ class ThomasFleetVehicle(models.Model):
         )
         return res
 
+class ThomasFleetOdometer(models.Model):
+    _inherit= 'fleet.vehicle.odometer'
+    lease_id = fields.Many2one('thomaslease.lease', 'Lease Agreement')
+    customer_id =fields.Many2one(related="lease_id.customer_id", string="Customer", readonly=True)
+    activity = fields.Selection([('lease_out', 'Lease Start'), ('lease_in', 'Lease Return'),('service', 'Service'),('swap', 'Swap')], string="Activity", track_visibility='onchange')
 
 class ThomasFleetVehicleModel(models.Model):
     _inherit = 'fleet.vehicle.model'
@@ -1081,15 +1086,21 @@ class ThomasFleetAccessory(models.Model):
     accessory_charge = fields.Float('Monthly Rate')
     purchase_date = fields.Date('Purchase Date')
     type = fields.Many2one('thomasfleet.accessory_type', 'Accessory Type')
-    #fields.Selection([('plow','Plow'),('transponder','Transponder')],'Accessory Type')
-    #     name = fields.Char()
-    #     value = fields.Integer()
-    #     value2 = fields.Float(compute="_value_pc", store=True)
-    #     description = fields.Text()
-    #
-    #     @api.depends('value')
-    #     def _value_pc(self):
-    #         self.value2 = float(self.value) / 100
+
+    @api.multi
+    @api.depends('type')
+    def name_get(self):
+            res = []
+            for record in self:
+                if record.type.id == 12:
+                    name = record.name + " " + record.unit_no
+                    res.append((record.id, name))
+                else:
+                    res.append((record.id,record.name))
+            return res
+
+
+
 class ThomasFleetMXInvoiceWizard(models.TransientModel):
     _name = 'thomasfleet.mx.invoice.wizard'
     lease_ids = fields.Many2many('thomaslease.lease', string="Lease")

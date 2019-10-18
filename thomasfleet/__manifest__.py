@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.68',
+    'version': '0.69',
 
     # any module necessary for this one to work correctly
     'depends': ['base','fleet'],
@@ -29,6 +29,10 @@
         'views/customer_views.xml',
         'views/invoice_views.xml',
         'views/templates.xml',
+        'report/custom_header_template.xml',
+        'report/lease_print_template.xml',
+        'report/lease_printout.xml',
+
         'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
         'data/thomasfleet.lease_status.csv',

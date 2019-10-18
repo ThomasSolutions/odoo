@@ -19,10 +19,7 @@
                         <div class="oe_title">
                             <field name="is_company" invisible="1"/>
                             <field name="commercial_partner_id" invisible="1"/>
-                            <label for="qc_check"/><field name="qc_check" />
-                            <field name="protractor_guid"/>
-                            <field name="protractor_search_name"/>
-                            <button name="find_protractor_guid" type="object" string="Get Protractor ID" class="oe_highlight" />
+
                             <field name="company_type" widget="radio"
                                 class="oe_edit_only"
                                 options="{'horizontal': true}"/>
@@ -187,7 +184,22 @@
                                     </form>
                                 </field>
                             </page>
+                            <page name='insurance_details' string="Insurance and License">
+                                <group colspan="4">
+                                <field name="insurance_on_file"/>
+                                <field name="insurance_agent"/>
+                                <field name="insurance_underwriter"/>
+                                <field name="insurance_policy"/>
+                                <field name="insurance_expiration"/>
+                                <field name="drivers_license"/>
+                                <field name="drivers_license_expiry"/>
+                                </group>
+                            </page>
                             <page name='internal_notes' string="Internal Notes">
+                                <label for="qc_check"/><field name="qc_check" />
+                                 <field name="protractor_guid"/>
+                                <field name="protractor_search_name"/>
+                                <button name="find_protractor_guid" type="object" string="Get Protractor ID" class="oe_highlight" />
                                 <field name="comment" placeholder="Internal note..."/>
                             </page>
                             <page name='lease_agreements' string="Lease Agreeements">
