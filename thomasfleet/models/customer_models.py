@@ -44,6 +44,13 @@ class ThomasContact(models.Model):
         relation='lease_agreement_res_partner_ops_rel'  # optional
 
     )
+    insurance_on_file = fields.Boolean(string="Proof of Insurance on File")
+    insurance_agent = fields.Char(string="Agent")
+    insurance_underwriter = fields.Char(string="Underwriter")
+    insurance_policy = fields.Char(string="Policy #")
+    insurance_expiration = fields.Date(string="Expiration Date")
+    drivers_license = fields.Char(string="Drivers License")
+    drivers_license_expiry = fields.Date(string="Drivers License Expiry")
 
     @api.multi
     def find_protractor_guid(self):

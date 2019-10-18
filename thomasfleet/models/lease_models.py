@@ -10,6 +10,10 @@ class ThomasLease(models.Model):
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
 
+    @api.onchange('vehicle_id')
+    def _get_unit_odometer(self):
+        self.mileage_at_lease =  self.vehicle_id.odometer
+
     @api.depends('customer_id')
     @api.one
     def _set_preferred_billing_default(self):
@@ -21,10 +25,26 @@ class ThomasLease(models.Model):
         if not self.billing_start_date:
             self.billing_start_date = self.lease_start_date
 
+
     @api.onchange("customer_id")
     def set_preferred_payment(self):
         print("Setting Payment Start Date")
         #self.preferred_payment = self.env['res.partner'].search([('id', '=', self.customer_id)]).preferred_payment
+
+    @api.multi
+    def btn_validate(self):
+        for rec in self:
+            rec.state='active'
+
+    @api.multi
+    def lease_print(self):
+        """ Print the invoice and mark it as sent, so that we can see more
+            easily the next step of the workflow
+        """
+        self.ensure_one()
+        return self.env.ref('thomasfleet.lease_agreement').report_action(self)
+
+
 
     _name = 'thomaslease.lease'
     lease_number = fields.Char('Lease ID',readonly=True)
@@ -33,7 +53,12 @@ class ThomasLease(models.Model):
     contract_number = fields.Char("Contract #")
     invoice_ids = fields.Many2many('account.invoice',string='Invoices',
                                    relation='lease_agreement_account_invoice_rel')
-    lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
+    #lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
+    state = fields.Selection([('draft','Draft'),('active','Active'),
+                                                    ('repairs_pending', 'Repairs Pending'),
+                                                    ('invoice_pending', 'Invoice Pending'),
+                                                     ('both','Repairs and Invoice Pending'),
+                                                    ('closed','Closed')],string="Status",default='draft')
     lease_start_date = fields.Date("Lease Start Date")
     billing_start_date = fields.Date("Billing Start Date")
     preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
@@ -42,20 +67,45 @@ class ThomasLease(models.Model):
     lease_return_date = fields.Date("Unit Returned on")
     billing_notes = fields.Char("Billing Notes")
     min_lease_end_date = fields.Date("To")
+    fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
+                                                     ('three_quarter', '3/4'), ('full', 'Full')],
+                                         )
+    fuel_at_return = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
+                                                     ('three_quarter', '3/4'), ('full', 'Full')],
+                                         )
+
+    lease_out_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Lease",
+                                            domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_out')]")
+    lease_return_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Return",
+                                               domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_in')]")
+    mileage_at_lease = fields.Float(string='Lease Start Odometer', related='lease_out_odometer_id.value',readonly=True)
+
+    mileage_at_return = fields.Float(string='Lease Return Odometer', related='lease_return_odometer_id.value', readonly=True)
+
+    delivery_charge = fields.Float(string='Delivery Charge')
+
+    driver_id = fields.Many2one('res.partner',string='Driver',domain="[('parent_id','=',customer_id)]")
+
     monthly_rate = fields.Float("Monthly Rate")
     weekly_rate=fields.Float("Weekly Rate")
     daily_rate=fields.Float("Daily Rate")
     monthly_tax =fields.Float("Tax(HST-13%)")
-    monthly_total= fields.Float("Monthly Lease Total")
-    monthly_mileage = fields.Integer("Monthly Mileage Allowance")
-    mileage_overage_rate =fields.Float("Additional Mileage Rate")
-    customer_id = fields.Many2one("res.partner", "Customer")
+    monthly_total = fields.Float("Monthly Lease Total")
+    monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500)
+    mileage_overage_rate =fields.Float("Additional Mileage Rate", default=0.14)
+    customer_id = fields.Many2one("res.partner", "Customer", change_default=True)
 
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True)
     unit_slug = fields.Char("Unit",related="vehicle_id.unit_slug", readonly=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', copy=True, auto_join=True)
     #product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
 
+    insurance_on_file = fields.Boolean(related='customer_id.insurance_on_file',string="Proof of Insurance on File",
+                                       readonly=True)
+    insurance_agent = fields.Char(related='customer_id.insurance_agent', string="Agent", readonly=True)
+    insurance_underwriter = fields.Char(related='customer_id.insurance_underwriter',string="Underwriter", readonly=True)
+    insurance_policy = fields.Char(related='customer_id.insurance_policy',string="Policy #", readonly=True)
+    insurance_expiration = fields.Date(related='customer_id.insurance_expiration',string="Expiration Date",readonly=True)
 
     ap_contact_ids = fields.Many2many('res.partner',string='Accounts Payable Contacts',
                                       relation='lease_agreement_res_partner_ap_rel',
@@ -73,11 +123,15 @@ class ThomasLease(models.Model):
     accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True)
    # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
     inclusions_discount = fields.Float('Inclusion Discount')
-    lease_notes=fields.Char("Lease Notes")
+    lease_notes=fields.Text("Lease Notes")
+    inspection_notes=fields.Text("Inspection Notes")
     additional_billing = fields.Char("Additional Billing")
     payment_method = fields.Char("Payment Method")
     last_invoice_date = fields.Date("Last Invoice On")
     additional_charges = fields.Boolean("Additional Charges")
+    outgoing_inspector =fields.Many2one('res.users',string="Outgoing Inspector")
+    incoming_inspector =fields.Many2one('res.users',string="Incoming Inspector")
+    transponder_id = fields.Many2one('thomasfleet.accessory', string="407 Transponder", domain="[('type.name','=','407 Transponder')]")
     #last_invoice_age = fields.Integer("Last Invoice Age", compute='calc_invoice_age')
 
     #inclusion_rate= fields.float(compute="_calIncRate",string='Inclusion Rate')
@@ -191,7 +245,29 @@ class ThomasFleetLeaseLine(models.Model):
         self.tax_amount = self.price * (float(self.tax_id.amount) / 100)
         self.total = self.price * (1 + (float(self.tax_id.amount)/100))
 
+class ThomasFleetReturnWizard(models.TransientModel):
 
+    _name = 'thomaslease.lease.return.wizard'
+    def _default_lease_ids(self):
+        #for the_id in self.env.context.get('active_ids'):
+        #    print(the_id.name)
+        return self.env.context.get('active_ids')
+
+    lease_ids = fields.Many2many('thomaslease.lease', string="Lease", default=_default_lease_ids)
+    invoice_pending = fields.Boolean("Invoice Pending")
+    repairs_pending = fields.Boolean("Repairs Pending")
+
+    @api.multi
+    def record_return(self):
+        for lease in self.lease_ids:
+            if self.invoice_pending & self.repairs_pending:
+                lease.state='both'
+            elif self.invoice_pending:
+                lease.state='invoice_pending'
+            elif self.repairs_pending:
+                lease.state ='repairs_pending'
+            else:
+                lease.state = 'closed'
 
 class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
