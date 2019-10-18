@@ -4,10 +4,10 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
-                    <div class="page">
+                    <div class="page" style="page-break-after:always;page-break-inside:avoid">
 
                             <div class="row">
-                               <h1>Lease Agreement</h1>
+                               <h1 class="text-center">Lease Agreement</h1>
                             </div>
                         <div class="row">
                             <div class="col-xs-8">
@@ -258,7 +258,7 @@
                             </tbody>
                         </table>
                     </div>
-                        <div class="page">
+                        <div class="page" style="page-break-after:always;page-break-inside:avoid">
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Physical Condition</h3>
@@ -299,7 +299,7 @@
 
                         </div>
                     </div>
-                        <div class="page">
+                        <div class="page" style="page-break-after:always;page-break-inside:avoid">
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Terms and Conditions</h3>
@@ -438,7 +438,7 @@
                             </div>
                         </div>
                     </div>
-                        <div class="page">
+                        <div class="page" style="page-break-after:always;page-break-inside:avoid">
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Lease Return</h3>
