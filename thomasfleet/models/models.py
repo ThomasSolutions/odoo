@@ -548,7 +548,7 @@ class ThomasFleetVehicle(models.Model):
             }
             response = requests.request("GET", url, headers=headers)
 
-            logging.info(response.text)
+
             data = response.json()
             the_note=""
             the_ownerID=""
