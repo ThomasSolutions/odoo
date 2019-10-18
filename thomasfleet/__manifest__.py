@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.73',
+    'version': '0.74',
 
     # any module necessary for this one to work correctly
     'depends': ['base','fleet'],
@@ -29,7 +29,7 @@
         'views/customer_views.xml',
         'views/invoice_views.xml',
         'views/templates.xml',
-        'report/custom_header_template.xml',
+        #'report/custom_header_template.xml',
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
 
