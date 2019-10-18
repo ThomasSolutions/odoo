@@ -1,5 +1,31 @@
 <odoo>
     <data>
+        <record id='lease_return_wizard_form' model='ir.ui.view'>
+            <field name='name'>Lease Return wizard form view</field>
+            <field name='model'>thomaslease.lease.return.wizard</field>
+            <field name='arch' type='xml'>
+                <form string="Lease Return">
+                    <sheet>
+                        <group>
+                            <field name="invoice_pending"/>
+                            <field name="repairs_pending"/>
+                            <field name='lease_ids'/>
+
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name='record_return'
+                                string='OK'
+                                class='btn-primary'
+                                type='object'/>
+                        <button string='Cancel'
+                                class='btn-default'
+                                special='cancel'/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
         <record id="open_lease_return_wizard_action" model="ir.actions.act_window">
             <field name="name">Lease Return Wizard</field>
             <field name="type">ir.actions.act_window</field>
@@ -17,7 +43,8 @@
                     <header>
                         <button name="lease_print" class="btn-primary" string="Print" type="object"/>
                         <button name="btn_validate" class="oe_highlight" string="Lease" type="object"/>
-                        <button name="%(open_lease_return_wizard_action)d" class="btn-primary"  string="Return" type="action"/>
+                        <button name="%(open_lease_return_wizard_action)d" class="btn-primary" string="Return"
+                                type="action"/>
 
                         <field name="state" clickable="True" widget="statusbar"
                                statusbar_colors="{'draft':'yellow','active':'green', 'closed':'red'}"
@@ -301,34 +328,10 @@
             </field>
         </record>
 
-        <record id='lease_return_wizard_form' model='ir.ui.view'>
-            <field name='name'>Lease Return wizard form view</field>
-            <field name='model'>thomaslease.lease.return.wizard</field>
-            <field name='arch' type='xml'>
-                <form string="Lease Return">
-                    <sheet>
-                        <group>
-                            <field name="invoice_pending"/>
-                            <field name="repairs_pending"/>
-                            <field name='lease_ids'/>
-
-                        </group>
-                    </sheet>
-                    <footer>
-                        <button name='record_return'
-                                string='OK'
-                                class='btn-primary'
-                                type='object'/>
-                        <button string='Cancel'
-                                class='btn-default'
-                                special='cancel'/>
-                    </footer>
-                </form>
-            </field>
-        </record>
 
         <menuitem name="Lease Agreements" id="lease_agreements_main" sequence="2"/>
-        <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu" id="thomaslease_return_menu"/>
+        <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
+                  id="thomaslease_return_menu"/>
         <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
                   id="thomaslease_lease_menu"/>
 
