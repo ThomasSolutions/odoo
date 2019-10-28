@@ -34,7 +34,10 @@ class ThomasAsset(models.Model):
    # lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set', track_visibility='onchange')
     inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions', track_visibility='onchange')
-
+    state = fields.Selection(
+        [('spare', 'Spare'), ('maint_req', 'Maintenance Required'), ('road_test', 'Road Test'), ('detail', 'Detail'),
+         ('reserved', 'Customer/Reserved'), ('leased', 'Leased'), ('available', 'Available for Lease'),
+         ('returned_inspect', 'Returned waiting Inspection')], string="Status", default='available')
 
 
 class ThomasAssetPhotoSet(models.Model):
@@ -337,7 +340,7 @@ class ThomasFleetVehicle(models.Model):
         response = requests.request("POST", url, data=payload, headers=headers)
 
         #print(payload)
-
+    @api.one
     def get_protractor_id(self):
         print("IN GET PROTRACTOR ID for" + str(self.vin_id))
        # self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
@@ -448,6 +451,7 @@ class ThomasFleetVehicle(models.Model):
         return res
 
     @api.onchange('vin_id')
+    @api.one
     def _get_protractor_data(self):
         print("GETTING PROTRACTOR DATA")
         the_resp = "NO VIN"
@@ -534,6 +538,7 @@ class ThomasFleetVehicle(models.Model):
                 return result
 
     @api.depends('stored_protractor_guid')
+    @api.one
     def _get_protractor_notes_and_owner(self):
         the_resp = "NO VIN"
         if self.vin_id:

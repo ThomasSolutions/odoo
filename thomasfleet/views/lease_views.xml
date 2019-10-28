@@ -35,6 +35,16 @@
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
+
+        <record id="open_lease_invoice_wizard_action" model="ir.actions.act_window">
+            <field name="name">Lease Invoice Wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">thomaslease.lease.invoice.wizard</field>
+            <field name="view_id" ref="lease_invoice_wizard_form"></field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
             <field name="name">thomaslease.lease.form</field>
             <field name="model">thomaslease.lease</field>
@@ -43,6 +53,9 @@
                     <header>
                         <button name="lease_print" class="btn-primary" string="Print" type="object"/>
                         <button name="btn_validate" class="oe_highlight" string="Lease" type="object"/>
+                        <button name="%(open_lease_invoice_wizard_action)d" class="btn-primary" string="Invoice"
+                                type="action"/>
+
                         <button name="%(open_lease_return_wizard_action)d" class="btn-primary" string="Return"
                                 type="action"/>
 
@@ -99,7 +112,7 @@
                                         <field name="fuel_at_lease"/>
                                         <field name="fuel_at_return"/>
                                         <field name="additional_charges"/>
-                                        <field name="lease_number"/>
+                                        <!--<field name="lease_number"/>-->
                                         <field name="lease_notes"/>
                                         <field name="contract_number"/>
                                         <field name="po_number"/>
@@ -126,6 +139,11 @@
                                         <field name="additional_billing"/>
                                         <field name="delivery_charge"/>
                                         <field name="billing_notes"/>
+                                        <field name="run_initial_invoicing"/>
+                                        <field name="invoice_to"/>
+                                        <field name="invoice_from"/>
+                                        <field name="invoice_posting_date"/>
+                                        <field name="invoice_generation_date"/>
                                     </group>
                                 </group>
 

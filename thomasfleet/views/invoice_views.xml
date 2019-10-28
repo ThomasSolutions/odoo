@@ -30,12 +30,19 @@
                 <field name="partner_id" position="after">
                     <field name="po_number" />
                     <field name="lease_ids" widget="many2many_tags"/>
-                    <field name="vehicle_id"/>
+                    <field name="vehicle_ids">
+                        <tree>
+                            <field name="unit_no"/>
+                            <field name="brand_id"/>
+                            <field name="model_id"/>
+                            <field name="license_plate"/>
+                        </tree>
+                    </field>
                </field>
            </field>
         </record>
 
-        <record id="view_account_invoice_filter" model="ir.ui.view">
+       <!-- <record id="view_account_invoice_filter" model="ir.ui.view">
             <field name="name">account.invoice.select</field>
             <field name="model">account.invoice</field>
             <field name="arch" type="xml">
@@ -99,8 +106,31 @@
             <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
             <field eval="False" name="view_id"/>
             <field name="domain">[('type','=','out_invoice')]</field>
-            <field name="context">{'type':'out_invoice', 'journal_type': 'sale'}</field>
-            <field name="search_view_id" ref="view_account_invoice_filter_inherit_invoices"/>
+            <field name="context">{'type':'out_invoice', 'journal_type': 'sale', 'lease':True}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter_inherit_invoices"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to create a customer invoice.
+              </p><p>
+                Odoo's electronic invoicing allows to ease and fasten the
+                collection of customer payments. Your customer receives the
+                invoice by email and he can pay online and/or import it
+                in his own system.
+              </p><p>
+                The discussions with your customer are automatically displayed at
+                the bottom of each invoice.
+              </p>
+            </field>
+        </record>-->
+    <record id="thomaslease_action_invoice_tree1" model="ir.actions.act_window">
+            <field name="name">Customer Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','=','out_invoice')]</field>
+            <field name="context">{'type':'out_invoice', 'journal_type': 'sale', 'lease':True}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter_inherit_invoices"/>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">
                 Click to create a customer invoice.
@@ -115,6 +145,8 @@
               </p>
             </field>
         </record>
+
+
 
         <menuitem name="Customer Invoices"  id="work_orders_main" sequence="2"/>
 
