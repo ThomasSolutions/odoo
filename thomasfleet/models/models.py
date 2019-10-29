@@ -370,12 +370,13 @@ class ThomasFleetVehicle(models.Model):
             if not the_id:
                 the_id = uuid.uuid4()
                 the_resp={'id':the_id,'update':True}
-                print("Setting Write to protractor cause no id found")
+                self.log.info("Setting Write to protractor cause no id found")
             else:
-                print("Found an existing unit: "+the_id)
+                self.log.info("Found an existing unit: "+the_id)
                 the_resp = {'id':the_id,'update':False}
                  #this can only be set on create
-
+                
+        self.log.info("RETURNING THE RESPONSE " + the_resp)
         return the_resp
 
     @api.multi
