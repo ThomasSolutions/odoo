@@ -218,9 +218,13 @@ class ThomasFleetVehicle(models.Model):
                 #record.stored_protractor_guid = guid['id']
                 if guid:
                     #print('Retrieved GUID' + guid['id'])
-                    record.protractor_guid = guid['id']
+                    if guid['id']:
+                        record.protractor_guid = guid['id']
                     #record.with_context(skip_update=True).stored_protractor_guid = guid['id']
-                    record.with_context(skip_update=True).update({'stored_protractor_guid': guid['id']})
+                        record.with_context(skip_update=True).update({'stored_protractor_guid': guid['id']})
+                    else:
+                        print("Problem with GUID in protractor")
+                        record.protractor_guid = 'Unable to locate Unit by VIN in Protractor'
                 else:
                     print("Could NOT Retrieve GUID")
                     record.protractor_guid = 'Unable to locate Unit by VIN in Protractor'
