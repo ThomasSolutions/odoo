@@ -107,7 +107,7 @@ class ThomasLease(models.Model):
                               ('both', 'Repairs and Invoice Pending'),
                               ('closed', 'Closed')], string="Status", default='draft')
 
-    lease_start_date = fields.Date("Lease Start Date", required=True)
+    lease_start_date = fields.Date("Lease Start Date" ) #, required=True)
     billing_start_date = fields.Date("Billing Start Date")
 
     invoice_from = fields.Date(string="Invoice From")
@@ -149,9 +149,9 @@ class ThomasLease(models.Model):
     monthly_total = fields.Float("Monthly Lease Total")
     monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500)
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14)
-    customer_id = fields.Many2one("res.partner", "Customer", change_default=True, required=True)
+    customer_id = fields.Many2one("res.partner", "Customer", change_default=True) #, required=True)
 
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True, required=True)
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True) #, required=True)
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', copy=True, auto_join=True)
     # product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
@@ -213,12 +213,13 @@ class ThomasLease(models.Model):
     def update_lease_number(self):
         Agreements = self.env['thomaslease.lease']
         aCount = 0
-        if self.customer_id:
-            aCount = Agreements.search_count([('customer_id', '=', self.customer_id.id)])
+        if self.state == 'draft':
+            if self.customer_id:
+                aCount = Agreements.search_count([('customer_id', '=', self.customer_id.id)])
 
-        self.lease_number = str(self.customer_id.name) + "_" + \
-                            str(self.vehicle_id.unit_no) + "_" + \
-                            str(self.lease_start_date) + "_" + str(aCount)
+            self.lease_number = str(self.customer_id.name) + "_" + \
+                                str(self.vehicle_id.unit_no) + "_" + \
+                                str(self.lease_start_date) + "_" + str(aCount)
 
     @api.onchange("lease_lines")
     def update_totals(self):
@@ -560,7 +561,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 leases = self.env['thomaslease.lease'].search(
                     [('aggregation_id', '=', ags_id), ('customer_id', '=', customer.id)])
                 for lease in leases:
-                    print(lease.lease_number + " : " + str(lease.po_number))
+                    #print(lease.lease_number + " : " + str(lease.po_number))
                     for line in lease.lease_lines:
                         product = line.product_id
                         invoice_line = self.env['account.invoice.line']
