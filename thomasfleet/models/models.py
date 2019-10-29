@@ -375,8 +375,8 @@ class ThomasFleetVehicle(models.Model):
                 self.log.info("Found an existing unit: "+the_id)
                 the_resp = {'id':the_id,'update':False}
                  #this can only be set on create
-                
-        self.log.info("RETURNING THE RESPONSE " + the_resp)
+
+        self.log.info("RETURNING THE RESPONSE " + str(the_resp))
         return the_resp
 
     @api.multi
