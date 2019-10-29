@@ -346,8 +346,8 @@ class ThomasFleetVehicle(models.Model):
         #print(payload)
     @api.one
     def get_protractor_id(self):
-        print("IN GET PROTRACTOR ID for" + str(self.vin_id))
-       # self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
+        #print("IN GET PROTRACTOR ID for" + str(self.vin_id))
+        self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.name))
         the_resp = {'id': False, 'update': False}
         if self.vin_id:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
