@@ -349,7 +349,9 @@ class ThomasFleetVehicle(models.Model):
     def get_protractor_id(self):
         #print("IN GET PROTRACTOR ID for" + str(self.vin_id))
         self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.vin_id))
-        the_resp = {'id': False, 'update': False}
+        the_resp = dict()
+        the_resp['id']= False
+        the_resp['update'] = False
         if self.vin_id:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
             headers = {
@@ -370,11 +372,13 @@ class ThomasFleetVehicle(models.Model):
             self.log.info("JSON RESPONSE FROM PROTRACTOR ID" + the_id)
             if not the_id:
                 the_id = uuid.uuid4()
-                the_resp={'id':the_id,'update':True}
+                the_resp['id']= the_id
+                the_resp['update']= True
                 self.log.info("Setting Write to protractor cause no id found")
             else:
                 self.log.info("Found an existing unit: "+the_id)
-                the_resp = {'id':the_id,'update':False}
+                the_resp['id']=the_id
+                the_resp['update'] = False
                  #this can only be set on create
 
         self.log.info("RETURNING THE RESPONSE " + str(the_resp))
