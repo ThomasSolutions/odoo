@@ -214,10 +214,11 @@ class ThomasFleetVehicle(models.Model):
            # print('Computing GUID ' + str(record.stored_protractor_guid))
             if not record.stored_protractor_guid:
                 guid = record.get_protractor_id()
-
+                self.log.info("GUID DICTIONARY: " + str(guid))
                 #record.stored_protractor_guid = guid['id']
                 if guid:
                     #print('Retrieved GUID' + guid['id'])
+
                     if guid['id']:
                         record.protractor_guid = guid['id']
                     #record.with_context(skip_update=True).stored_protractor_guid = guid['id']
