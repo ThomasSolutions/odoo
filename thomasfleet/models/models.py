@@ -154,8 +154,8 @@ class ThomasFleetVehicle(models.Model):
     fleet_status = fields.Many2one('fleet.vehicle.state', 'Fleet Status', track_visibility='onchange')
     air_conditioning = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Air Conditioning', default='yes', track_visibility='onchange')
     transmission = fields.Char("Transmission", track_visibility='onchange')
-    protractor_guid = fields.Char(compute='protractor_guid_compute')
-    stored_protractor_guid = fields.Char()#compute='get_protractor_guid')
+    protractor_guid = fields.Char(compute='protractor_guid_compute', change_default=True)
+    stored_protractor_guid = fields.Char(compute='_get_protractor_notes_and_owner', readonly=True)
     qc_check = fields.Boolean('Data Accurracy Validated')
     fin_check = fields.Boolean('Financial Accuracy Validated')
     accessories = fields.One2many('thomasfleet.accessory','vehicle_id',String="Accessories", track_visibility='onchange')
@@ -205,7 +205,7 @@ class ThomasFleetVehicle(models.Model):
 
 
     # accessories = fields.Many2many()
-    #@api.depends('stored_protractor_guid')
+    @api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
         if self:
             print('HERE IS THE STORED PGUID:' + str(self.stored_protractor_guid))
@@ -221,8 +221,9 @@ class ThomasFleetVehicle(models.Model):
 
                     if guid['id']:
                         record.protractor_guid = guid['id']
-                    #record.with_context(skip_update=True).stored_protractor_guid = guid['id']
-                        record.with_context(skip_update=True).update({'stored_protractor_guid': guid['id']})
+                        #record.stored_protractor_guid = guid['id']
+                        #record.with_context(skip_update=True).stored_protractor_guid = guid['id']
+                        #record.with_context(skip_update=True).update({'stored_protractor_guid': guid['id']})
                     else:
                         print("Problem with GUID in protractor")
                         record.protractor_guid = 'Unable to locate Unit by VIN in Protractor'
@@ -345,9 +346,11 @@ class ThomasFleetVehicle(models.Model):
         response = requests.request("POST", url, data=payload, headers=headers)
 
         #print(payload)
-    @api.one
+
+
     def get_protractor_id(self):
         #print("IN GET PROTRACTOR ID for" + str(self.vin_id))
+        self.ensure_one()
         self.log.info("Getting Protarctor ID for Vehicle: "+ str(self.vin_id))
         the_resp = dict()
         the_resp['id']= False
@@ -383,6 +386,7 @@ class ThomasFleetVehicle(models.Model):
 
         self.log.info("RETURNING THE RESPONSE " + str(the_resp))
         return the_resp
+
 
     @api.multi
     def write(self, values):
@@ -547,35 +551,38 @@ class ThomasFleetVehicle(models.Model):
                 }}
                 return result
 
-    @api.depends('stored_protractor_guid')
+    @api.depends('vin_id')
     @api.one
     def _get_protractor_notes_and_owner(self):
         the_resp = "NO VIN"
-        if self.vin_id:
-            url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
-            headers = {
-            'connectionId': "8c3d682f873644deb31284b9f764e38f",
-            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
-            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
-            'Accept': "application/json",
-            'Cache-Control': "no-cache",
-            'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
-            }
-            response = requests.request("GET", url, headers=headers)
+        for record in self:
+            if record.vin_id:
+                url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
+                headers = {
+                'connectionId': "8c3d682f873644deb31284b9f764e38f",
+                'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+                'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+                'Accept': "application/json",
+                'Cache-Control': "no-cache",
+                'Postman-Token': "9caffd55-2bac-4e79-abfc-7fd1a3e84c6d"
+                }
+                response = requests.request("GET", url, headers=headers)
 
 
-            data = response.json()
-            the_note=""
-            the_ownerID=""
+                data = response.json()
+                the_note=""
+                the_ownerID=""
+                the_id=""
 
-            for item in data['ItemCollection']:
-                the_note = item['Note']
-                the_ownerID = item['OwnerID']
+                for item in data['ItemCollection']:
+                    the_note = item['Note']
+                    the_ownerID = item['OwnerID']
+                    the_id = item['ID']
 
-            for record in self:
                 record.notes = the_note
                 record.protractor_owner_guid = the_ownerID
-
+                if not record.stored_protractor_guid:
+                    record.stored_protractor_guid = the_id
 
 
 

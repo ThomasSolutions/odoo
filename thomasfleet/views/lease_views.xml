@@ -102,6 +102,7 @@
                                     <field name="po_contact_ids" widget="many2many_tags"/>
                                     <field name="ops_contact_ids" widget="many2many_tags"/>
                                     <field name="driver_id"/>
+                                    <field name="rate_type"/>
                                 </group>
                             </group>
                         </group>
@@ -225,6 +226,7 @@
                     <field name="customer_id"/>
                     <field name="po_number"/>
                     <field name="lease_number"/>
+                    <field name="rate_type"/>
                     <field name="lease_start_date"/>
                     <field name="state"/>
                     <field name="additional_charges"/>

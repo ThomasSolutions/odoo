@@ -191,7 +191,6 @@
                                                    options="{'color_field': 'color', 'no_create_edit': True}"/>
                                         </group>
                                     </group>
-                                    ]
                                 </page>
                                 <page string="Financial History">
                                     <group colspan="4">
