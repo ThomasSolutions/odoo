@@ -137,7 +137,7 @@ class ThomasLease(models.Model):
                               ('both', 'Repairs and Invoice Pending'),
                               ('closed', 'Closed')], string="Status", default='draft')
 
-    lease_start_date = fields.Date("Lease Start Date", required=True)
+    lease_start_date = fields.Date("Lease Start Date")#, required=True)
 
     billing_start_date = fields.Date("Billing Start Date")
 
@@ -181,9 +181,9 @@ class ThomasLease(models.Model):
     monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500)
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14)
 
-    customer_id = fields.Many2one("res.partner", "Customer", change_default=True, required=True)
+    customer_id = fields.Many2one("res.partner", "Customer", change_default=True)# required=True)
 
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True, required=True)
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True)# required=True)
 
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default = True, copy=True, auto_join=True)
