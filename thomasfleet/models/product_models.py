@@ -5,9 +5,12 @@ class ThomasProduct(models.Model):
 
     _inherit = 'product.template'
 
+
+
     rate_type = fields.Selection([('monthly', 'Monthly'),
-                                  ('weekly','Weekly'),
+                                  ('weekly', 'Weekly'),
                                   ('daily', 'Daily'),
+                                  ('term', 'Term'),
                                   ('amd_daily_pu', 'AMD Daily Pickup'),
                                   ('amd_daily_cc', 'AMD Daily Crew Cab'),
                                   ('amd_daily_ts', 'AMD Daily Tandem Stake'),
@@ -20,3 +23,6 @@ class ThomasProduct(models.Model):
                                  'Rate Type', default='monthly',
                                  track_visibility='onchange')
 
+    daily_rate = fields.Monetary('Daily Rate')
+    weekly_rate = fields.Monetary('Weekly Rate')
+    monthly_rate = fields.Monetary('Monthly Rate', change_default=True)

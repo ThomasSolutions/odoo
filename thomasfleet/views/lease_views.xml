@@ -43,7 +43,6 @@
             <field name="view_id" ref="lease_invoice_wizard_form"></field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="target">new</field>
         </record>
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
             <field name="name">thomaslease.lease.form</field>
@@ -136,7 +135,7 @@
                                         <field name="monthly_mileage"/>
                                         <field name="mileage_overage_rate"/>
                                         <field name="preferred_payment"/>
-                                        <field name="last_invoice_date" class="oe_read_only"/>
+                                        <field name="last_invoice_date" />
                                         <field name="additional_billing"/>
                                         <field name="delivery_charge"/>
                                         <field name="billing_notes"/>
@@ -308,7 +307,6 @@
                     src_model="thomaslease.lease"
                     view_mode="form"
                     multi="True"
-                    target="new"
                     key2="client_action_multi"
                     id="action_generate_lease_invoices"
         />
@@ -332,8 +330,20 @@
                         <group>
                             <field name="invoice_date"/>
                             <field name="invoice_due_date"/>
-                            <field name='lease_ids'/>
-                        </group>
+                           <!-- <field name="invoice_posting_date"/>
+                            <field name="invoice_start_date"/>
+                            <field name="invoice_end_date"/>-->
+                            <field name='lease_ids'>
+                                <tree editable="bottom">
+                                    <field name="lease_number"/>
+                                    <field name="unit_no"/>
+                                    <field name="customer_id"/>
+                                    <field name="invoice_due_date"/>
+                                    <field name="invoice_from"/>
+                                    <field name="invoice_to"/>
+                                </tree>
+                            </field>
+                            </group>
                     </sheet>
                     <footer>
                         <button name='record_lease_invoices'
