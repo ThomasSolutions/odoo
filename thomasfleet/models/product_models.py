@@ -24,6 +24,6 @@ class ThomasProduct(models.Model):
                                  'Rate Type', default='monthly',
                                  track_visibility='onchange')
 
-    daily_rate = fields.Monetary('Daily Rate')
-    weekly_rate = fields.Monetary('Weekly Rate')
-    monthly_rate = fields.Monetary('Monthly Rate', change_default=True)
+    #daily_rate = fields.Monetary('Daily Rate')
+    #weekly_rate = fields.Monetary('Weekly Rate')
+    #monthly_rate = fields.Monetary('Monthly Rate', change_default=True)
