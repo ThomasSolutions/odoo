@@ -10,6 +10,7 @@ class ThomasProduct(models.Model):
     rate_type = fields.Selection([('monthly', 'Monthly'),
                                   ('weekly', 'Weekly'),
                                   ('daily', 'Daily'),
+                                  ('biweekly', 'Bi-Weekly'),
                                   ('term', 'Term'),
                                   ('amd_daily_pu', 'AMD Daily Pickup'),
                                   ('amd_daily_cc', 'AMD Daily Crew Cab'),

@@ -30,6 +30,7 @@
         'views/invoice_views.xml',
         'views/templates.xml',
         'views/product_views.xml',
+        'views/message_views.xml',
         'report/custom_header_template.xml',
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
