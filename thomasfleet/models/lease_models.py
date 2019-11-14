@@ -518,7 +518,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
-        num_days = (end_d - start_d).days
+        num_days = (end_d - start_d).days +1
         daily_rate = (monthly_total * 12.5) / 100
         weekly_rate = (monthly_total * 45) / 100
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
@@ -539,10 +539,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
-        num_days = (end_d - start_d).days
-        monthly_rate = (weekly_total /0.45)
-        daily_rate = (monthly_rate * 12.5)/100
+        num_days = (end_d - start_d).days +1
+        daily_rate = (weekly_total /7)
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
+        monthly_rate = (days_in_month * daily_rate)
         amount = monthly_rate
 
         if num_days < 7:
@@ -556,14 +556,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
-    def calc_rate_weekly_lease(self, daily_total, start_date, end_date):
+    def calc_rate_daily_lease(self, daily_total, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
-        num_days = (end_d - start_d).days
-        monthly_rate = (daily_total /0.125)
-        weekly_rate = (monthly_rate * 45)/100
+        num_days = (end_d - start_d).days +1
+
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
+        monthly_rate = (days_in_month * daily_total)
+        weekly_rate = (daily_total * 7)
         amount = monthly_rate
 
         if num_days < 7:
@@ -764,11 +765,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             start_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').date()
             end_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d').date()
 
-            num_days = (end_date - start_date).days
+            num_days = (end_date - start_date).days+1
             pro_rated = ''
             quantity = 1
 
-            if num_days <= end_of_month:
+            if num_days < end_of_month:
                 description = 'Lease for Unit # ' + the_lease.id.vehicle_id.unit_no + ' - ' + month + ' ' + str(
                     start_date.day) + ' to ' + str(
                     end_date.day) + ' ' + year
@@ -828,10 +829,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                                               prev_month_from.strftime('%Y-%m-%d'),
                                                               prev_month_to.strftime('%Y-%m-%d'), the_lease.id)
 
-                num_days = (prev_month_to - prev_month_from).days
+                num_days = (prev_month_to - prev_month_from).days +1
                 pro_rated = prev_month + ' ' + prev_year
                 quantity =1
-                if num_days <= prev_month_days:
+                if num_days < prev_month_days:
                     description = 'Lease for Unit # ' + the_lease.id.vehicle_id.unit_no + ' - ' + prev_month + ' ' + str(
                         prev_month_from.day) + ' to ' + str(
                         prev_month_to.day) + ' ' + prev_year
@@ -956,14 +957,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             product = line.product_id
                             invoice_line = self.env['account.invoice.line']
                             line_amount = self.calculate_line_amount(product, line.price, lease.invoice_from,
-                                                                     lease.invoice_to, lease.id)
+                                                                     lease.invoice_to, lease)
                             start_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d').date()
                             end_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d').date()
 
-                            num_days = (end_date - start_date).days
+                            num_days = (end_date - start_date).days +1
                             quantity = 1
 
-                            if num_days <= end_of_month:
+                            if num_days < end_of_month:
                                 description = 'Lease for Unit # ' + lease.vehicle_id.unit_no + ' - ' + month + ' ' + str(
                                     start_date.day) + ' to ' + str(
                                     end_date.day) + ' ' + year
@@ -997,7 +998,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                             # call set taxes to set them...otherwise the relationships aren't set properly
                             line_id._set_taxes()
-                            line_id.price_unit = line.total
+                            line_id.price_unit = line_amount
                             line_ids.append(line_id.id)
                             if lease.invoice_ids:
                                 lease_invoices.extend(lease.invoice_ids.ids)
@@ -1010,10 +1011,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                                                               prev_month_from.strftime('%Y-%m-%d'),
                                                                               prev_month_to.strftime('%Y-%m-%d'), lease)
 
-                                num_days = (prev_month_to - prev_month_from).days
+                                num_days = (prev_month_to - prev_month_from).days +1
                                 pro_rated = prev_month + ' ' + prev_year
                                 quantity = 1
-                                if num_days <= prev_month_days:
+                                if num_days < prev_month_days:
                                     description = 'Lease for Unit # ' + lease.vehicle_id.unit_no + ' - ' + prev_month + ' ' + str(
                                         prev_month_from.day) + ' to ' + str(
                                         prev_month_to.day) + ' ' + prev_year
