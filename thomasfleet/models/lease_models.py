@@ -1111,9 +1111,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     print("NORMAL INVOICING")
                     # self.record_normal_invoice(a_lease, wizard)
                     self.record_normal_invoice2(a_lease)
-                lease.last_invoice_date = wizard.invoice_date
             aggregate_customers = list(dict.fromkeys(aggregate_customers))
             self.record_aggregate_invoice(aggregate_customers, wizard)
+
 
         theMess = self.env['thomaslease.message']
         rec = theMess.create({'message': 'Invoice(s) have been created for ' + self.invoice_date})
