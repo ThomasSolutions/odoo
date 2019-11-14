@@ -6,9 +6,6 @@
             <field name="arch" type="xml">
                 <field name="categ_id" position="after">
                     <field name="rate_type"/>
-                   <!-- <field name="monthly_rate"/>
-                    <field name="weekly_rate"/>
-                    <field name="daily_rate"/>-->
                </field>
            </field>
         </record>
