@@ -514,7 +514,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
-    def pro_rate_monthly_lease(self, monthly_total, start_date, end_date):
+    def calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
@@ -535,6 +535,47 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
+    def calc_rate_weekly_lease(self, weekly_total, start_date, end_date):
+
+        start_d = datetime.strptime(start_date, '%Y-%m-%d')
+        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        num_days = (end_d - start_d).days
+        monthly_rate = (weekly_total /0.45)
+        daily_rate = (monthly_rate * 12.5)/100
+        days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
+        amount = monthly_rate
+
+        if num_days < 7:
+            amount = num_days * daily_rate
+        elif num_days >= 7 and num_days < days_in_month:
+            days = num_days % 7
+            weeks = math.floor(num_days / 7)
+            amount = (days * daily_rate) + (weeks * weekly_total)
+            if amount > monthly_rate:
+                amount = monthly_rate
+
+        return amount
+
+    def calc_rate_weekly_lease(self, daily_total, start_date, end_date):
+
+        start_d = datetime.strptime(start_date, '%Y-%m-%d')
+        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        num_days = (end_d - start_d).days
+        monthly_rate = (daily_total /0.125)
+        weekly_rate = (monthly_rate * 45)/100
+        days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
+        amount = monthly_rate
+
+        if num_days < 7:
+            amount = num_days * daily_total
+        elif num_days >= 7 and num_days < days_in_month:
+            days = num_days % 7
+            weeks = math.floor(num_days / 7)
+            amount = (days * daily_total) + (weeks * weekly_rate)
+            if amount > monthly_rate:
+                amount = monthly_rate
+
+        return amount
     # add weekly, add day, add term
     # todo figure out how to go from daily to weekly to monthly
 
@@ -632,12 +673,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         print("CALC AMOUNT FOR : " + product.categ_id.name)
         the_amount = line_amount
+        if lease.lease_return_date:
+            end_date = lease.lease_return_date
+
         if product.rate_type == 'monthly':
-            the_amount = self.pro_rate_monthly_lease(line_amount, start_date, end_date)
+            the_amount = self.calc_rate_monthly_lease(line_amount, start_date, end_date)
         elif product.rate_type == 'weekly':
-            the_amount = self.pro_rate_monthly_lease(line_amount, start_date, end_date)
+            the_amount = self.calc_rate_weekly_lease(line_amount, start_date, end_date)
         elif product.rate_type == 'daily':
-            the_amount = self.pro_rate_monthly_lease(line_amount, start_date, end_date)
+            the_amount = self.calc_rate_daily_lease(line_amount, start_date, end_date)
         elif product.rate_type == 'biweekly':
             the_amount = self.calc_biweekly_lease(line_amount, lease)
         elif 'amd' in product.rate_type:
