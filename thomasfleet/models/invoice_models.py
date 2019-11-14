@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 import requests, json, uuid, jsonpath
 from urllib import parse
 
@@ -26,5 +26,54 @@ class ThomasAccountingInvoice(models.Model):
     invoice_posting_date = fields.Date(string="Invoice Posting Date")
     invoice_generation_date = fields.Date(string="Invoice Generation Date")
 
+    @api.multi
+    def _get_mail_contacts(self):
 
+        self.ensure_one()
+        contact_ids=[]
+        for lease in self.lease_ids:
+            contact_ids.extend(lease.ap_contact_ids.ids)
+        return contact_ids
 
+    @api.multi
+    def action_invoice_cancel(self):
+        self.move_name=False
+        return super(ThomasAccountingInvoice, self).action_invoice_cancel()
+
+    @api.multi
+    def action_invoice_sent(self):
+        """ Open a window to compose an email, with the edi invoice template
+            message loaded by default
+        """
+        self.ensure_one()
+        res = super(ThomasAccountingInvoice,self).action_invoice_sent()
+        ctx = res['context']
+        res.update(context=dict(ctx,default_partner_ids=self._get_mail_contacts()))
+        return res
+
+        '''
+        template = self.env.ref('account.email_template_edi_invoice', False)
+        compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
+        ctx = dict(
+            default_model='account.invoice',
+            default_res_id=self.id,
+            default_use_template=bool(template),
+            default_template_id=template and template.id or False,
+            default_composition_mode='comment',
+            default_partner_ids=self._get_mail_contacts(),
+            mark_invoice_as_sent=True,
+            custom_layout="account.mail_template_data_notification_email_account_invoice",
+            force_email=True
+        )
+        return {
+            'name': _('Compose Email'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form.id, 'form')],
+            'view_id': compose_form.id,
+            'target': 'new',
+            'context': ctx,
+        }
+        '''

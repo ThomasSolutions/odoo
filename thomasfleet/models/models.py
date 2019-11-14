@@ -372,7 +372,7 @@ class ThomasFleetVehicle(models.Model):
             for item in data['ItemCollection']:
                 the_id = item['ID']
 
-            self.log.info("JSON RESPONSE FROM PROTRACTOR ID" + the_id)
+
             if not the_id:
                 the_id = uuid.uuid4()
                 the_resp['id']= the_id
