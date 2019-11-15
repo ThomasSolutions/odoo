@@ -8,11 +8,10 @@
 
             <form string="Information">
 
-                <group>
 
                     <field name="message" />
 
-                </group>
+
 
                 <footer>
 
