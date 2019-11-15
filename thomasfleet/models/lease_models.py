@@ -428,6 +428,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
         elif lease.lease_start_date:
             l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+            lease.billing_start_date = lease.lease_start_date
         else:
             raise models.UserError('Lease Start Date or Billing Date Not set for: ' + lease.lease_number)
 
@@ -513,8 +514,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         # calculate invoice for 4 weeks from last date.
         if lease.last_invoice_to:
             last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
-        else:
+        elif lease.billing_start_date:
             last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+        else:
+            last_to_date = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
         start_date = last_to_date
         if lease.lease_return_date:
             end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
