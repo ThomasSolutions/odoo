@@ -16,10 +16,10 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.90',
+    'version': '0.91',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','fleet', 'account' , 'sale'],
+    'depends': ['base','fleet', 'account'],
 
     # always loaded
     'data': [
