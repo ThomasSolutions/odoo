@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="thomasfleet.report_styles" name="Report Styles" inherit_id="web.report_assets_common">
+        <xpath expr="link[last()]" position="after">
+            <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
+        </xpath>
+    </template>
     <template id="thomasfleet.lease_agreement_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
@@ -282,7 +287,10 @@
                                 </span>
                             </div>
                             <div class="col-xs-4">
-                                <b>Spare Key Initials: </b><hr/><br/>
+                                <dl class="row">
+                                    <dt class="col-md-4"><b>Spare Key Initials: </b></dt>
+                                    <dd class="col-xs-4"><hr/></dd>
+                                </dl>
                                 <b>Mileage:</b>
                                 <t t-esc="doc.mileage_at_lease"/>
                                 KM
@@ -408,7 +416,7 @@
                         </div>
                         <div class="justify_content_start row no_gutters">
                             <div class="col-xs-3">Customer Name (print):</div>
-                            <div class="col-xs-3 text-left" style="background-color:'yellow'">
+                            <div class="col-xs-3 text-left">
                                 <hr/>
                             </div>
                             <div class="col-xs-1">Date:</div>
@@ -478,7 +486,10 @@
                                 </span>
                             </div>
                             <div class="col-xs-4">
-                                <b>Spare Key Initials: </b><hr/><br/>
+                                <dl class="row">
+                                    <dt class="col-md-4"><b>Spare Key Initials: </b></dt>
+                                    <dd class="col-xs-4"><hr/></dd>
+                                </dl>
                                 <b>Mileage:</b>
                                 <t t-esc="doc.mileage_at_return"/>
                                 KM

@@ -20,6 +20,7 @@ class ThomasContact(models.Model):
     ap_contact = fields.Boolean(string="Accounts Payable Contact")
     po_contact = fields.Boolean(string="Purchasing Contact")
     ops_contact = fields.Boolean(string="Operations Contact")
+
     aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True)
     preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
                                                   string='Invoice Delivery',default='email')
@@ -96,12 +97,13 @@ class ThomasContact(models.Model):
 
     def _compute_protractor_search_name(self):
         for rec in self:
-            theString = rec.name.replace('.', '')
-            if theString.find('&'):
-                theSArr = theString.split('&',1)
-                theString = theSArr[0];
-            print("The String===>" + theString)
-            rec.protractor_search_name = theString.rstrip()
+            if rec.name:
+                theString = rec.name.replace('.', '')
+                if theString.find('&'):
+                    theSArr = theString.split('&',1)
+                    theString = theSArr[0];
+                print("The String===>" + theString)
+                rec.protractor_search_name = theString.rstrip()
 
 class ThomasCustomerDocument(models.Model):
     _name = 'thomasfleet.customer_document'

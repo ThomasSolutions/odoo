@@ -96,11 +96,14 @@
                                 </group>
                                 <group string="Customer Details">
                                     <!--<field name="customer_id" domain="[('is_company', '=', True)]"/>-->
-                                    <field name="customer_id"/>
-                                    <field name="ap_contact_ids" widget="many2many_tags"/>
-                                    <field name="po_contact_ids" widget="many2many_tags"/>
-                                    <field name="ops_contact_ids" widget="many2many_tags"/>
-                                    <field name="driver_id"/>
+                                    <field name="customer_id" options="{'no_create_edit': True}"/>
+                                    <field name="ap_contact_ids" options="{'no_open':True, 'no_create_edit': True}" widget="many2many_tags"/>
+                                    <field name="po_contact_ids" options="{'no_open':True, 'no_create_edit': True}"  widget="many2many_tags"/>
+                                    <field name="ops_contact_ids" options="{'no_open':True, 'no_create_edit': True}" widget="many2many_tags"/>
+                                    <field name="partner_invoice_id"  context="{'default_type':'invoice'}"/>
+                                    <field name="partner_shipping_id" context="{'default_type':'delivery'}"/>
+
+                                    <field name="driver_id" options="{'no_open':True, 'no_create_edit': True}"/>
                                     <field name="rate_type"/>
                                 </group>
                             </group>

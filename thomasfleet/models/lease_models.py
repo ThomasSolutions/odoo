@@ -10,6 +10,32 @@ import math
 class ThomasLease(models.Model):
     _inherit = 'mail.thread'
 
+    '''
+    def init(self):
+        recs = self.env['thomaslease.lease'].search([])
+        values = {}
+        for rec in recs:
+
+            partner = self.env['res.partner'].browse(rec.customer_id.id)
+            addr = (partner.address_get(['invoice', 'delivery', 'contact']))
+            print ("Contact "+str(addr.get('contact')))
+            print ("Invoice "+str(addr.get('invoice')))
+            print("Delivery "+ str(addr.get('delivery')))
+            print("Evaluation " + str(addr and addr.get('delivery')))
+            if not (addr.get('invoice') == addr.get('contact')):
+                values['partner_invoice_id'] = addr.get('invoice')
+            else:
+                values['partner_invoice_id'] = False
+            if not (addr.get('delivery') == addr.get('contact')):
+                values['partner_shipping_id'] = addr.get('delivery')
+            else:
+                values['partner_shipping_id'] = False
+            rec.update(values)
+            print(str(rec.lease_number) + " Invoice ID: " + str(rec.partner_invoice_id.id))
+            print(str(rec.lease_number) + " Shipping ID: " +str(rec.partner_shipping_id.id))
+
+    '''
+
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
 
@@ -119,10 +145,57 @@ class ThomasLease(models.Model):
             else:
                 self.invoice_to = tmp_invoice_to
 
+    @api.multi
+    @api.onchange('customer_id')
+    def set_contacts(self):
+        ap_cons=[]
+        po_cons=[]
+        ops_cons=[]
+        for cons in self.customer_id.child_ids:
+            if cons.ap_contact:
+                ap_cons.append(cons.id)
+            elif cons.po_contact:
+                po_cons.append(cons.id)
+            elif cons.ops_contact:
+                ops_cons.append(cons.id)
+
+        self.ap_contact_ids = [(6,0,ap_cons)]
+        self.po_contact_ids = [(6,0,po_cons)]
+        self.ops_contact_ids =[(6,0,ops_cons)]
+
+    @api.multi
+    @api.onchange('customer_id')
+    def get_invoice_address(self):
+        addr = self.customer_id.address_get(['invoice'])
+        if addr:
+            self.partner_invoice_id = addr.get('invoice')
+
+    @api.multi
+    @api.onchange('customer_id')
+    def get_shipping_address(self):
+        addr = self.customer_id.address_get(['delivery'])
+        if addr:
+            self.partner_shipping_id = addr.get('delivery')
+
+
     @api.onchange("customer_id")
     def set_preferred_payment(self):
         print("Setting Payment Start Date")
         # self.preferred_payment = self.env['res.partner'].search([('id', '=', self.customer_id)]).preferred_payment
+
+    '''
+    @api.one
+    @api.depends('customer_id')
+    def default_shipping_address(self):
+        addr = self.customer_id.address_get(['delivery'])
+        return addr['delivery']
+
+    @api.one
+    @api.depends('customer_id')
+    def default_invoice_address(self):
+        addr = self.customer_id.address_get(['invoice'])
+        return addr['invoice']
+    '''
 
     @api.multi
     def btn_validate(self):
@@ -199,7 +272,8 @@ class ThomasLease(models.Model):
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14)
 
     customer_id = fields.Many2one("res.partner", "Customer", change_default=True)  # required=True)
-
+    partner_invoice_id = fields.Many2one('res.partner', string='Bill To')
+    partner_shipping_id = fields.Many2one('res.partner', string='Ship To')
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True)  # required=True)
 
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True)
@@ -265,6 +339,7 @@ class ThomasLease(models.Model):
     def update_lease_number(self):
         Agreements = self.env['thomaslease.lease']
         aCount = 0
+
 
         if self.state == 'draft':
             if self.customer_id:
@@ -840,6 +915,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             'type': 'out_invoice',
             'state': 'draft',
             'po_number': the_lease.id.po_number,
+            'partner_invoice_id': the_lease.id.partner_invoice_id.id,
+            'partner_shipping_id': the_lease.id.partner_shipping_id.id,
             'requires_manual_calculations': the_lease.id.requires_manual_calculations,
             'invoice_line_ids': [(6, 0, line_ids)]
         })
@@ -907,6 +984,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 'type': 'out_invoice',
                 'state': 'draft',
                 'po_number': the_lease.id.po_number,
+                'partner_invoice_id': the_lease.id.partner_invoice_id.id,
+                'partner_shipping_id': the_lease.id.partner_shipping_id.id,
                 'requires_manual_calculations': the_lease.id.requires_manual_calculations,
                 'invoice_line_ids': [(6, 0, next_month_line_ids)]
             })
@@ -1100,6 +1179,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'type': 'out_invoice',
                                 'state': 'draft',
                                 'po_number': lease.po_number,
+                                'partner_invoice_id': lease.partner_invoice_id.id,
+                                'partner_shipping_id': lease.id.partner_shipping_id.id,
                                 'requires_manual_calculations': lease.requires_manual_calculations,
                                 'invoice_line_ids': [(6, 0, next_month_line_ids)]
                             })
@@ -1120,6 +1201,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'type': 'out_invoice',
                     'state': 'draft',
                     'po_number': lease.po_number,
+                    'partner_invoice_id': lease.partner_invoice_id.id,
+                    'partner_shipping_id': lease.id.partner_shipping_id.id,
                     'requires_manual_calculations': lease.requires_manual_calculations,
                     'invoice_line_ids': [(6, 0, line_ids)]
                 })
@@ -1201,7 +1284,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
                     strSuccess += '<p>Invoice id: ' + str(a.id) + ' Invoice Date: ' + str_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
             strSuccess += "<hr/>"
-            l.message_post(body='<h2>Invoice(s) have been successfully created for: ' + str_i_date + '</h2>'+strSuccess, subject="Invoice Creation", subtype="mt_note")
+            l.message_post(body='<p><b>Invoice(s) have been successfully created for: ' + str_i_date + '</b></p>'+strSuccess, subject="Invoice Creation", subtype="mt_note")
 
         strExisting = ""
         for l in lease_with_existing_invoice:

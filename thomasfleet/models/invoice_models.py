@@ -25,6 +25,23 @@ class ThomasAccountingInvoice(models.Model):
     invoice_to = fields.Date(string="Invoice To")
     invoice_posting_date = fields.Date(string="Invoice Posting Date")
     invoice_generation_date = fields.Date(string="Invoice Generation Date")
+    partner_shipping_id = fields.Many2one(
+        'res.partner',
+        string='Delivery Address',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        help="Delivery address for current invoice.")
+
+
+    @api.onchange('partner_id', 'company_id')
+    def _onchange_delivery_address(self):
+        addr = self.partner_id.address_get(['delivery'])
+        self.partner_shipping_id = addr and addr.get('delivery')
+
+    @api.multi
+    def get_delivery_partner_id(self):
+        self.ensure_one()
+        return self.partner_shipping_id.id or super(AccountInvoice, self).get_delivery_partner_id()
 
     @api.multi
     def _get_mail_contacts(self):

@@ -16,10 +16,10 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.89',
+    'version': '0.90',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','fleet'],
+    'depends': ['base','fleet', 'account' , 'sale'],
 
     # always loaded
     'data': [
@@ -31,7 +31,7 @@
         'views/templates.xml',
         'views/product_views.xml',
         'views/message_views.xml',
-        'report/custom_header_template.xml',
+        #'report/custom_header_template.xml',
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
 

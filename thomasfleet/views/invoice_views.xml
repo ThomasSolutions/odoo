@@ -27,8 +27,12 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form" />
             <field name="arch" type="xml">
-                <field name="partner_id" position="after">
-                    <field name="po_number" />
+                <data>
+                    <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                       <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
+                    </xpath>
+                     <xpath expr="//field[@name='partner_id']" position="after">
+                        <field name="po_number" />
                     <field name="lease_ids" widget="many2many_tags"/>
                     <field name="vehicle_ids">
                         <tree>
@@ -38,10 +42,22 @@
                             <field name="license_plate"/>
                         </tree>
                     </field>
-               </field>
+                    </xpath>
+                 </data>
            </field>
         </record>
 
+    <!--  <record id="thomase_invoice_form_sale" model="ir.ui.view">
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="sale.account_invoice_form" />
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                       <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
+                    </xpath>
+                 </data>
+           </field>
+        </record>-->
        <!-- <record id="view_account_invoice_filter" model="ir.ui.view">
             <field name="name">account.invoice.select</field>
             <field name="model">account.invoice</field>
