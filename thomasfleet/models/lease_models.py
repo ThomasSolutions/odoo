@@ -313,8 +313,8 @@ class ThomasLease(models.Model):
     payment_method = fields.Char("Payment Method")
     last_invoice_date = fields.Date("Last Invoice On")
     additional_charges = fields.Boolean("Additional Charges")
-    outgoing_inspector = fields.Many2one('res.users', string="Outgoing Inspector")
-    incoming_inspector = fields.Many2one('res.users', string="Incoming Inspector")
+    outgoing_inspector = fields.Many2one('hr.employee', string="Outgoing Inspector")
+    incoming_inspector = fields.Many2one('hr.employee', string="Incoming Inspector")
     transponder_id = fields.Many2one('thomasfleet.accessory', string="407 Transponder",
                                      domain="[('type.name','=','407 Transponder')]")
 
