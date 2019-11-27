@@ -465,7 +465,7 @@ class ThomasFleetVehicle(models.Model):
         return res
 
     @api.onchange('vin_id')
-    @api.one
+    #@api.one
     def _get_protractor_data(self):
         print("GETTING PROTRACTOR DATA")
         the_resp = "NO VIN"
@@ -552,7 +552,7 @@ class ThomasFleetVehicle(models.Model):
                 return result
 
     @api.depends('vin_id')
-    @api.one
+    #@api.one
     def _get_protractor_notes_and_owner(self):
         the_resp = "NO VIN"
         for record in self:
@@ -586,7 +586,7 @@ class ThomasFleetVehicle(models.Model):
 
 
 
-    @api.one
+    #@api.one
     def _get_protractor_invoices(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
         da = datetime.now()
@@ -743,7 +743,7 @@ class ThomasFleetOdometer(models.Model):
     _inherit= 'fleet.vehicle.odometer'
     lease_id = fields.Many2one('thomaslease.lease', 'Lease Agreement')
     customer_id =fields.Many2one(related="lease_id.customer_id", string="Customer", readonly=True)
-    activity = fields.Selection([('lease_out', 'Lease Start'), ('lease_in', 'Lease Return'),('service', 'Service'),('swap', 'Swap')], string="Activity", track_visibility='onchange')
+    activity = fields.Selection([('lease_out', 'Lease Start'), ('lease_in', 'Lease Return'),('service', 'Service'),('spare_swap', 'Spare Swap'), ('spare_swap_back','Spare Swap Back')], string="Activity", track_visibility='onchange')
 
 class ThomasFleetVehicleModel(models.Model):
     _inherit = 'fleet.vehicle.model'

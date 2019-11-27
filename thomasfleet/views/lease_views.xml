@@ -122,8 +122,8 @@
                                         <field name="po_comments"/>
                                     </group>
                                     <group>
-                                        <field name="outgoing_inspector"/>
-                                        <field name="incoming_inspector"/>
+                                        <field name="outgoing_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
+                                        <field name="incoming_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
                                         <field name="inspection_notes"/>
                                         <field name="lease_out_odometer_id"
                                                context="{'lease':True , 'default_activity':'lease_out', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
@@ -156,7 +156,7 @@
 
                                 <field name="lease_lines">
                                     <tree editable="bottom">
-                                        <field name="product_id"></field>
+                                        <field name="product_id"  options="{'no_open':True, 'no_create_edit': True}"></field>
                                         <field name="description"></field>
                                         <field name="price"></field>
                                         <field name="tax_id"></field>
