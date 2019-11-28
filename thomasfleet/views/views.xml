@@ -23,8 +23,8 @@
                 <xpath expr="//form[1]" position="replace">
                     <form string="Vehicle">
                         <header>
-                            <button name="do_something_with_the_record"
-                                    string="Do something" type="object" class="btn-primary"/>
+                            <button name="update_protractor"
+                                    string="Update Protractor" type="object" class="btn-primary"/>
                             <button name="do_something_else" string="Second action"/>
                             <field name="lease_status" widget="statusbar"/>
                         </header>
