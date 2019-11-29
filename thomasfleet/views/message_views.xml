@@ -15,8 +15,8 @@
 
                 <footer>
 
-                    <button string="OK" special="cancel" class="oe_highlight"/>
-
+                    <button type="object" name="ok_pressed" string="OK" class="btn-primary"/>
+                    <button type="object" name="cancel_pressed" string="Cancel" class="btn-primary"/>
                 </footer>
 
             </form>

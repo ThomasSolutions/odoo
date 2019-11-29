@@ -115,7 +115,7 @@ class ThomasFleetVehicle(models.Model):
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
-    vin_id = fields.Char('V.I.N', track_visibility='onchange')
+    vin_id = fields.Char('V.I.N', required=True, track_visibility='onchange')
     license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
     brand_id = fields.Many2one(related='model_id.brand_id', string='Make', track_visibility='onchange')
 
@@ -254,7 +254,6 @@ class ThomasFleetVehicle(models.Model):
         return p_notes
 
 
-
     @api.depends('unit_no', 'model_id')
     def _compute_slug(self):
         for record in self:
@@ -271,15 +270,46 @@ class ThomasFleetVehicle(models.Model):
             record.lease_agreements_count = the_agreements.search_count([('vehicle_id', '=', record.id)])
             record.lease_invoices_count = the_invoices.search_count([('vehicle_id', '=', record.id)])
 
+    def ok_pressed(self):
+        self.with_context(manual_update=True).update_protractor()
+
+    def check_update_portractor(self):
+        theMess = self.env['thomaslease.message']
+
+        rec = theMess.create({'message': "Update Protractor?", 'ok_handler': self.ok_pressed})
+
+        return {
+
+            'name': 'Update Protractor',
+
+            'type': 'ir.actions.act_window',
+
+            'res_model': 'thomaslease.message',
+
+            'res_id': rec.id,
+
+            'ok_handler': self.ok_pressed,
+
+            'view_mode': 'form',
+
+            'view_type': 'form',
+
+            'target': 'new'
+
+        }
+
+
 
     def update_protractor(self):
         url = " "
+        guid = ""
         if self.stored_protractor_guid:
             url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+self.stored_protractor_guid
-
+            guid = self.stored_protractor_guid
         else:
             if self.protractor_guid:
                 url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + self.protractor_guid
+                guid = self.protractor_guid
             else:
                 url = "bad guid"
 
@@ -294,7 +324,7 @@ class ThomasFleetVehicle(models.Model):
         theUnit = {
             "VIN":self.vin_id,
             "PlateRegistration":"ON",
-            "ID":self.stored_protractor_guid,
+            "ID":guid,
             "IsComplete":True,
             "Unit":self.unit_no,
             "Color": self.color,
@@ -345,7 +375,7 @@ class ThomasFleetVehicle(models.Model):
         }
         response = requests.request("POST", url, data=payload, headers=headers)
 
-        #print(payload)
+        print(response.txt)
 
 
     def get_protractor_id(self):
@@ -383,6 +413,9 @@ class ThomasFleetVehicle(models.Model):
                 the_resp['id']=the_id
                 the_resp['update'] = False
                  #this can only be set on create
+        else:
+            if self.env.context.get('manual_update'):
+                raise models.UserError('Vehicle VIN must be set before it can be linked, created or updated Protractor')
 
         self.log.info("RETURNING THE RESPONSE " + str(the_resp))
         return the_resp
