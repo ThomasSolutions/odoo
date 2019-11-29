@@ -276,7 +276,7 @@ class ThomasFleetVehicle(models.Model):
     def check_update_portractor(self):
         theMess = self.env['thomaslease.message']
 
-        rec = theMess.create({'message': "Update Protractor?", 'ok_handler': self.ok_pressed})
+        rec = theMess.create({'message': "Do you want to unit " + self.unit_no +"in Protractor?", 'ok_handler': self.ok_pressed})
 
         return {
 
@@ -375,7 +375,6 @@ class ThomasFleetVehicle(models.Model):
         }
         response = requests.request("POST", url, data=payload, headers=headers)
 
-        print(response.txt)
 
 
     def get_protractor_id(self):
