@@ -115,7 +115,7 @@ class ThomasFleetVehicle(models.Model):
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
-    vin_id = fields.Char('V.I.N', required=True, track_visibility='onchange')
+    vin_id = fields.Char('V.I.N', track_visibility='onchange')
     license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
     brand_id = fields.Many2one(related='model_id.brand_id', string='Make', track_visibility='onchange')
 
