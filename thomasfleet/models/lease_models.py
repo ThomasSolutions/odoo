@@ -10,7 +10,7 @@ import math
 class ThomasLease(models.Model):
     _inherit = 'mail.thread'
 
-    '''
+
     def init(self):
         recs = self.env['thomaslease.lease'].search([])
         values = {}
@@ -34,7 +34,7 @@ class ThomasLease(models.Model):
             print(str(rec.lease_number) + " Invoice ID: " + str(rec.partner_invoice_id.id))
             print(str(rec.lease_number) + " Shipping ID: " +str(rec.partner_shipping_id.id))
 
-    '''
+
 
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
