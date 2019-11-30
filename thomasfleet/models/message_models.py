@@ -17,3 +17,6 @@ class ThomasMessage(models.TransientModel):
         res = self.env[self.env.context['active_model']].browse(self.env.context['active_id'])
         if res:
             res.ok_pressed()
+
+    def cancel_pressed(self):
+        return

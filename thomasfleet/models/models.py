@@ -115,7 +115,7 @@ class ThomasFleetVehicle(models.Model):
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
     lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
-    vin_id = fields.Char('V.I.N', required=True, track_visibility='onchange')
+    vin_id = fields.Char('V.I.N', track_visibility='onchange')
     license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
     brand_id = fields.Many2one(related='model_id.brand_id', string='Make', track_visibility='onchange')
 
@@ -276,7 +276,7 @@ class ThomasFleetVehicle(models.Model):
     def check_update_portractor(self):
         theMess = self.env['thomaslease.message']
 
-        rec = theMess.create({'message': "Update Protractor?", 'ok_handler': self.ok_pressed})
+        rec = theMess.create({'message': "Do you want to unit " + self.unit_no +"in Protractor?", 'ok_handler': self.ok_pressed})
 
         return {
 
@@ -375,7 +375,6 @@ class ThomasFleetVehicle(models.Model):
         }
         response = requests.request("POST", url, data=payload, headers=headers)
 
-        print(response.txt)
 
 
     def get_protractor_id(self):
