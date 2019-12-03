@@ -1202,7 +1202,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'state': 'draft',
                     'po_number': lease.po_number,
                     'partner_invoice_id': lease.partner_invoice_id.id,
-                    'partner_shipping_id': lease.id.partner_shipping_id.id,
+                    'partner_shipping_id': lease.partner_shipping_id.id,
                     'requires_manual_calculations': lease.requires_manual_calculations,
                     'invoice_line_ids': [(6, 0, line_ids)]
                 })
@@ -1242,6 +1242,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return in_range
 
+    @api.model
+    def ok_pressed(self):
+        print("IN OK FUNCTION")
+
     @api.multi
     def record_lease_invoices(self):
         aggregate_customers = []
@@ -1272,7 +1276,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
             agg_invoices.extend(norm_invoices)
 
-        theMess = self.env['thomaslease.message']
         strSuccess = ""
         str_i_date = datetime.strptime(self.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
 
@@ -1303,23 +1306,31 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                        ' date ranges already exist for the following lease agreements:</h3><br/>' + strExisting
 
 
+        rec = self.env['thomaslease.message'].create({'message': strMess})
 
-        rec = theMess.create({'message': strMess})
+        #rec = theMess.
+        #rec2 = rec.with_context(ok_handler=self.ok_pressed)
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'message_action')
+        res.update(
+            context=dict(self.env.context, ok_handler='ok_pressed', caller_model=self._name, caller_id=self.id),
+            res_id=rec.id
+        )
+        return res
 
-        return {
 
-            'name': 'Lease Invoice Creation',
-
-            'type': 'ir.actions.act_window',
-
-            'res_model': 'thomaslease.message',
-
-            'res_id': rec.id,
-
-            'view_mode': 'form',
-
-            'view_type': 'form',
-
-            'target': 'new'
-
-        }
+        # return {
+        #
+        #     'name': 'Lease Invoice Creation',
+        #
+        #     'type': 'ir.actions.act_window',
+        #
+        #     'res_model': 'thomaslease.message',
+        #
+        #     'res_id': rec.id,
+        #
+        #     'view_mode': 'form',
+        #
+        #     'view_type': 'form',
+        #
+        #     'target': 'new'
+        # }

@@ -14,9 +14,17 @@ class ThomasMessage(models.TransientModel):
 
     def ok_pressed(self):
         print("OK Pressed")
-        res = self.env[self.env.context['active_model']].browse(self.env.context['active_id'])
-        if res:
-            res.ok_pressed()
+        for rec in self:
+            mod = rec.env[rec.env.context['caller_model']].browse(rec.env.context['caller_id'])
+            handle = rec.env.context['ok_handler']
+            if handle:
+                res = getattr(mod, handle)
+                res()
+            else:
+                res = self.env[self.env.context['active_model']].browse(self.env.context['active_id'])
+                if res:
+                    res.ok_pressed()
+
 
     def cancel_pressed(self):
         return
