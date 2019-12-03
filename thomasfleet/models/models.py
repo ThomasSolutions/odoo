@@ -276,27 +276,34 @@ class ThomasFleetVehicle(models.Model):
     def check_update_portractor(self):
         theMess = self.env['thomaslease.message']
 
-        rec = theMess.create({'message': "Do you want to unit " + self.unit_no +"in Protractor?", 'ok_handler': self.ok_pressed})
+        rec = theMess.create({'message': "Do you want to unit update " + self.unit_no +" in Protractor?"})
 
-        return {
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'message_action')
 
-            'name': 'Update Protractor',
-
-            'type': 'ir.actions.act_window',
-
-            'res_model': 'thomaslease.message',
-
-            'res_id': rec.id,
-
-            'ok_handler': self.ok_pressed,
-
-            'view_mode': 'form',
-
-            'view_type': 'form',
-
-            'target': 'new'
-
-        }
+        res.update(
+            context=dict(self.env.context, ok_handler='ok_pressed', caller_model=self._name, caller_id=self.id),
+            res_id=rec.id
+        )
+        return res
+        # return {
+        #
+        #     'name': 'Update Protractor',
+        #
+        #     'type': 'ir.actions.act_window',
+        #
+        #     'res_model': 'thomaslease.message',
+        #
+        #     'res_id': rec.id,
+        #
+        #     'ok_handler': self.ok_pressed,
+        #
+        #     'view_mode': 'form',
+        #
+        #     'view_type': 'form',
+        #
+        #     'target': 'new'
+        #
+        # }
 
 
 
@@ -589,7 +596,7 @@ class ThomasFleetVehicle(models.Model):
         the_resp = "NO VIN"
         for record in self:
             if record.vin_id:
-                url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+self.vin_id
+                url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/Search/"+record.vin_id
                 headers = {
                 'connectionId': "8c3d682f873644deb31284b9f764e38f",
                 'apiKey': "fb3c8305df2a4bd796add61e646f461c",

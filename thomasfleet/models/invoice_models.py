@@ -41,7 +41,7 @@ class ThomasAccountingInvoice(models.Model):
     @api.multi
     def get_delivery_partner_id(self):
         self.ensure_one()
-        return self.partner_shipping_id.id or super(AccountInvoice, self).get_delivery_partner_id()
+        return self.partner_shipping_id.id or super(ThomasAccountingInvoice, self).get_delivery_partner_id()
 
     @api.multi
     def _get_mail_contacts(self):
