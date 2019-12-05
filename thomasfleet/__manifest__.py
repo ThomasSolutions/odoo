@@ -17,7 +17,7 @@
     # for the full list
     'category': 'Thomas',
 
-    'version': '0.103',
+    'version': '0.104',
 
 
     # any module necessary for this one to work correctly
