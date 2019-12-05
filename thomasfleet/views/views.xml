@@ -756,8 +756,8 @@
             <field name="model">thomasfleet.trim</field>
             <field name="arch" type="xml">
                 <tree string="Model Trim">
-                    <field name="brand_id"/>
-                    <field name="model_id"/>
+                    <field name="brand_id" options="{'no_open':True, 'no_create':True}"/>
+                    <field name="model_id" options="{'no_open':True, 'no_create':True}"/>
                     <field name="name"/>
                     <field name="description"/>
                 </tree>
@@ -771,8 +771,8 @@
                 <form string="Model Trim">
                     <sheet>
                         <group>
-                            <field name="brand_id"/>
-                            <field name="model_id"/>
+                            <field name="brand_id" options="{'no_open':True, 'no_create':True}"/>
+                            <field name="model_id" options="{'no_open':True, 'no_create':True}"/>
                             <field name="name"/>
                             <field name="description"/>
                         </group>
