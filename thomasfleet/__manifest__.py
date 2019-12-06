@@ -19,7 +19,6 @@
 
     'version': '0.104',
 
-
     # any module necessary for this one to work correctly
     'depends': ['base','fleet', 'account' , 'sale'],
 
