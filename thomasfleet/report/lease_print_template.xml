@@ -188,7 +188,7 @@
                                 <t t-esc="doc.po_comments"/>
                                 <br/>
                                 <b>Preferred Payment:</b>
-                                <t t-esc="doc.payment_method"/>
+                                <t t-esc="doc.preferred_payment"/>
                                 <br/>
                                 <b>Additional Billing Notes:</b>
                                 <t t-esc="doc.additional_billing"/>
