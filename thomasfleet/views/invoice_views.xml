@@ -28,9 +28,9 @@
             <field name="inherit_id" ref="account.invoice_form" />
             <field name="arch" type="xml">
                 <data>
-                    <!--<xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                    <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                        <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
-                    </xpath>-->
+                    </xpath>
                      <xpath expr="//field[@name='partner_id']" position="after">
                         <field name="po_number" />
                     <field name="lease_ids" widget="many2many_tags"/>

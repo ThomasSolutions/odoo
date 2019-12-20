@@ -43,6 +43,7 @@ class ThomasFleetSwapWizard(models.TransientModel):
     @api.one
     def record_swap(self):
         self.ensure_one()
+
         #create swap record
         # set date of swap
         # copy data from wizard

@@ -906,7 +906,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         a_invoice = accounting_invoice.create({
             'partner_id': the_lease.id.customer_id.id,
             'vehicle_id': the_lease.id.vehicle_id.id,
-            'date_invoice': the_lease.id.invoice_generation_date,
+            'date_invoice': self.invoice_due_date,#the_lease.id.invoice_generation_date,
             'date_due': the_lease.id.invoice_due_date,
             'invoice_from': the_lease.id.invoice_from,
             'invoice_to': the_lease.id.invoice_to,
@@ -975,7 +975,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             a_next_invoice = accounting_invoice.create({
                 'partner_id': the_lease.id.customer_id.id,
                 'vehicle_id': the_lease.id.vehicle_id.id,
-                'date_invoice': the_lease.id.invoice_generation_date,
+                'date_invoice': self.invoice_due_date,#the_lease.id.invoice_generation_date,
                 'date_due': the_lease.id.invoice_due_date,
                 'invoice_from': prev_month_from,
                 'invoice_to': prev_month_to,
@@ -1170,7 +1170,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             a_next_invoice = accounting_invoice.create({
                                 'partner_id': lease.customer_id.id,
                                 'vehicle_id': lease.vehicle_id.id,
-                                'date_invoice': lease.invoice_generation_date,
+                                'date_invoice': the_wizard.invoice_due_date,#lease.invoice_generation_date,
                                 'date_due': lease.invoice_due_date,
                                 'invoice_from': prev_month_from,
                                 'invoice_to': prev_month_to,
@@ -1192,7 +1192,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 a_invoice = accounting_invoice.create({
                     'partner_id': lease.customer_id.id,
                     'vehicle_id': lease.vehicle_id.id,
-                    'date_invoice': lease.invoice_generation_date,
+                    'date_invoice':the_wizard.invoice_due_date,# lease.invoice_generation_date,
                     'date_due': lease.invoice_due_date,
                     'invoice_from': lease.invoice_from,
                     'invoice_to': lease.invoice_to,
