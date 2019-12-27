@@ -17,7 +17,7 @@
     # for the full list
     'category': 'Thomas',
 
-    'version': '0.105',
+    'version': '0.106',
 
     # any module necessary for this one to work correctly
     'depends': ['base','fleet', 'account' , 'sale'],
@@ -35,7 +35,7 @@
         #'report/custom_header_template.xml',
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
-
+        'report/invoice_report_template.xml',
         'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
         'data/thomasfleet.lease_status.csv',

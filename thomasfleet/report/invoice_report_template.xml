@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_inherit_thomas" inherit_id="account.report_invoice_document">
+       <xpath expr="//div[@t-field='o.partner_id']" position="before">
+                <strong>Billing address:</strong>
+       </xpath>
+        <xpath expr="//div[@t-if='o.name']" position="before">
+                <div class="col-xs-2" t-if="o.po_number">
+                    <strong>Purchase Order:</strong>
+                    <p t-field="o.po_number"/>
+                </div>
+       </xpath>
+    </template>
+</odoo>

@@ -19,6 +19,7 @@ class ThomasAccountingInvoice(models.Model):
     vehicle_ids = fields.Many2many('fleet.vehicle',string='Units',
                                   relation='unit_lease_account_invoice_rel')
 
+    units_display = fields.Char(string='Unit #s', compute='_compute_units_display')
     po_number = fields.Char(string='Purchase Order #')
     requires_manual_calculations = fields.Char(string="Needs Manual Calculation")
     invoice_from = fields.Date(string="Invoice From")
@@ -27,7 +28,7 @@ class ThomasAccountingInvoice(models.Model):
     invoice_generation_date = fields.Date(string="Invoice Generation Date")
     partner_shipping_id = fields.Many2one(
         'res.partner',
-        string='Delivery Address',
+        string='Shipping Address',
         readonly=True,
         states={'draft': [('readonly', False)]},
         help="Delivery address for current invoice.")
@@ -37,6 +38,13 @@ class ThomasAccountingInvoice(models.Model):
     def _onchange_delivery_address(self):
         addr = self.partner_id.address_get(['delivery'])
         self.partner_shipping_id = addr and addr.get('delivery')
+
+    def _compute_units_display(self):
+        units = []
+        for rec in self:
+            for veh in rec.vehicle_ids:
+                units.append(veh.unit_no)
+            rec.units_display = ',' .join(units)
 
     @api.multi
     def get_delivery_partner_id(self):

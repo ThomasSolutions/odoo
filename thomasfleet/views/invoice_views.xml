@@ -46,6 +46,20 @@
                  </data>
            </field>
         </record>
+      <record id="thomase_invoice_tree" model="ir.ui.view">
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree" />
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//field[@name='partner_id']" position="after">
+
+                    <field name="units_display">
+
+                    </field>
+                    </xpath>
+                 </data>
+           </field>
+        </record>
 
     <!--  <record id="thomase_invoice_form_sale" model="ir.ui.view">
             <field name="model">account.invoice</field>
