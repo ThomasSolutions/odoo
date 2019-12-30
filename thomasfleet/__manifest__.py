@@ -17,7 +17,7 @@
     # for the full list
     'category': 'Thomas',
 
-    'version': '0.107',
+    'version': '0.108',
 
     # any module necessary for this one to work correctly
     'depends': ['base','fleet', 'account' , 'sale'],
