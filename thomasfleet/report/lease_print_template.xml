@@ -290,7 +290,7 @@
                                     <dt class="col-md-4"><b>Spare Key Initials: </b></dt>
                                     <dd class="col-xs-4"><hr/></dd>
                                 </dl>
-                                <b>Mileage:</b>
+                                <b>Outgoing Mileage:</b>
                                 <t t-esc="doc.mileage_at_lease"/>
                                 KM
                                 <br/>
@@ -490,11 +490,11 @@
                                     <dd class="col-xs-4"><hr/></dd>
                                 </dl>
                                 <b>Mileage:</b>
-                                <t t-esc="doc.mileage_at_return"/>
-                                KM
+                                <!--<t t-esc="doc.mileage_at_return"/>
+                                KM-->
                                 <br/>
                                 <b>Fuel:</b>
-                                <t t-esc="doc.fuel_at_lease"/>
+                                <!--<t t-esc="doc.fuel_at_lease"/>-->
                                 <br/>
                                 <b>Lease Notes:</b>
                                 <t t-esc="doc.lease_notes"/>

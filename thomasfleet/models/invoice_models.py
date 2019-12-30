@@ -62,8 +62,14 @@ class ThomasAccountingInvoice(models.Model):
 
     @api.multi
     def action_invoice_cancel(self):
+        self.ensure_one()
         self.move_name=False
-        return super(ThomasAccountingInvoice, self).action_invoice_cancel()
+        #leases = self.env['thomaslease.lease'].search([('id', 'in', self.lease_ids.ids)], limit=1)
+        res =super(ThomasAccountingInvoice, self).action_invoice_cancel()
+        for lease in self.lease_ids:
+            invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
+            lease.last_invoice_date = invoice.date_invoice
+        return res
 
     @api.multi
     def action_invoice_sent(self):

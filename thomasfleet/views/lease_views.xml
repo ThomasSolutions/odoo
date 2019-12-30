@@ -7,6 +7,7 @@
                 <form string="Lease Return">
                     <sheet>
                         <group>
+                            <field name="lease_return_date"/>
                             <field name="invoice_pending"/>
                             <field name="repairs_pending"/>
                             <field name='lease_ids'/>
@@ -112,6 +113,7 @@
                             <page string="Lease Details">
                                 <group colpan="4">
                                     <group>
+                                        <field name="run_initial_invoicing"/>
                                         <field name="fuel_at_lease"/>
                                         <field name="fuel_at_return"/>
                                         <field name="additional_charges"/>
@@ -129,8 +131,8 @@
                                                context="{'lease':True , 'default_activity':'lease_out', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
                                         <field name="lease_return_odometer_id"
                                                context="{'lease':True , 'default_activity':'lease_in', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
-                                        <field name="mileage_at_lease"/>
-                                        <field name="mileage_at_return"/>
+                                        <field name="mileage_at_lease" invisible="1"/>
+                                        <field name="mileage_at_return" invisible="1"/>
                                         <field name="lease_start_date"/>
                                         <field name="billing_start_date"/>
                                         <field name="min_lease_end_date"/>
@@ -142,7 +144,6 @@
                                         <field name="additional_billing"/>
                                         <field name="delivery_charge"/>
                                         <field name="billing_notes"/>
-                                        <field name="run_initial_invoicing"/>
                                         <field name="invoice_to"/>
                                         <field name="invoice_from"/>
                                         <field name="last_invoice_to"/>

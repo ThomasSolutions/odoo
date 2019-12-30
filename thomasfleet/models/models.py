@@ -784,6 +784,17 @@ class ThomasFleetOdometer(models.Model):
     customer_id =fields.Many2one(related="lease_id.customer_id", string="Customer", readonly=True)
     activity = fields.Selection([('lease_out', 'Lease Start'), ('lease_in', 'Lease Return'),('service', 'Service'),('spare_swap', 'Spare Swap'), ('spare_swap_back','Spare Swap Back')], string="Activity", track_visibility='onchange')
 
+    def name_get(self):
+        if self._context.get('lease'):
+            res = []
+            for record in self:
+                name = '{0:,.2f}'.format(record.value)
+                res.append((record.id, name))
+            return res
+        else:
+            print("Context is none")
+            return super(ThomasFleetOdometer, self).name_get()
+
 class ThomasFleetVehicleModel(models.Model):
     _inherit = 'fleet.vehicle.model'
 

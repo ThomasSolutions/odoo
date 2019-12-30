@@ -7,6 +7,7 @@ import calendar
 import math
 
 
+
 class ThomasLease(models.Model):
     _inherit = 'mail.thread'
 
@@ -242,7 +243,7 @@ class ThomasLease(models.Model):
     lease_return_date = fields.Date("Unit Returned on")
     requires_manual_calculations = fields.Boolean("Requires Manual Calculations", default=False)
     billing_notes = fields.Char("Billing Notes")
-    min_lease_end_date = fields.Date("To")
+    min_lease_end_date = fields.Date("Minimum Lease End Date")
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                       ('three_quarter', '3/4'), ('full', 'Full')],
                                      )
@@ -463,9 +464,13 @@ class ThomasFleetReturnWizard(models.TransientModel):
         #    print(the_id.name)
         return self.env.context.get('active_ids')
 
+    def _default_return_date(self):
+        return datetime.now()
+
     lease_ids = fields.Many2many('thomaslease.lease', string="Lease", default=_default_lease_ids)
     invoice_pending = fields.Boolean("Invoice Pending")
     repairs_pending = fields.Boolean("Repairs Pending")
+    lease_return_date = fields.Date("Return Date", default=_default_return_date)
 
     @api.multi
     def record_return(self):
@@ -478,6 +483,7 @@ class ThomasFleetReturnWizard(models.TransientModel):
                 lease.state = 'repairs_pending'
             else:
                 lease.state = 'closed'
+            lease.lease_return_date = self.lease_return_date
 
 
 class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
@@ -486,14 +492,22 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         # for the_id in self.env.context.get('active_ids'):
         #    print(the_id.name)
         leases_ids = self.env.context.get('active_ids')
+        updated_leases = []
         for lease in leases_ids:
             a_lease = self.env['thomaslease.lease'].browse(lease)
-            self.set_invoice_dates(a_lease)
+            if a_lease.state == 'closed':
+                raise models.ValidationError('A closed Lease cannot be invoiced')
+            else:
+                self.set_invoice_dates(a_lease,False)
+
 
         return leases_ids
 
-    def set_invoice_dates(self, lease):
-        dt = datetime.now()
+    def set_invoice_dates(self, lease, dt_in):
+        if not dt_in:
+            dt = datetime.now()
+        else:
+            dt = dt_in
 
         l_rdt = False
         if lease.lease_return_date:
@@ -563,9 +577,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         end_of_month = calendar.monthrange(dt.year, dt.month)[1]
         self.invoice_due_date = dt2
         for lease in self.lease_ids:
-            lease.invoice_due_date = dt2
-            lease.invoice_from = date(dt.year, dt.month, 1)
-            lease.invoice_to = date(dt.year, dt.month, end_of_month)
+            self.set_invoice_dates(lease,dt)
+        #    lease.invoice_due_date = dt2
+        #    lease.invoice_from = date(dt.year, dt.month, 1)
+        #    lease.invoice_to = date(dt.year, dt.month, end_of_month)
         # todo: add non-amd calc..
         # if not amd invoice is for the current of the invoice date..
         # else amd is previous month.
@@ -856,7 +871,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                                      the_lease.id.invoice_to, the_lease.id)
 
             start_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').date()
-            end_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d').date()
+
+            if the_lease.id.lease_return_date:
+                end_date = datetime.strptime(the_lease.id.lease_return_date, '%Y-%m-%d').date()
+            else:
+                end_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d').date()
 
             num_days = (end_date - start_date).days + 1
             pro_rated = ''
@@ -1253,6 +1272,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         lease_success = []
         norm_invoices = []
         agg_invoices = []
+        str_lease_closed = ''
 
         for wizard in self:
             leases = wizard.lease_ids
@@ -1271,23 +1291,33 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         lease_success.append(a_lease.id)
 
                     a_lease.id.last_invoice_date = wizard.invoice_date
+                    if a_lease.id.state == 'invoice_pending':
+                        a_lease.id.state = 'closed'
+                        str_lease_closed += '<p> Lease: ' + a_lease.id.lease_number + 'state changed from Invoice Pending to Closed</p>'
+                        a_lease.id.message_post(
+                            body='<p><b>Leas state changed from Invoice Pending to Closed</b></p>',
+                            subject="Lease State Changed", subtype="mt_note")
 
             aggregate_customers = list(dict.fromkeys(aggregate_customers))
             agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
             agg_invoices.extend(norm_invoices)
 
         strSuccess = ""
+
         str_i_date = datetime.strptime(self.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
 
         for l in lease_success:
+            strPost = ""
             strSuccess += '<p>' + l.lease_number + '<\p>'
             for a in agg_invoices:
                 if l in a.lease_ids:
                     a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
                     a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
                     strSuccess += '<p>Invoice id: ' + str(a.id) + ' Invoice Date: ' + str_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
+                    strPost = '<p>Invoice id: ' + str(a.id) + ' Invoice Date: ' + str_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
+                    l.message_post(body='<p><b>Invoice(s) have been successfully created for: ' + str_i_date + '</b></p>'+strPost, subject="Invoice Creation", subtype="mt_note")
+
             strSuccess += "<hr/>"
-            l.message_post(body='<p><b>Invoice(s) have been successfully created for: ' + str_i_date + '</b></p>'+strSuccess, subject="Invoice Creation", subtype="mt_note")
 
         strExisting = ""
         for l in lease_with_existing_invoice:
@@ -1304,6 +1334,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         if not strExisting == '':
             strMess += '<h2>WARNING - INVOICES NOT CREATED</h2> <h3>Invoices with the same or crossing' \
                        ' date ranges already exist for the following lease agreements:</h3><br/>' + strExisting
+
+        if not str_lease_closed == '':
+            strMess += '<h2>The following Lease Agreements state have changed</h2><br/>' + str_lease_closed
 
 
         rec = self.env['thomaslease.message'].create({'message': strMess})
