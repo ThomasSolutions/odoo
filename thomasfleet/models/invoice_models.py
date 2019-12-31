@@ -70,8 +70,26 @@ class ThomasAccountingInvoice(models.Model):
         res =super(ThomasAccountingInvoice, self).action_invoice_cancel()
         for lease in self.lease_ids:
             invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
+            lease.last_invoice_date = False
             lease.last_invoice_date = invoice.date_invoice
         return res
+
+    @api.multi
+    def unlink(self):
+        for invoice in self:
+            if invoice.state not in ('draft', 'cancel'):
+                raise UserError(_(
+                    'You cannot delete an invoice which is not draft or cancelled. You should create a credit note instead.'))
+            elif invoice.move_name:
+                raise UserError(_(
+                    'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
+        res= super(ThomasAccountingInvoice, self).unlink()
+        for lease in self.lease_ids:
+            invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
+            lease.last_invoice_date = False
+            lease.last_invoice_date = invoice.date_invoice
+        return res
+
 
     @api.multi
     def action_invoice_sent(self):
