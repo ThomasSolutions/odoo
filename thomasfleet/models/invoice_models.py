@@ -83,12 +83,16 @@ class ThomasAccountingInvoice(models.Model):
             elif invoice.move_name:
                 raise UserError(_(
                     'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
-        res= super(ThomasAccountingInvoice, self).unlink()
+
         for lease in self.lease_ids:
             invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
-            lease.last_invoice_date = False
-            lease.last_invoice_date = invoice.date_invoice
-        return res
+
+            if invoice:
+                lease.last_invoice_date = invoice.date_invoice
+            else:
+                lease.last_invoice_date = False
+
+        return super(ThomasAccountingInvoice, self).unlink()
 
 
     @api.multi
