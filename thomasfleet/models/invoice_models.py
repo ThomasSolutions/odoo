@@ -44,6 +44,8 @@ class ThomasAccountingInvoice(models.Model):
         for rec in self:
             for veh in rec.vehicle_ids:
                 units.append(veh.unit_no)
+
+            units =list(dict.fromkeys(units))
             rec.units_display = ',' .join(units)
 
     @api.multi
