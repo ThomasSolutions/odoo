@@ -532,13 +532,22 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         # if start date - handled by initial invoicing
         # if return date
-        if l_rdt:
-            if i_to.month == l_rdt.month and i_to.year == l_rdt.year:
-                if l_rdt.day < i_to.day:
-                    i_to = l_rdt
+        if lease.run_initial_invoicing:
+            if l_rdt:
+                if i_to.month == l_rdt.month and i_to.year == l_rdt.year:
+                    if l_rdt.day < i_to.day:
+                        i_to = l_rdt
 
-        if l_sdt > i_from:
-            i_from = lease.billing_start_date
+            if l_sdt > i_from:
+                i_from = lease.billing_start_date
+
+        #handles the scenario where lease is returned the month prior to billing..ie.  leased from dec1 to dec25
+        #billing on Jan 1, paid in Feb
+        else:
+            if l_rdt:
+                i_to = l_rdt
+                if i_to < i_from:
+                    i_from = lease.billing_start_date
 
         lease.invoice_from = i_from
         lease.invoice_to = i_to
@@ -556,18 +565,21 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def _default_invoice_posting_date(self):
         dt2 = datetime.now()
-        dt = date(dt2.year, dt2.month - 1, 1)
+        dfm = dt2 - relativedelta.relativedelta(months=-1)
+        dt = date(dfm.year, dfm.month, 1)
         return dt
 
     def _default_invoice_start_date(self):
         df = datetime.now()
-        dt2 = date(df.year, df.month - 1, 1)
+        dfm = df - relativedelta.relativedelta(months=-1)
+        dt2 = date(dfm.year, dfm.month, 1)
         return dt2
 
     def _default_invoice_end_date(self):
         df = datetime.now()
-        days_in_month = calendar.monthrange(df.year, df.month - 1)[1]
-        dt2 = date(df.year, df.month - 1, days_in_month)
+        dfm = df - relativedelta.relativedelta(months=-1)
+        days_in_month = calendar.monthrange(dfm.year, dfm.month)[1]
+        dt2 = date(dfm.year, dfm.month, days_in_month)
         return dt2
 
     @api.onchange("invoice_date")

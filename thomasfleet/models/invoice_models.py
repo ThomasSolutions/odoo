@@ -40,8 +40,9 @@ class ThomasAccountingInvoice(models.Model):
         self.partner_shipping_id = addr and addr.get('delivery')
 
     def _compute_units_display(self):
-        units = []
+
         for rec in self:
+            units = []
             for veh in rec.vehicle_ids:
                 units.append(veh.unit_no)
 
@@ -84,13 +85,13 @@ class ThomasAccountingInvoice(models.Model):
                 raise UserError(_(
                     'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
 
-        for lease in self.lease_ids:
-            invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
+            for lease in invoice.lease_ids:
+                the_invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel'), ('id', '!=', invoice.id)], limit=1,order='date_invoice desc')
 
-            if invoice:
-                lease.last_invoice_date = invoice.date_invoice
-            else:
-                lease.last_invoice_date = False
+                if the_invoice:
+                    lease.last_invoice_date = invoice.date_invoice
+                else:
+                    lease.last_invoice_date = False
 
         return super(ThomasAccountingInvoice, self).unlink()
 
