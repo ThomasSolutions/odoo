@@ -275,7 +275,7 @@ class ThomasLease(models.Model):
     customer_id = fields.Many2one("res.partner", "Customer", change_default=True)  # required=True)
     partner_invoice_id = fields.Many2one('res.partner', string='Bill To')
     partner_shipping_id = fields.Many2one('res.partner', string='Ship To')
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", required=True, change_default=True)  # required=True)
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True)  # required=True)
 
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default=True,
