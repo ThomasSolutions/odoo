@@ -212,7 +212,7 @@
                                 </field>
                             </page>
                             <page name='documents' string="Customer Documents">
-                                <field name="documents" options="{'no_create' : True}"/>
+                                <field name="documents"/>
                             </page>
                             <page name='sales_purchases' string="Sales &amp; Purchases">
                                 <group name="container_row_2">
