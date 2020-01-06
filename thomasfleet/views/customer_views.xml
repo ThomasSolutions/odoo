@@ -269,7 +269,7 @@
             <form string="Document">
                 <sheet>
                     <group>
-                        <field name="name"/>
+                        <field name="document" widget="binary"/>
                         <field name="description"/>
                         <field name="type"/>
                         <field name="expiration"/>
@@ -283,9 +283,8 @@
         <field name="name">thomasfleet.customer_document.tree</field>
         <field name="model">thomasfleet.customer_document</field>
         <field name="arch" type="xml">
-            <tree string="Document" editable="top">
-                <field name="document"/>
-                <field name="name" />
+            <tree string="Document">
+                <field name="document" widget="binary"/>
                 <field name="description"/>
                 <field name="type"/>
                 <field name="expiration"/>

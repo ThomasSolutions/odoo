@@ -109,11 +109,11 @@ class ThomasCustomerDocument(models.Model):
     _name = 'thomasfleet.customer_document'
 
     customer_id = fields.Many2one("res.partner", "Customer")
-    name = fields.Char("Name")
+    name=fields.Char("Name")
     description = fields.Char("Description")
     type = fields.Selection([('insurance', 'Proof of Insurance'), ('certification', 'Certification')])
     expiration = fields.Date('Expiration Date')
-    document = fields.Binary("Document", attachment=True)
+    document = fields.Binary("Document")
 
 class ThomaseDepartment(models.Model):
     _name = 'thomasfleet.customer_department'

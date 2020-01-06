@@ -31,8 +31,8 @@
             <field name="name">Lease Return Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.return.wizard</field>
-            <field name="view_id" ref="lease_return_wizard_form"></field>
-            <field name="view_type">form</field>
+           <!-- <field name="view_id" ref="lease_return_wizard_form"></field>
+            <field name="view_type">form</field>-->
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -235,6 +235,7 @@
                     <field name="rate_type"/>
                     <field name="lease_start_date"/>
                     <field name="state"/>
+                    <field name="lease_return_date" string="Unit Returned On"/>
                     <field name="additional_charges"/>
                     <field name="preferred_payment"/>
                     <field name="last_invoice_date"/>
@@ -319,9 +320,7 @@
         />
         <act_window name="Lease Return"
                     res_model="thomaslease.lease.return.wizard"
-                    src_model="thomaslease.lease"
                     view_mode="form"
-                    multi="True"
                     target="new"
                     key2="client_action_multi"
                     id="action_open_lease_return"
