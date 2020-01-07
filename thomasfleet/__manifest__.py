@@ -18,7 +18,7 @@
     'category': 'Thomas',
 
 
-    'version': '0.124',
+    'version': '0.125',
 
 
 
