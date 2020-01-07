@@ -119,7 +119,7 @@
                                         <field name="additional_charges"/>
                                         <!--<field name="lease_number"/>-->
                                         <field name="lease_notes"/>
-                                        <field name="contract_number"/>
+                                       <!-- <field name="contract_number"/>-->
                                         <field name="po_number"/>
                                         <field name="po_comments"/>
                                     </group>
@@ -157,7 +157,7 @@
 
                                 <field name="lease_lines">
                                     <tree editable="bottom">
-                                        <field name="product_id"  options="{'no_open':True, 'no_create_edit': True}"></field>
+                                        <field name="product_id"  options="{'no_open':True, 'no_create': True}"></field>
                                         <field name="description"></field>
                                         <field name="price"></field>
                                         <field name="tax_id"></field>

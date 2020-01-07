@@ -245,7 +245,7 @@ class ThomasLease(models.Model):
     billing_notes = fields.Char("Billing Notes")
     min_lease_end_date = fields.Date("Minimum Lease End Date")
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
-                                      ('three_quarter', '3/4'), ('full', 'Full')],
+                                      ('three_quarter', '3/4'), ('full', 'Full')],default='Full'
                                      )
     fuel_at_return = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                        ('three_quarter', '3/4'), ('full', 'Full')],

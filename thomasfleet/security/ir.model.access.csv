@@ -5,6 +5,8 @@ access_thomasfleet_location_user,thomasfleet.location.user,model_thomasfleet_loc
 access_thomasfleet_location_manager,thomasfleet.location.manager,model_thomasfleet_location,base.group_system,1,1,1,1
 access_thomasfleet_accessory_user,thomasfleet.accessory.user,model_thomasfleet_accessory,base.group_user,1,0,0,0
 access_thomasfleet_accessory_manager,thomasfleet.accessory.manager,model_thomasfleet_accessory,base.group_system,1,1,1,1
+access_thomasfleet_vehicle_user,thomasfleet.vehicle.user,model_fleet_vehicle,base.group_user,1,0,0,0
+access_thomasfleet_vehicle_manager,thomasfleet.vehicle.manager,model_fleet_vehicle,base.group_system,1,1,1,1
 access_thomas_asset_user,thomasfleet.asset.user,model_thomas_asset,base.group_user,1,0,0,0
 access_thomas_asset_manager,thomasfleet.asset.manager,model_thomas_asset,base.group_system,1,1,1,1
 access_thomasfleet_asset_class_user,thomasfleet.asset_class.user,model_thomasfleet_asset_class,base.group_user,1,0,0,0
