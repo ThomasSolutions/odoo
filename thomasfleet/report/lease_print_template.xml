@@ -10,8 +10,8 @@
               <div class="footer o_background_footer">
             <div class="text-center">
                 <ul class="list-inline">
-                    <li><i class="fa fa-phone"/><span>905-545-8808 ext.7234</span></li>
-                    <li><i class="fa fa-at"/><span>lease@thomassolutions.ca</span></li>
+                    <li><i class="fa fa-phone"/><span> 905-545-8808 ext.7234</span></li>
+                    <li><i class="fa fa-at"/><span> lease@thomassolutions.ca</span></li>
                     <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
                 </ul>
                 <div class="text-muted">
@@ -25,8 +25,6 @@
 
         </xpath>
     </template>
-
-
     <template id="thomasfleet.lease_agreement_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
