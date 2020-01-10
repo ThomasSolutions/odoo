@@ -52,6 +52,7 @@ class ThomasContact(models.Model):
     insurance_expiration = fields.Date(string="Expiration Date")
     drivers_license = fields.Char(string="Drivers License")
     drivers_license_expiry = fields.Date(string="Drivers License Expiry")
+    gp_customer_id = fields.Char(string="GP Customer ID")
 
     @api.multi
     def find_protractor_guid(self):
