@@ -18,12 +18,12 @@
     'category': 'Thomas',
 
 
-    'version': '0.127',
+    'version': '0.128',
 
 
 
     # any module necessary for this one to work correctly
-    'depends': ['base','fleet', 'account' , 'sale'],
+    'depends': ['base','fleet', 'account', 'sale'],
 
     # always loaded
     'data': [

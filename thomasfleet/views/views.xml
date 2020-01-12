@@ -24,8 +24,8 @@
                     <form string="Vehicle">
                         <header>
                             <button name="check_update_portractor"
-                                    string="Update Protractor" type="object" class="btn-primary"/>
-                            <button name="do_something_else" string="Second action"/>
+                                    string="Update Protractor" type="object" class="btn-primary" groups="fleet.fleet_group_manager"/>
+                            <button name="do_something_else" string="Second action" groups="fleet.fleet_group_manager"/>
                             <field name="lease_status" widget="statusbar"/>
                         </header>
                         <sheet>
@@ -67,7 +67,6 @@
                                         class="oe_stat_button"
                                         icon="fa-flask"
                                         help="Show all the Photographs for this vehicle"
-                                        groups="fleet.fleet_group_manager"
                                         string="Vehicle Pictures">
                                 </button>
                                 <button name="return_action_to_open"

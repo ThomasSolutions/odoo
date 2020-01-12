@@ -54,7 +54,7 @@
                         <button name="lease_print" class="btn-primary" string="Print" type="object"/>
                         <button name="btn_validate" class="oe_highlight" string="Lease" type="object"/>
                         <button name="%(open_lease_invoice_wizard_action)d" class="btn-primary" string="Invoice"
-                                type="action"/>
+                                type="action" groups="account.group_account_invoice"/>
 
                         <button name="%(open_lease_return_wizard_action)d" class="btn-primary" string="Return"
                                 type="action"/>
@@ -188,7 +188,7 @@
 
                                 </group>
                             </page>
-                            <page string="Invoices">
+                            <page string="Invoices" groups="account.group_account_invoice">
                                 <field name="invoice_ids" options="{'no_create': True}" readonly="1">
                                     <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
                                           string="Invoice">
