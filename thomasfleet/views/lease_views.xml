@@ -52,12 +52,12 @@
                 <form string="Lease Agreements">
                     <header>
                         <button name="lease_print" class="btn-primary" string="Print" type="object"/>
-                        <button name="btn_validate" class="oe_highlight" string="Lease" type="object"/>
+                        <button name="btn_validate" class="oe_highlight" string="Lease" type="object" groups="fleet.fleet_group_manager"/>
                         <button name="%(open_lease_invoice_wizard_action)d" class="btn-primary" string="Invoice"
                                 type="action" groups="account.group_account_invoice"/>
 
                         <button name="%(open_lease_return_wizard_action)d" class="btn-primary" string="Return"
-                                type="action"/>
+                                type="action" groups="fleet.fleet_group_manager"/>
 
                         <field name="state" clickable="True" widget="statusbar"
                                statusbar_colors="{'draft':'yellow','active':'green', 'closed':'red'}"
