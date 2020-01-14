@@ -180,11 +180,11 @@
                             <page string="Customer Insurance Details">
                                 <group colspan="4">
 
-                                    <field name="insurance_on_file" />
-                                    <field name="insurance_agent" />
-                                    <field name="insurance_underwriter"/>
-                                    <field name="insurance_policy"/>
-                                    <field name="insurance_expiration"/>
+                                    <field name="insurance_on_file" readonly="True"/>
+                                    <field name="insurance_agent" readonly="True"/>
+                                    <field name="insurance_underwriter" readonly="True"/>
+                                    <field name="insurance_policy" readonly="True"/>
+                                    <field name="insurance_expiration" readonly="True"/>
 
                                 </group>
                             </page>
@@ -230,16 +230,15 @@
                 <tree string="Lease Agreements">
                     <field name="vehicle_id" context="{'lease':True}"/>
                     <field name="customer_id"/>
-                    <field name="po_number"/>
-                    <field name="lease_number"/>
-                    <field name="rate_type"/>
                     <field name="lease_start_date"/>
+                     <field name="lease_return_date" string="Unit Returned On"/>
+                   <field name="additional_charges"/>
+                    <field name="po_number"/>
+                    <field name="rate_type"/>
                     <field name="state"/>
-                    <field name="lease_return_date" string="Unit Returned On"/>
-                    <field name="additional_charges"/>
+                   <field name="last_invoice_date"/>
                     <field name="preferred_payment"/>
-                    <field name="last_invoice_date"/>
-                    <!--<field name="last_invoice_age"/>-->
+                    <!-- <field name="lease_number"/>-->
                 </tree>
             </field>
         </record>
