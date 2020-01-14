@@ -180,11 +180,11 @@
                             <page string="Customer Insurance Details">
                                 <group colspan="4">
 
-                                    <field name="insurance_on_file" readonly="True"/>
-                                    <field name="insurance_agent" readonly="True"/>
-                                    <field name="insurance_underwriter" readonly="True"/>
-                                    <field name="insurance_policy" readonly="True"/>
-                                    <field name="insurance_expiration" readonly="True"/>
+                                    <field name="insurance_on_file" />
+                                    <field name="insurance_agent" />
+                                    <field name="insurance_underwriter"/>
+                                    <field name="insurance_policy"/>
+                                    <field name="insurance_expiration"/>
 
                                 </group>
                             </page>
