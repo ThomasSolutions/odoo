@@ -212,114 +212,114 @@ class ThomasLease(models.Model):
         return self.env.ref('thomasfleet.lease_agreement').report_action(self)
 
     _name = 'thomaslease.lease'
-    lease_number = fields.Char('Lease ID')
-    po_number = fields.Char("Purchase Order #")
-    po_comments = fields.Char("Purchase Order Comments")
-    contract_number = fields.Char("Contract #")
+    lease_number = fields.Char('Lease ID',track_visibility='onchange')
+    po_number = fields.Char("Purchase Order #",track_visibility='onchange')
+    po_comments = fields.Char("Purchase Order Comments",track_visibility='onchange')
+    contract_number = fields.Char("Contract #",track_visibility='onchange')
     invoice_ids = fields.Many2many('account.invoice', string='Invoices',
-                                   relation='lease_agreement_account_invoice_rel')
+                                   relation='lease_agreement_account_invoice_rel',track_visibility='onchange')
     # lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
     state = fields.Selection([('draft', 'Draft'), ('active', 'Active'),
                               ('repairs_pending', 'Repairs Pending'),
                               ('invoice_pending', 'Invoice Pending'),
                               ('both', 'Repairs and Invoice Pending'),
-                              ('closed', 'Closed')], string="Status", default='draft')
+                              ('closed', 'Closed')], string="Status", default='draft',track_visibility='onchange')
 
-    lease_start_date = fields.Date("Lease Start Date")  # , required=True)
+    lease_start_date = fields.Date("Lease Start Date",track_visibility='onchange')  # , required=True)
 
-    billing_start_date = fields.Date("Billing Start Date")
+    billing_start_date = fields.Date("Billing Start Date",track_visibility='onchange')
 
-    invoice_from = fields.Date(string="Invoice From")
-    invoice_to = fields.Date(string="Invoice To")
-    last_invoice_to = fields.Date(string="Last Invoice Date Range")
-    invoice_posting_date = fields.Date(string="Invoice Posting Date")
-    invoice_generation_date = fields.Date(string="Invoice Generation Date")
-    invoice_due_date = fields.Date(string="Invoice Due Date")
+    invoice_from = fields.Date(string="Invoice From",track_visibility='onchange')
+    invoice_to = fields.Date(string="Invoice To",track_visibility='onchange')
+    last_invoice_to = fields.Date(string="Last Invoice Date Range",track_visibility='onchange')
+    invoice_posting_date = fields.Date(string="Invoice Posting Date",track_visibility='onchange')
+    invoice_generation_date = fields.Date(string="Invoice Generation Date",track_visibility='onchange')
+    invoice_due_date = fields.Date(string="Invoice Due Date",track_visibility='onchange')
 
     run_initial_invoicing = fields.Boolean(string="Initial Invoice", default=False)
     preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
                                           ('pad2', 'PAD no Invoice Sent'), ('customer', 'Customer')],
-                                         )
-    lease_return_date = fields.Date("Unit Returned on")
-    requires_manual_calculations = fields.Boolean("Requires Manual Calculations", default=False)
-    billing_notes = fields.Char("Billing Notes")
-    min_lease_end_date = fields.Date("Minimum Lease End Date")
+                                         track_visibility='onchange')
+    lease_return_date = fields.Date("Unit Returned on",track_visibility='onchange')
+    requires_manual_calculations = fields.Boolean("Requires Manual Calculations", default=False,track_visibility='onchange')
+    billing_notes = fields.Char("Billing Notes",track_visibility='onchange')
+    min_lease_end_date = fields.Date("Minimum Lease End Date",track_visibility='onchange')
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                       ('three_quarter', '3/4'), ('full', 'Full')],default='full'
-                                     )
+                                     ,track_visibility='onchange')
     fuel_at_return = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                        ('three_quarter', '3/4'), ('full', 'Full')],
-                                      )
+                                      track_visibility='onchange')
 
     lease_out_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Lease",
-                                            domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_out')]")
+                                            domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_out')]",track_visibility='onchange')
     lease_return_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Return",
-                                               domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_in')]")
-    mileage_at_lease = fields.Float(string='Lease Start Odometer', related='lease_out_odometer_id.value', readonly=True)
+                                               domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_in')]",track_visibility='onchange')
+    mileage_at_lease = fields.Float(string='Lease Start Odometer', related='lease_out_odometer_id.value', readonly=True,track_visibility='onchange')
 
     mileage_at_return = fields.Float(string='Lease Return Odometer', related='lease_return_odometer_id.value',
-                                     readonly=True)
+                                     readonly=True,track_visibility='onchange')
 
-    delivery_charge = fields.Float(string='Delivery Charge')
+    delivery_charge = fields.Float(string='Delivery Charge',track_visibility='onchange')
 
-    driver_id = fields.Many2one('res.partner', string='Driver', domain="[('parent_id','=',customer_id)]")
+    driver_id = fields.Many2one('res.partner', string='Driver', domain="[('parent_id','=',customer_id)]",track_visibility='onchange')
 
-    monthly_rate = fields.Float("Monthly Rate", change_default=True)
-    weekly_rate = fields.Float("Weekly Rate")
-    daily_rate = fields.Float("Daily Rate")
-    monthly_tax = fields.Float("Tax(HST-13%)")
-    monthly_total = fields.Float("Monthly Lease Total")
-    monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500)
-    mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14)
+    monthly_rate = fields.Float("Monthly Rate", change_default=True,track_visibility='onchange')
+    weekly_rate = fields.Float("Weekly Rate",track_visibility='onchange')
+    daily_rate = fields.Float("Daily Rate",track_visibility='onchange')
+    monthly_tax = fields.Float("Tax(HST-13%)",track_visibility='onchange')
+    monthly_total = fields.Float("Monthly Lease Total",track_visibility='onchange')
+    monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500,track_visibility='onchange')
+    mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14,track_visibility='onchange')
 
-    customer_id = fields.Many2one("res.partner", "Customer", change_default=True)  # required=True)
-    partner_invoice_id = fields.Many2one('res.partner', string='Bill To')
-    partner_shipping_id = fields.Many2one('res.partner', string='Ship To')
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True)  # required=True)
+    customer_id = fields.Many2one("res.partner", "Customer", change_default=True,track_visibility='onchange')  # required=True)
+    partner_invoice_id = fields.Many2one('res.partner', string='Bill To',track_visibility='onchange')
+    partner_shipping_id = fields.Many2one('res.partner', string='Ship To',track_visibility='onchange')
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True,track_visibility='onchange')  # required=True)
 
-    unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True)
+    unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True,track_visibility='onchange')
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default=True,
-                                  copy=True, auto_join=True)
+                                  copy=True, auto_join=True,track_visibility='onchange')
     # product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
 
     insurance_on_file = fields.Boolean(related='customer_id.insurance_on_file', string="Proof of Insurance on File",
-                                       readonly=True)
+                                       readonly=True,track_visibility='onchange')
     insurance_agent = fields.Char(related='customer_id.insurance_agent', string="Agent", readonly=True)
     insurance_underwriter = fields.Char(related='customer_id.insurance_underwriter', string="Underwriter",
-                                        readonly=True)
-    insurance_policy = fields.Char(related='customer_id.insurance_policy', string="Policy #", readonly=True)
+                                        readonly=True,track_visibility='onchange')
+    insurance_policy = fields.Char(related='customer_id.insurance_policy', string="Policy #", readonly=True,track_visibility='onchange')
     insurance_expiration = fields.Date(related='customer_id.insurance_expiration', string="Expiration Date",
-                                       readonly=True)
+                                       readonly=True,track_visibility='onchange')
 
     ap_contact_ids = fields.Many2many('res.partner', string='Accounts Payable Contacts',
                                       relation='lease_agreement_res_partner_ap_rel',
-                                      domain="[('parent_id','=',customer_id)]")
+                                      domain="[('parent_id','=',customer_id)]",track_visibility='onchange')
     po_contact_ids = fields.Many2many('res.partner', string='Purchasing Contacts',
                                       relation='lease_agreement_res_partner_po_rel',
-                                      domain="[('parent_id','=',customer_id)]")
+                                      domain="[('parent_id','=',customer_id)]",track_visibility='onchange')
     ops_contact_ids = fields.Many2many('res.partner', string='Operations Contacts',
                                        relation='lease_agreement_res_partner_ops_rel',
-                                       domain="[('parent_id','=',customer_id)]")
+                                       domain="[('parent_id','=',customer_id)]",track_visibility='onchange')
 
     # unit_no = fields.Many2one("fleet.vehicle.unit_no", "Unit No")
-    unit_no = fields.Char('Unit #', related="vehicle_id.unit_no", readonly=True)
-    rate_type = fields.Char("Rate Type", compute='_get_rate_type', search='_search_rate_type', change_default=True)
-    inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True)
-    accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True)
+    unit_no = fields.Char('Unit #', related="vehicle_id.unit_no", readonly=True,track_visibility='onchange')
+    rate_type = fields.Char("Rate Type", compute='_get_rate_type', search='_search_rate_type', change_default=True,track_visibility='onchange')
+    inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True,track_visibility='onchange')
+    accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True,track_visibility='onchange')
     # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
-    inclusions_discount = fields.Float('Inclusion Discount')
-    lease_notes = fields.Text("Lease Notes")
-    inspection_notes = fields.Text("Inspection Notes")
-    additional_billing = fields.Char("Additional Billing")
-    payment_method = fields.Char("Payment Method")
-    last_invoice_date = fields.Date("Last Invoice On")
-    additional_charges = fields.Boolean("Additional Charges")
-    outgoing_inspector = fields.Many2one('hr.employee', string="Outgoing Inspector")
-    incoming_inspector = fields.Many2one('hr.employee', string="Incoming Inspector")
+    inclusions_discount = fields.Float('Inclusion Discount',track_visibility='onchange')
+    lease_notes = fields.Text("Lease Notes",track_visibility='onchange')
+    inspection_notes = fields.Text("Inspection Notes",track_visibility='onchange')
+    additional_billing = fields.Char("Additional Billing",track_visibility='onchange')
+    payment_method = fields.Char("Payment Method",track_visibility='onchange')
+    last_invoice_date = fields.Date("Last Invoice On",track_visibility='onchange')
+    additional_charges = fields.Boolean("Additional Charges",track_visibility='onchange')
+    outgoing_inspector = fields.Many2one('hr.employee', string="Outgoing Inspector",track_visibility='onchange')
+    incoming_inspector = fields.Many2one('hr.employee', string="Incoming Inspector",track_visibility='onchange')
     transponder_id = fields.Many2one('thomasfleet.accessory', string="407 Transponder",
-                                     domain="[('type.name','=','407 Transponder')]")
+                                     domain="[('type.name','=','407 Transponder')]",track_visibility='onchange')
 
-    aggregation_id = fields.Char("Aggregate ID")
+    aggregation_id = fields.Char("Aggregate ID",track_visibility='onchange')
 
     # last_invoice_age = fields.Integer("Last Invoice Age", compute='calc_invoice_age')
 
