@@ -235,6 +235,7 @@
                    <field name="additional_charges"/>
                     <field name="po_number"/>
                     <field name="rate_type"/>
+                    <field name="monthly_rate" widget="monetary" string="Rate"/>
                     <field name="state"/>
                    <field name="last_invoice_date"/>
                     <field name="preferred_payment"/>
