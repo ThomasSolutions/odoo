@@ -10,49 +10,49 @@ class ThomasContact(models.Model):
 
     #department = fields.Char(string='Department')
     user_id = fields.Many2one('res.users', string='Thomas Contact',
-                              help='The internal user that is in charge of communicating with this contact if any.')
-    qc_check = fields.Boolean(string='Data Accuracy Validation')
-    lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts')
-    documents = fields.One2many('thomasfleet.customer_document', 'customer_id', 'Customer Docucments')
-    department = fields.Many2one('thomasfleet.customer_department','Department')
-    protractor_guid = fields.Char(string='Protractor GUID', readonly=True) #,compute='_compute_protractor_guid')
-    protractor_search_name = fields.Char(string="Search Name", compute='_compute_protractor_search_name')
-    ap_contact = fields.Boolean(string="Accounts Payable Contact")
-    po_contact = fields.Boolean(string="Purchasing Contact")
-    ops_contact = fields.Boolean(string="Operations Contact")
+                              help='The internal user that is in charge of communicating with this contact if any.',track_visibility='onchange')
+    qc_check = fields.Boolean(string='Data Accuracy Validation',track_visibility='onchange')
+    lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts',track_visibility='onchange')
+    documents = fields.One2many('thomasfleet.customer_document', 'customer_id', 'Customer Docucments',track_visibility='onchange')
+    department = fields.Many2one('thomasfleet.customer_department','Department',track_visibility='onchange')
+    protractor_guid = fields.Char(string='Protractor GUID', readonly=True,track_visibility='onchange') #,compute='_compute_protractor_guid')
+    protractor_search_name = fields.Char(string="Search Name", compute='_compute_protractor_search_name',track_visibility='onchange')
+    ap_contact = fields.Boolean(string="Accounts Payable Contact",track_visibility='onchange')
+    po_contact = fields.Boolean(string="Purchasing Contact",track_visibility='onchange')
+    ops_contact = fields.Boolean(string="Operations Contact",track_visibility='onchange')
 
-    aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True)
+    aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True,track_visibility='onchange')
     preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
-                                                  string='Invoice Delivery',default='email')
+                                                  string='Invoice Delivery',default='email',track_visibility='onchange')
     preferred_payment = fields.Selection([('credit card','Credit Card'),('pad1', 'PAD with Invoice Sent'),
                                                      ('pad2', 'PAD no Invoice Sent'), ('customer','Customer')],
                                          string='Preferred Payment Method',
-                                         default='customer')
+                                         default='customer',track_visibility='onchange')
     lease_agreement_ap_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',
         relation='lease_agreement_res_partner_ap_rel'  # optional
-    )
+        , track_visibility='onchange')
     lease_agreement_po_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',
         relation='lease_agreement_res_partner_po_rel'  # optional
-
+        , track_visibility='onchange'
     )
     lease_agreement_ops_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',
         relation='lease_agreement_res_partner_ops_rel'  # optional
-
+        ,track_visibility='onchange'
     )
-    insurance_on_file = fields.Boolean(string="Proof of Insurance on File")
-    insurance_agent = fields.Char(string="Agent")
-    insurance_underwriter = fields.Char(string="Underwriter")
-    insurance_policy = fields.Char(string="Policy #")
-    insurance_expiration = fields.Date(string="Expiration Date")
-    drivers_license = fields.Char(string="Drivers License")
-    drivers_license_expiry = fields.Date(string="Drivers License Expiry")
-    gp_customer_id = fields.Char(string="GP Customer ID")
+    insurance_on_file = fields.Boolean(string="Proof of Insurance on File",track_visibility='onchange')
+    insurance_agent = fields.Char(string="Agent",track_visibility='onchange')
+    insurance_underwriter = fields.Char(string="Underwriter",track_visibility='onchange')
+    insurance_policy = fields.Char(string="Policy #",track_visibility='onchange')
+    insurance_expiration = fields.Date(string="Expiration Date",track_visibility='onchange')
+    drivers_license = fields.Char(string="Drivers License",track_visibility='onchange')
+    drivers_license_expiry = fields.Date(string="Drivers License Expiry",track_visibility='onchange')
+    gp_customer_id = fields.Char(string="GP Customer ID",track_visibility='onchange')
 
     @api.multi
     def find_protractor_guid(self):
