@@ -911,7 +911,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         year = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').strftime('%Y')
         dt_inv_to = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d')
         end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
-        inv_date = the_lease.id.invoice_date
+        inv_date = self.invoice_date
 
         if the_lease.id.run_initial_invoicing:
             last_to_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d')

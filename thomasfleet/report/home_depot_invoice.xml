@@ -5,33 +5,13 @@
             <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
         </xpath>
     </template>
-    <template id="thomasfleet.lease_agreement_footer" inherit_id="web.external_layout_background">
-        <xpath expr="//div[@class='footer o_background_footer']" position="replace">
-            <div class="footer o_background_footer">
-            <div class="text-center">
-                <ul class="list-inline">
-                    <li><i class="fa fa-phone"/><span> 905-545-8808 ext.7234</span></li>
-                    <li><i class="fa fa-at"/><span> lease@thomassolutions.ca</span></li>
-                    <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
-                </ul>
-                <div class="text-muted">
-                    Page:
-                    <span class="page"/>
-                    of
-                    <span class="topage"/>
-                </div>
-            </div>
-        </div>
-
-        </xpath>
-    </template>
-    <template id="thomasfleet.lease_agreement_template">
+    <template id="thomasfleet.home_depot_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
                     <div class="page" style="page-break-after:always;page-break-inside:avoid">
                             <div class="row">
-                               <h1 class="text-center">Lease Agreement</h1>
+                               <h1 class="text-center">Invoice</h1>
                             </div>
                         <div class="row">
                             <div class="col-xs-8">
