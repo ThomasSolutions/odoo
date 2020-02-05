@@ -814,10 +814,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     def calc_stelco_rate(self, rate_type, line_amount, start_date, end_date):
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
-        num_days = (end_d - start_d).days
+        date_delta = relativedelta.relativedelta(end_d, start_d)
+        num_days = date_delta.days + 1 #assumes current day for billing
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
 
-        amount = 0
+        amount = line_amount
         if rate_type == 'stelco_daily':
             amount = num_days * line_amount
         elif rate_type == 'stelco_monthly':
