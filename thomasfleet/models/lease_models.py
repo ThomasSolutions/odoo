@@ -898,6 +898,23 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         else:
             description = month + ' ' + year + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
     '''
+    def create_dofasco_monthly_invoice_line_description(self,lease):
+        month_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%b')
+        year_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%Y')
+        if lease.vehicle_id.unit_no:
+            description = month_amd + ' ' + year_amd + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+        else:
+            description = month_amd + ' ' + year_amd + ' - Monthly Lease'
+
+        return description
+
+    def create_monthly_invoice_line_description(self,month,year, lease):
+        if lease.vehicle_id.unit_no:
+            description = month + ' ' + year + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+        else:
+            description = month + ' ' + year + ' - Monthly Lease'
+
+        return description
 
     @api.multi
     def record_normal_invoice2(self, the_lease):
@@ -980,11 +997,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
             else:
                 if "Dofasco" in the_lease.id.customer_id.name:
-                    month_amd = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').strftime('%b')
-                    year_amd = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').strftime('%Y')
-                    description = month_amd + ' ' + year_amd+ ' - Monthly Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
+                    description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
                 else:
-                    description = month + ' ' + year + ' - Monthly Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
+                    description = self.create_monthly_invoice_line_description(month , year, the_lease.id)
 
             line_id = invoice_line.create({
                 'product_id': product.id,
@@ -1065,7 +1080,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     t_quantity = str(weeks) + " weeks " + str(days) + " days "
                     description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
                 else:
-                    description = prev_month + ' ' + prev_year + ' - Monthly Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
+                    if "Dofasco" in the_lease.id.customer_id.name:
+                        description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
+                    else:
+                        description = self.create_monthly_invoice_line_description(prev_month, prev_year, the_lease.id)
 
                 next_month_line_id = invoice_line.create({
                     'product_id': product.id,
@@ -1109,6 +1127,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         the_lease.id.run_initial_invoicing = False
         the_lease.id.last_invoice_to = self.determine_last_invoice_to(the_lease.id)
         return new_invoices
+
+
 
     @api.multi
     def record_aggregate_invoice(self, customers, the_wizard):
@@ -1220,11 +1240,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
                             else:
                                 if "Dofasco" in lease.customer_id.name:
-                                    month_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%b')
-                                    year_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%Y')
-                                    description = month_amd + ' ' + year_amd + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                    description = self.create_dofasco_monthly_invoice_line_description(lease)
                                 else:
-                                    description = month + ' ' + year + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                    description = self.create_monthly_invoice_line_description(month,year,lease)
 
                             # create the invoice line
                             line_id = invoice_line.create({
@@ -1296,13 +1314,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                         description = prev_month_from.strftime('%Y-%m-%d') + ' - ' + prev_month_to.strftime('%Y-%m-%d') + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
                                     else:
                                         if "Dofasco" in lease.customer_id.name:
-                                            month_amd = datetime.strptime(lease.invoice_from,
-                                                                          '%Y-%m-%d').strftime('%b')
-                                            year_amd = datetime.strptime(lease.invoice_from,
-                                                                         '%Y-%m-%d').strftime('%Y')
-                                            description = month_amd + ' ' + year_amd + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                            description = self.create_dofasco_monthly_invoice_line_description(lease)
                                         else:
-                                            description = prev_month + ' ' + prev_year + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                            description = self.create_monthly_invoice_line_description(prev_month,prev_year,lease)
 
                                 next_month_line_id = invoice_line.create({
                                     'product_id': product.id,
