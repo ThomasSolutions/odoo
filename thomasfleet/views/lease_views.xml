@@ -160,6 +160,9 @@
                                         <field name="product_id"  options="{'no_open':True, 'no_create': True}"></field>
                                         <field name="description"></field>
                                         <field name="price"></field>
+                                        <field name="monthly_rate"></field>
+                                        <field name="daily_rate"/>
+                                        <field name="weekly_rate"/>
                                         <field name="tax_id"></field>
                                         <field name="tax_amount"></field>
                                         <field name="total"></field>
@@ -339,14 +342,14 @@
                            <!-- <field name="invoice_posting_date"/>
                             <field name="invoice_start_date"/>
                             <field name="invoice_end_date"/>-->
-                            <field name='lease_ids' options="{'no_open':True, 'no_create_edit': True}">
-                                <tree>
+                            <field name='lease_ids'>
+                                <tree editable="top">
                                     <field name="lease_number"/>
                                     <field name="unit_no"/>
                                     <field name="customer_id"/>
                                     <field name="invoice_due_date"/>
-                                    <field name="invoice_from"/>
-                                    <field name="invoice_to"/>
+                                    <field name="invoice_from" class="oe_inline"/>
+                                    <field name="invoice_to" class="oe_inline"/>
                                 </tree>
                             </field>
                             </group>

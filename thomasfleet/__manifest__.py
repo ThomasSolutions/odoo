@@ -18,7 +18,7 @@
     'category': 'Thomas',
 
 
-    'version': '0.138git',
+    'version': '0.139',
 
 
 
