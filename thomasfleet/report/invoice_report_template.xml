@@ -11,4 +11,26 @@
                 </div>
        </xpath>
     </template>
+    <template id="thomasfleet.invoice_footer" inherit_id="web.external_layout_background">
+        <xpath expr="//div[@class='footer o_background_footer']" position="replace">
+            <div class="footer o_background_footer">
+            <div class="text-center">
+                <ul class="list-inline">
+                    <li t-if="company.phone"><i class="fa fa-phone"/> <span t-field="company.phone"/></li>
+                    <li t-if="company.email"><i class="fa fa-at"/> <span t-field="company.email"/></li>
+                    <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
+                    <li t-if="company.vat"><i class="fa fa-building-o"/><t t-esc="company.country_id.vat_label or 'TIN'"/>: <span t-field="company.vat"/></li>
+                </ul>
+                <div t-field="company.report_footer"/>
+                <div class="text-muted">
+                    Page:
+                    <span class="page"/>
+                    of
+                    <span class="topage"/>
+                </div>
+            </div>
+        </div>
+
+        </xpath>
+    </template>
 </odoo>
