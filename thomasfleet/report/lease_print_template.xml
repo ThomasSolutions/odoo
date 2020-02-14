@@ -5,7 +5,7 @@
             <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
         </xpath>
     </template>
-    <template id="thomasfleet.lease_agreement_footer" inherit_id="web.external_layout_background">
+   <!-- <template id="thomasfleet.lease_agreement_footer" inherit_id="web.external_layout_background">
         <xpath expr="//div[@class='footer o_background_footer']" position="replace">
             <div class="footer o_background_footer">
             <div class="text-center">
@@ -24,7 +24,7 @@
         </div>
 
         </xpath>
-    </template>
+    </template>-->
     <template id="thomasfleet.lease_agreement_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">

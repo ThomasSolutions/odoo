@@ -149,8 +149,6 @@
                                         <field name="last_invoice_to"/>
                                         <field name="invoice_posting_date"/>
                                         <field name="invoice_generation_date"/>
-                                        <field name="daily_rate"/>
-                                        <field name="weekly_rate"/>
                                     </group>
                                 </group>
 
