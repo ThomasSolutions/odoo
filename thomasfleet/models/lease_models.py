@@ -1106,8 +1106,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 line_amount = line.price
                 rel_days =relativedelta.relativedelta(end_date, start_date).days
                 rel_weeks=relativedelta.relativedelta(end_date, start_date).weeks
-                quantity = (rel_weeks + (rel_days - (rel_weeks*7))/7)/ 2
-                (3 + ((rel_days - (rel_weeks * 7)) / 7)) / 2
+                quantity ='{0:,.1f}'.format((rel_days + 1)/14)
+                #(rel_weeks + (rel_days - (rel_weeks*7))/7)/ 2
+                #(3 + ((rel_days - (rel_weeks * 7)) / 7)) / 2
             elif the_lease.id.rate_type == 'Daily':
                 quantity = num_days
                 line_amount = line.price
@@ -1208,8 +1209,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                     if the_lease.id.lease_return_date:
                         end_date = datetime.strptime(the_lease.id.lease_return_date, '%Y-%m-%d')
-                    else:
-                        end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
+
 
                     start_date_str = start_date.strftime('%b %d')
                     end_date_str = end_date.strftime('%b %d')
@@ -1218,8 +1218,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     next_line_amount = next_line.price
                     rel_days = relativedelta.relativedelta(end_date, start_date).days
                     rel_weeks = relativedelta.relativedelta(end_date, start_date).weeks
-                    quantity = (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
-
+                    quantity = '{0:,.1f}'.format((rel_days + 1)/14)
                 elif the_lease.id.rate_type == 'Daily':
                     quantity = prev_days_quantity
                     next_line_amount = next_line.price
@@ -1258,24 +1257,25 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                 next_month_line_ids.append(next_month_line_id.id)
 
-            a_next_invoice = accounting_invoice.create({
-                'partner_id': the_lease.id.customer_id.id,
-                'vehicle_id': the_lease.id.vehicle_id.id,
-                'comment': resp['formula'],
-                'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
-                'date_due': the_lease.id.invoice_due_date,
-                'invoice_from': prev_month_from,
-                'invoice_to': prev_month_to,
-                'invoice_posting_date': the_lease.id.invoice_generation_date,
-                'invoice_generation_date': the_lease.id.invoice_generation_date,
-                'type': 'out_invoice',
-                'state': 'draft',
-                'po_number': the_lease.id.po_number,
-                'partner_invoice_id': the_lease.id.partner_invoice_id.id,
-                'partner_shipping_id': the_lease.id.partner_shipping_id.id,
-                'requires_manual_calculations': the_lease.id.requires_manual_calculations,
-                'invoice_line_ids': [(6, 0, next_month_line_ids)]
-            })
+                #moved this in the loop...test initial invoicing again
+                a_next_invoice = accounting_invoice.create({
+                    'partner_id': the_lease.id.customer_id.id,
+                    'vehicle_id': the_lease.id.vehicle_id.id,
+                    'comment': resp['formula'],
+                    'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
+                    'date_due': the_lease.id.invoice_due_date,
+                    'invoice_from': prev_month_from,
+                    'invoice_to': prev_month_to,
+                    'invoice_posting_date': the_lease.id.invoice_generation_date,
+                    'invoice_generation_date': the_lease.id.invoice_generation_date,
+                    'type': 'out_invoice',
+                    'state': 'draft',
+                    'po_number': the_lease.id.po_number,
+                    'partner_invoice_id': the_lease.id.partner_invoice_id.id,
+                    'partner_shipping_id': the_lease.id.partner_shipping_id.id,
+                    'requires_manual_calculations': the_lease.id.requires_manual_calculations,
+                    'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                })
 
             lease_invoices.append(a_next_invoice.id)
             new_invoices.append(a_next_invoice)
@@ -1394,8 +1394,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                                 if lease.lease_return_date:
                                     end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
-                                else:
-                                    end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
+                                #else:
+                                #    end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
                                 start_date_str = start_date.strftime('%b %d')
                                 end_date_str = end_date.strftime('%b %d')
@@ -1404,7 +1404,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 line_amount = line.price
                                 rel_days = relativedelta.relativedelta(end_date, start_date).days
                                 rel_weeks = relativedelta.relativedelta(end_date, start_date).weeks
-                                quantity = (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
+                                quantity = '{0:,.1f}'.format((rel_days + 1)/14) #(rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
 
                             elif lease.rate_type == 'Daily':
                                 quantity = end_of_month
@@ -1484,7 +1484,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     next_line_amount = next_line.price
                                     rel_days = relativedelta.relativedelta(end_date, start_date).days
                                     rel_weeks = relativedelta.relativedelta(end_date, start_date).weeks
-                                    quantity = (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
+                                    quantity = '{0:,.1f}'.format((rel_days + 1)/14)
+                                    #(rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
                                 elif lease.rate_type == 'Daily':
                                     quantity = prev_month_days
                                     next_line_amount = next_line.price

@@ -283,6 +283,30 @@
                         </table>
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-2">
+                                    <b>Unit #:</b>
+                                    <t t-esc="doc.vehicle_id.unit_no"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Make:</b>
+                                    <t t-esc="doc.vehicle_id.brand_id.name"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Model:</b>
+                                    <t t-esc="doc.vehicle_id.model_id.name"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Physical Condition</h3>
@@ -328,6 +352,30 @@
                         </div>
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
+                       <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-2">
+                                    <b>Unit #:</b>
+                                    <t t-esc="doc.vehicle_id.unit_no"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Make:</b>
+                                    <t t-esc="doc.vehicle_id.brand_id.name"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Model:</b>
+                                    <t t-esc="doc.vehicle_id.model_id.name"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Terms and Conditions</h3>
@@ -466,6 +514,30 @@
                         </div>
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
+                           <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-2">
+                                    <b>Unit #:</b>
+                                    <t t-esc="doc.vehicle_id.unit_no"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Make:</b>
+                                    <t t-esc="doc.vehicle_id.brand_id.name"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <b>Model:</b>
+                                    <t t-esc="doc.vehicle_id.model_id.name"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <hr/>
+                                </div>
+                            </div>
                         <div class="row">
                             <div class="col-xs-4">
                                 <h3>Lease Return</h3>
