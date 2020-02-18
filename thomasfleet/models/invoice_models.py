@@ -32,6 +32,7 @@ class ThomasAccountingInvoice(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         help="Delivery address for current invoice.")
+    customer_name = fields.Char("Customer", related="partner_id.compound_name")
 
 
     @api.onchange('partner_id', 'company_id')

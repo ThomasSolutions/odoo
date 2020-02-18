@@ -97,7 +97,7 @@
                                 </group>
                                 <group string="Customer Details">
                                     <!--<field name="customer_id" domain="[('is_company', '=', True)]"/>-->
-                                    <field name="customer_id"    options="{'no_create': True}"/>
+                                    <field name="customer_id"  context="{'show_internal_division':True}" options="{'no_create': True, 'always_reload':True}" />
                                     <field name="ap_contact_ids" options="{'no_open':True, 'no_create':True}" widget="many2many_tags"/>
                                     <field name="po_contact_ids" options="{'no_open':True, 'no_create':True}"  widget="many2many_tags"/>
                                     <field name="ops_contact_ids" options="{'no_open':True, 'no_create':True}" widget="many2many_tags"/>
@@ -230,7 +230,8 @@
             <field name="arch" type="xml">
                 <tree string="Lease Agreements">
                     <field name="vehicle_id" context="{'lease':True}"/>
-                    <field name="customer_id"/>
+                    <field name="customer_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload': True}"/>
+                    <field name="customer_name"/>
                     <field name="lease_start_date"/>
                      <field name="lease_return_date" string="Unit Returned On"/>
                    <field name="additional_charges"/>
@@ -256,7 +257,9 @@
                                 <div>
                                     <strong>
                                         <field name="vehicle_id" context="{'lease':True}"/>
-                                        <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                                        <field name="customer_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload':True}" domain="[('is_company', '=', True)]"/>
+                                        <field name="customer_name"/>
+
                                     </strong>
                                 </div>
                                 <div>
@@ -278,7 +281,7 @@
             <field name="arch" type="xml">
                 <search string="Lease Agreements">
                     <field name="vehicle_id" context="{'lease':True}"/>
-                    <field name="customer_id" domain="[('is_company', '=', True)]"/>
+                    <field name="customer_id" context="{'show_internal_division':True}"  options="{'always_reload':True}" domain="[('is_company', '=', True)]"/>
                     <field name="lease_number"/>
                     <field name="po_number"/>
                     <group expand="0" string="Group By">
@@ -303,7 +306,7 @@
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,kanban,form</field>
-            <field name="context">{"lease" : True}</field>
+            <field name="context">{'lease' : True, 'show_internal_division':True}</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to create a lease agreement.

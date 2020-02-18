@@ -51,12 +51,11 @@
             <field name="inherit_id" ref="account.invoice_tree" />
             <field name="arch" type="xml">
                 <data>
-                    <xpath expr="//field[@name='partner_id']" position="after">
-
-                    <field name="units_display"/>
-                    <!--<field context="{'lease':True}" name="vehicle_ids" widget="many2many_tags"/>-->
-
-                    </xpath>
+                    <xpath expr="//field[@name='partner_id']" position="replace">
+                        <field name="partner_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload': True}"/>
+                        <field name="customer_name"/>
+                        <field name="units_display"/>
+             </xpath>
                  </data>
            </field>
         </record>
@@ -72,49 +71,19 @@
                  </data>
            </field>
         </record>-->
-       <!-- <record id="view_account_invoice_filter" model="ir.ui.view">
-            <field name="name">account.invoice.select</field>
+       <record id="thomas_view_account_invoice_filter" model="ir.ui.view">
+            <field name="name">thomas.invoice.select</field>
             <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
             <field name="arch" type="xml">
-                <search string="Search Invoice">
-                    <field name="number" string="Invoice" filter_domain="['|','|','|', ('number','ilike',self), ('origin','ilike',self), ('reference', 'ilike', self), ('partner_id', 'child_of', self)]"/>
-                    <field name="journal_id" />
-                    <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
-                    <filter name="invoices" string="Invoices" domain="['&amp;', ('state','in',['draft','open','paid']),('type','in',('out_invoice','in_invoice'))]"/>
-                    <filter name="refunds" string="Credit Notes" domain="['&amp;', ('state','in',['draft','open','paid']),('type','in',('out_refund','in_refund'))]"/>
-                    <separator/>
-                    <filter name="unpaid" string="Not Paid" domain="[('state','=','open')]"/>
-                    <filter name="late" string="Overdue" domain="['&amp;', ('date_due', '&lt;', time.strftime('%%Y-%%m-%%d')), ('state', '=', 'open')]" help="Overdue invoices, maturity date passed"/>
-                    <separator/>
-                    <field name="partner_id" operator="child_of"/>
-                    <field name="user_id" string="Salesperson" domain="[('share','=', False)]"/>
-                    <field name="date" string="Period"/>
-                    <separator/>
-                    <filter domain="[('user_id','=',uid)]" help="My Invoices"/>
-                    <separator/>
-                    <filter string="My Activities" name="activities_my"
-                        domain="[('activity_ids.user_id', '=', uid)]"/>
-                    <separator/>
-                    <filter string="Late Activities" name="activities_overdue"
-                        domain="[('activity_ids.date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
-                        help="Show all records which has next action date is before today"/>
-                    <filter string="Today Activities" name="activities_today"
-                        domain="[('activity_ids.date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
-                    <filter string="Future Activities" name="activities_upcoming_all"
-                        domain="[('activity_ids.date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))
-                        ]"/>
-                    <group expand="0" string="Group By">
-                        <filter name="group_by_partner_id" string="Partner" context="{'group_by':'commercial_partner_id'}"/>
-                        <filter string="Salesperson" context="{'group_by':'user_id'}"/>
-                        <filter name="status" string="Status" context="{'group_by':'state'}"/>
-                        <separator/>
-                        <filter string="Invoice Date" context="{'group_by':'date_invoice'}"/>
-                        <filter string="Due Date" context="{'group_by':'date_due'}"/>
-                    </group>
-               </search>
+                <data>
+                    <xpath expr="//field[@name='partner_id']" position="replace">
+                        <field name="partner_id" string="Customer" context="{'show_internal_division':True}" operator="child_of" options="{'always_reload':True}"/>
+                    </xpath>
+                </data>
             </field>
         </record>
-
+        <!--
         <record id="view_account_invoice_filter_inherit_invoices" model="ir.ui.view">
             <field name="name">account.invoice.select.invoices</field>
             <field name="model">account.invoice</field>
@@ -159,7 +128,7 @@
             <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
             <field eval="False" name="view_id"/>
             <field name="domain">[('type','=','out_invoice')]</field>
-            <field name="context">{'type':'out_invoice', 'journal_type': 'sale', 'lease':True}</field>
+            <field name="context">{'type':'out_invoice','show_internal_division':True, 'journal_type': 'sale', 'lease':True}</field>
             <field name="search_view_id" ref="account.view_account_invoice_filter_inherit_invoices"/>
             <field name="help" type="html">
               <p class="oe_view_nocontent_create">

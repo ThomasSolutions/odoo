@@ -3,10 +3,13 @@
 from odoo import models, fields, api
 import requests, json, uuid, jsonpath
 from urllib import parse
+from odoo.osv import expression
+
 
 class ThomasContact(models.Model):
 
     _inherit = 'res.partner'
+
 
     #department = fields.Char(string='Department')
     user_id = fields.Many2one('res.users', string='Thomas Contact',
@@ -53,6 +56,40 @@ class ThomasContact(models.Model):
     drivers_license = fields.Char(string="Drivers License",track_visibility='onchange')
     drivers_license_expiry = fields.Date(string="Drivers License Expiry",track_visibility='onchange')
     gp_customer_id = fields.Char(string="GP Customer ID",track_visibility='onchange')
+    internal_division = fields.Char(string="Internal Division")
+    compound_name = fields.Char(string = "Name", compute="_compute_display_name")
+    name = fields.Char(string="Name",index=True)
+
+    def _compute_display_name(self):
+        for rec in self:
+            name = rec.name
+            if rec.internal_division:
+                rec.compound_name = '%s - %s' % (name, rec.internal_division)
+            else:
+                rec.compound_name = name
+    @api.multi
+    def name_get(self):
+        if self._context.get('show_internal_division'):
+            res = []
+            for rec in self:
+                name = rec.name
+                if rec.internal_division:
+                    name = '%s - %s' % (name, rec.internal_division)
+                res.append((rec.id, name))
+            return res
+        return super(ThomasContact, self).name_get()
+
+    @api.model
+    def name_search(self, name='', args=None, operator='ilike', limit=100):
+        if self._context.get('show_internal_division'):
+            if operator in ('ilike', 'like', '=', '=like', '=ilike'):
+                domain = expression.AND([
+                    args or [],
+                    ['|', ('name', operator, name), ('internal_division', operator, name)]
+                ])
+                return self.search(domain, limit=limit).name_get()
+        return super(ThomasContact, self).name_search(name, args, operator, limit)
+
 
     @api.multi
     def find_protractor_guid(self):

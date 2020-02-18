@@ -275,7 +275,8 @@ class ThomasLease(models.Model):
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14, track_visibility='onchange')
 
     customer_id = fields.Many2one("res.partner", "Customer", change_default=True,
-                                  track_visibility='onchange')  # required=True)
+                                  track_visibility='onchange',options="{'always_reload':true}", context="{'show_internal_division':True}")  # required=True)
+    customer_name = fields.Char("Customer", related="customer_id.compound_name")
     partner_invoice_id = fields.Many2one('res.partner', string='Bill To', track_visibility='onchange')
     partner_shipping_id = fields.Many2one('res.partner', string='Ship To', track_visibility='onchange')
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True,
@@ -423,12 +424,12 @@ class ThomasFleetLeaseLine(models.Model):
 
         for rec in recs:
             if rec.price:
-                #if not rec.weekly_rate:
-                rec.weekly_rate = rec.calc_weekly_rate()
-                #if not rec.daily_rate:
-                rec.daily_rate = rec.calc_daily_rate()
-                #if not rec.monthly_rate:
-                rec.monthly_rate = rec.calc_monthly_rate()
+                if not rec.weekly_rate:
+                    rec.weekly_rate = rec.calc_weekly_rate()
+                if not rec.daily_rate:
+                    rec.daily_rate = rec.calc_daily_rate()
+                if not rec.monthly_rate:
+                    rec.monthly_rate = rec.calc_monthly_rate()
 
     @api.depends('product_id')
     def default_description(self):
