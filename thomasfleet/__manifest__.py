@@ -17,7 +17,7 @@
     # for the full list
     'category': 'Thomas',
 
-    'version': '0.143',
+    'version': '0.144',
 
 
 

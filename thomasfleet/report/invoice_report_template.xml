@@ -27,7 +27,7 @@
                         <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
                     </ul>
                 </div>
-                <div t-field="company.report_footer"/>
+                <div t-if="doc_model=='account.invoice'" t-field="company.report_footer"/>
                     <div class="text-muted">
                         Page:
                         <span class="page"/>
