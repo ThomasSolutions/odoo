@@ -14,6 +14,7 @@
     <template id="thomasfleet.invoice_footer" inherit_id="web.external_layout_background">
         <xpath expr="//div[@class='footer o_background_footer']" position="replace">
             <div class="footer o_background_footer">
+                <div t-if="doc_model=='account.invoice'" t-field="company.report_footer"/>
                 <div class="text-center">
                     <ul t-if="doc_model=='account.invoice'"  class="list-inline">
                         <li t-if="company.phone"><i class="fa fa-phone"/> <span t-field="company.phone"/></li>
@@ -27,7 +28,6 @@
                         <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
                     </ul>
                 </div>
-                <div t-if="doc_model=='account.invoice'" t-field="company.report_footer"/>
                     <div class="text-muted">
                         Page:
                         <span class="page"/>
