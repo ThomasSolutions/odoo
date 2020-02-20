@@ -238,7 +238,7 @@ class ThomasLease(models.Model):
                                           ('pad2', 'PAD no Invoice Sent'), ('customer', 'Customer')],
                                          track_visibility='onchange')
     lease_return_date = fields.Date("Unit Returned on", track_visibility='onchange')
-    requires_manual_calculations = fields.Boolean("Manual Calculation", default=False,
+    requires_manual_calculations = fields.Boolean("Exception", default=False,
                                                   track_visibility='onchange')
     billing_notes = fields.Char("Billing Notes", track_visibility='onchange')
     min_lease_end_date = fields.Date("Minimum Lease End Date", track_visibility='onchange')

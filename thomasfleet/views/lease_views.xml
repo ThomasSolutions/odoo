@@ -231,18 +231,19 @@
             <field name="arch" type="xml">
                 <tree string="Lease Agreements">
                     <field name="vehicle_id" context="{'lease':True}"/>
+                    <field name="requires_manual_calculations"/>
                     <field name="customer_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload': True}"/>
                     <field name="customer_name"/>
                     <field name="lease_start_date"/>
-                     <field name="lease_return_date" string="Unit Returned On"/>
-                   <field name="additional_charges"/>
-                    <field name="requires_manual_calculations"/>
+                    <field name="lease_return_date" string="Unit Returned On"/>
+                    <field name="additional_charges"/>
                     <field name="po_number"/>
                     <field name="rate_type"/>
                     <field name="monthly_rate" widget="monetary" string="Rate"/>
                     <field name="preferred_payment"/>
                     <field name="state"/>
-                   <field name="last_invoice_date"/>
+                    <field name="run_initial_invoicing"/>
+                    <field name="last_invoice_date"/>
                     <!-- <field name="lease_number"/>-->
                 </tree>
             </field>

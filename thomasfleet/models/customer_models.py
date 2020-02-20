@@ -85,7 +85,7 @@ class ThomasContact(models.Model):
             if operator in ('ilike', 'like', '=', '=like', '=ilike'):
                 domain = expression.AND([
                     args or [],
-                    ['|', ('name', operator, name), ('internal_division', operator, name)]
+                    ['|', ('name', operator, name), ('internal_division', operator, name),('display_name', operator, name)]
                 ])
                 return self.search(domain, limit=limit).name_get()
         return super(ThomasContact, self).name_search(name, args, operator, limit)
