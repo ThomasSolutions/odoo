@@ -57,10 +57,11 @@ class ThomasContact(models.Model):
     drivers_license_expiry = fields.Date(string="Drivers License Expiry",track_visibility='onchange')
     gp_customer_id = fields.Char(string="GP Customer ID",track_visibility='onchange')
     internal_division = fields.Char(string="Internal Division")
-    compound_name = fields.Char(string = "Name", compute="_compute_display_name")
+    compound_name = fields.Char(string="Compound Name", compute="_compute_compound_name")
     name = fields.Char(string="Name",index=True)
 
-    def _compute_display_name(self):
+    @api.depends('name','internal_division')
+    def _compute_compound_name(self):
         for rec in self:
             name = rec.name
             if rec.internal_division:
@@ -79,13 +80,13 @@ class ThomasContact(models.Model):
             return res
         return super(ThomasContact, self).name_get()
 
-    @api.model
+    @api.multi
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         if self._context.get('show_internal_division'):
             if operator in ('ilike', 'like', '=', '=like', '=ilike'):
                 domain = expression.AND([
                     args or [],
-                    ['|', ('name', operator, name), ('internal_division', operator, name),('display_name', operator, name)]
+                    ['|','|', ('name', operator, name), ('internal_division', operator, name),('display_name', operator, name)]
                 ])
                 return self.search(domain, limit=limit).name_get()
         return super(ThomasContact, self).name_search(name, args, operator, limit)
