@@ -80,10 +80,10 @@ class ThomasAccountingInvoice(models.Model):
     def unlink(self):
         for invoice in self:
             if invoice.state not in ('draft', 'cancel'):
-                raise UserError(_(
+                raise models.UserError(_(
                     'You cannot delete an invoice which is not draft or cancelled. You should create a credit note instead.'))
             elif invoice.move_name:
-                raise UserError(_(
+                raise models.UserError(_(
                     'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
 
             for lease in invoice.lease_ids:

@@ -58,7 +58,7 @@ class ThomasContact(models.Model):
     gp_customer_id = fields.Char(string="GP Customer ID",track_visibility='onchange')
     internal_division = fields.Char(string="Internal Division")
     compound_name = fields.Char(string="Compound Name", compute="_compute_compound_name")
-    name = fields.Char(string="Name",index=True)
+    #name = fields.Char(string="Name",index=True)
 
     @api.depends('name','internal_division')
     def _compute_compound_name(self):
@@ -68,6 +68,8 @@ class ThomasContact(models.Model):
                 rec.compound_name = '%s - %s' % (name, rec.internal_division)
             else:
                 rec.compound_name = name
+
+
     @api.multi
     def name_get(self):
         if self._context.get('show_internal_division'):
@@ -80,7 +82,7 @@ class ThomasContact(models.Model):
             return res
         return super(ThomasContact, self).name_get()
 
-    @api.multi
+    @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         if self._context.get('show_internal_division'):
             if operator in ('ilike', 'like', '=', '=like', '=ilike'):

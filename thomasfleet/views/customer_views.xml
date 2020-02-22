@@ -301,7 +301,7 @@
 
 
 
-            <record id="action_partner_form" model="ir.actions.act_window">
+      <record id="action_partner_form" model="ir.actions.act_window">
             <field name="name">Customers</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">res.partner</field>

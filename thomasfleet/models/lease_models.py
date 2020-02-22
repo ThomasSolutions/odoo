@@ -87,7 +87,7 @@ class ThomasLease(models.Model):
     def check_vehicle_is_available(self):
         for rec in self:
             for lease_agreement in rec.vehicle_id.lease_agreements:
-                if lease_agreement.state == 'active':
+                if lease_agreement.state == 'active' and lease_agreement.id != rec.id:
                     raise models.ValidationError(
                         'Unit: ' + rec.vehicle_id.unit_no +
                         ' is currently associated with an Active lease agreement: ' + lease_agreement.lease_number)
@@ -168,6 +168,8 @@ class ThomasLease(models.Model):
         addr = self.customer_id.address_get(['invoice'])
         if addr:
             self.partner_invoice_id = addr.get('invoice')
+        else:
+            self.partner_invoice_id = addr.get('contact')
 
     @api.multi
     @api.onchange('customer_id')
@@ -175,6 +177,8 @@ class ThomasLease(models.Model):
         addr = self.customer_id.address_get(['delivery'])
         if addr:
             self.partner_shipping_id = addr.get('delivery')
+        else:
+            self.partner_shipping_id = addr.get('contact')
 
     @api.onchange("customer_id")
     def set_preferred_payment(self):
@@ -277,8 +281,10 @@ class ThomasLease(models.Model):
     customer_id = fields.Many2one("res.partner", "Customer", change_default=True,
                                   track_visibility='onchange',options="{'always_reload':true}", context="{'show_internal_division':True}")  # required=True)
     customer_name = fields.Char("Customer", related="customer_id.compound_name")
-    partner_invoice_id = fields.Many2one('res.partner', string='Bill To', track_visibility='onchange')
-    partner_shipping_id = fields.Many2one('res.partner', string='Ship To', track_visibility='onchange')
+    partner_invoice_id = fields.Many2one('res.partner', string='Bill To', domain="[('parent_id','=',customer_id)]",
+                                         track_visibility='onchange')
+    partner_shipping_id = fields.Many2one('res.partner', string='Ship To', domain="[('parent_id','=',customer_id)]",
+                                          track_visibility='onchange')
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True,
                                  track_visibility='onchange')  # required=True)
 
@@ -1163,7 +1169,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             'type': 'out_invoice',
             'state': 'draft',
             'po_number': the_lease.id.po_number,
-            'partner_invoice_id': the_lease.id.partner_invoice_id.id,
             'partner_shipping_id': the_lease.id.partner_shipping_id.id,
             'requires_manual_calculations': the_lease.id.requires_manual_calculations,
             'invoice_line_ids': [(6, 0, line_ids)]
@@ -1272,7 +1277,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'type': 'out_invoice',
                     'state': 'draft',
                     'po_number': the_lease.id.po_number,
-                    'partner_invoice_id': the_lease.id.partner_invoice_id.id,
+                    #'partner_invoice_id': the_lease.id.partner_invoice_id.id,
                     'partner_shipping_id': the_lease.id.partner_shipping_id.id,
                     'requires_manual_calculations': the_lease.id.requires_manual_calculations,
                     'invoice_line_ids': [(6, 0, next_month_line_ids)]
@@ -1464,7 +1469,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 quantity = 1
                                 if num_days < prev_month_days and not lease.rate_type == 'Bi-Weekly':
                                     description = self.create_daily_invoice_line_description(prev_month_from, prev_month_to,
-                                                                                             lease.id)
+                                                                                             lease)
                                 elif lease.rate_type == 'Bi-Weekly':  # need to determine what to do here
                                     if not lease.last_invoice_to:
                                         last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
@@ -1490,7 +1495,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 elif lease.rate_type == 'Daily':
                                     quantity = prev_month_days
                                     next_line_amount = next_line.price
-                                    description = self.create_daily_invoice_line_description(prev_month_from, prev_month_to,lease.id)
+                                    description = self.create_daily_invoice_line_description(prev_month_from, prev_month_to,lease)
                                 elif lease.rate_type == 'Weekly':
                                     days = prev_month_days % 7
                                     weeks = math.floor(prev_month_days / 7)
@@ -1539,7 +1544,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'type': 'out_invoice',
                                 'state': 'draft',
                                 'po_number': lease.po_number,
-                                'partner_invoice_id': lease.partner_invoice_id.id,
+                                #'partner_invoice_id': lease.partner_invoice_id.id,
                                 'partner_shipping_id': lease.partner_shipping_id.id,
                                 'requires_manual_calculations': lease.requires_manual_calculations,
                                 'invoice_line_ids': [(6, 0, next_month_line_ids)]
@@ -1562,7 +1567,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             'type': 'out_invoice',
                             'state': 'draft',
                             'po_number': lease.po_number,
-                            'partner_invoice_id': lease.partner_invoice_id.id,
+                            #'partner_invoice_id': lease.partner_invoice_id.id,
                             'partner_shipping_id': lease.partner_shipping_id.id,
                             'requires_manual_calculations': lease.requires_manual_calculations,
                             'invoice_line_ids': [(6, 0, line_ids)]
