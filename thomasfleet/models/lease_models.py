@@ -1146,10 +1146,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 'price_unit': line_amount,
                 'quantity': quantity,
                 'name': description,
-                'invoice_line_tax_ids': [line.tax_ids],
-                'account_id': product.property_account_income_id.id
+                'invoice_line_tax_ids': line.tax_ids,# [(6,0,line.product_id.taxes_id.ids)],
+                'account_id': line.product_id.property_account_income_id.id
             })
-
             # call set taxes to set them...otherwise the relationships aren't set properly
             line_id._set_taxes()
             line_id.price_unit = line_amount
@@ -1167,6 +1166,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             'invoice_posting_date': the_lease.id.invoice_posting_date,
             'invoice_generation_date': the_lease.id.invoice_generation_date,
             'type': 'out_invoice',
+            #'account_id': product.property_account_income_id.id,
             'state': 'draft',
             'po_number': the_lease.id.po_number,
             'partner_shipping_id': the_lease.id.partner_shipping_id.id,
@@ -1179,11 +1179,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         if the_lease.id.run_initial_invoicing:
             resp = {}
             for next_line in the_lease.id.lease_lines:
-
-                next_line_amount = self.calculate_line_amount(product, next_line.price,
+                product = next_line.product_id
+                taxes = next_line.product_id.taxes_id.id
+                res = self.calculate_line_amount(product, next_line.price,
                                                               prev_month_from.strftime('%Y-%m-%d'),
                                                               prev_month_to.strftime('%Y-%m-%d'), the_lease.id)
-
+                next_line_amount = res['amount']
                 num_days = relativedelta.relativedelta(prev_month_to,prev_month_from).days + 1
 
                 pro_rated = prev_month + ' ' + prev_year
@@ -1250,38 +1251,42 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
 
                 next_month_line_id = invoice_line.create({
-                    'product_id': product.id,
+                    'product_id': next_line.product_id.id,
                     'price_unit': next_line_amount,
                     'quantity': quantity,
                     'name': description,
-                    'invoice_line_tax_ids': next_line.tax_ids,
-                    'account_id': product.property_account_income_id.id
+                    'invoice_line_tax_ids':next_line.product_id.taxes_id.ids,
+                    'account_id': next_line.product_id.property_account_income_id.id
                 })
+
+
 
                 next_month_line_id._set_taxes()
                 next_month_line_id.price_unit = next_line_amount
 
                 next_month_line_ids.append(next_month_line_id.id)
 
-                #moved this in the loop...test initial invoicing again
-                a_next_invoice = accounting_invoice.create({
-                    'partner_id': the_lease.id.customer_id.id,
-                    'vehicle_id': the_lease.id.vehicle_id.id,
-                    'comment': resp['formula'],
-                    'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
-                    'date_due': the_lease.id.invoice_due_date,
-                    'invoice_from': prev_month_from,
-                    'invoice_to': prev_month_to,
-                    'invoice_posting_date': the_lease.id.invoice_generation_date,
-                    'invoice_generation_date': the_lease.id.invoice_generation_date,
-                    'type': 'out_invoice',
-                    'state': 'draft',
-                    'po_number': the_lease.id.po_number,
-                    #'partner_invoice_id': the_lease.id.partner_invoice_id.id,
-                    'partner_shipping_id': the_lease.id.partner_shipping_id.id,
-                    'requires_manual_calculations': the_lease.id.requires_manual_calculations,
-                    'invoice_line_ids': [(6, 0, next_month_line_ids)]
-                })
+            #moved this in the loop...test initial invoicing again
+            a_next_invoice = accounting_invoice.create({
+                'partner_id': the_lease.id.customer_id.id,
+                'vehicle_id': the_lease.id.vehicle_id.id,
+                'comment': res['formula'],
+                'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
+                'date_due': the_lease.id.invoice_due_date,
+                'invoice_from': prev_month_from,
+                'invoice_to': prev_month_to,
+                'invoice_posting_date': the_lease.id.invoice_generation_date,
+                'invoice_generation_date': the_lease.id.invoice_generation_date,
+                'type': 'out_invoice',
+                #'account_id': product.property_account_income_id.id,
+                'state': 'draft',
+                'po_number': the_lease.id.po_number,
+                #'partner_invoice_id': the_lease.id.partner_invoice_id.id,
+                'partner_shipping_id': the_lease.id.partner_shipping_id.id,
+                'requires_manual_calculations': the_lease.id.requires_manual_calculations,
+                'invoice_line_ids': [(6, 0, next_month_line_ids)]
+
+            })
 
             lease_invoices.append(a_next_invoice.id)
             new_invoices.append(a_next_invoice)
