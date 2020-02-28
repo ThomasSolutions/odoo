@@ -310,6 +310,7 @@
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,kanban,form</field>
+            <field name="limit">500</field>
             <field name="context">{'lease' : True, 'show_internal_division':True}</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
