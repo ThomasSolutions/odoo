@@ -133,4 +133,26 @@ class ThomasAccountingInvoice(models.Model):
             'target': 'new',
             'context': ctx,
         }
-        '''
+   
+     '''
+
+class ThomasAccountInvoiceLine(models.Model):
+    _inherit = "account.invoice.line"
+
+    lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
+    unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
+
+    #def init(self):
+    # recs = self.env['account.invoice.line'].search([])
+    #
+    # for rec in recs:
+    #     for lease in rec.invoice_id.lease_ids:
+    #         for lease_line in lease.lease_lines:
+    #             if lease_line.vehicle_id and lease_line.vehicle_id.unit_no:
+    #                 if lease_line.vehicle_id.unit_no in rec.name:
+    #                     if not rec.lease_line_id:
+    #                         rec.lease_line_id = lease_line.id
+    #                         print ("Getting Unit NO"+ rec.unit_no)
+
+
+

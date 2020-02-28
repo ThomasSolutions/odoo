@@ -5,7 +5,6 @@ class ThomasProduct(models.Model):
 
     _inherit = 'product.template'
 
-
     rate_type = fields.Selection([('monthly', 'Monthly'),
                                   ('weekly', 'Weekly'),
                                   ('daily', 'Daily'),
@@ -23,3 +22,8 @@ class ThomasProduct(models.Model):
                                  'Rate Type', default='monthly',
                                  track_visibility='onchange')
 
+    gp_tax_schedule_id = fields.Char(compute="_compute_tax_schedule_id")
+
+    def _compute_tax_schedule_id(self):
+        for rec in self:
+            rec.gp_tax_schedule_id = 'HST ONT'

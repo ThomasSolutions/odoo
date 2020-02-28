@@ -43,6 +43,9 @@
                         </tree>
                     </field>
                     </xpath>
+                      <xpath expr="//tree/field[@name='sequence']" position="after">
+                        <field name="unit_no" />
+                      </xpath>
                  </data>
            </field>
         </record>

@@ -265,7 +265,7 @@ class ThomasLease(models.Model):
     mileage_at_return = fields.Float(string='Lease Return Odometer', related='lease_return_odometer_id.value',
                                      readonly=True, track_visibility='onchange')
 
-    delivery_charge = fields.Float(string='Delivery Charge', track_visibility='onchange')
+    delivery_charge = fields.Float(string='Delivery Charge / Pick up Charge', track_visibility='onchange')
 
     driver_id = fields.Many2one('res.partner', string='Driver', domain="[('parent_id','=',customer_id)]",
                                 track_visibility='onchange')
@@ -275,7 +275,7 @@ class ThomasLease(models.Model):
     daily_rate = fields.Float("Daily Rate", track_visibility='onchange')
     monthly_tax = fields.Float("Tax(HST-13%)", track_visibility='onchange')
     monthly_total = fields.Float("Monthly Lease Total", track_visibility='onchange')
-    monthly_mileage = fields.Integer("Monthly Mileage Allowance", default=3500, track_visibility='onchange')
+    monthly_mileage = fields.Integer("Mileage Allowance", default=3500, track_visibility='onchange')
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14, track_visibility='onchange')
 
     customer_id = fields.Many2one("res.partner", "Customer", change_default=True,
@@ -492,6 +492,7 @@ class ThomasFleetLeaseLine(models.Model):
 
     lease_id = fields.Many2one('thomaslease.lease', string='Lease Reference', required=True, ondelete='cascade',
                                index=True, copy=False)
+    vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #", related='lease_id.vehicle_id')
     product_id = fields.Many2one('product.product', string='Product', change_default=True, ondelete='restrict',
                                  required=True)
     description = fields.Char(string="Description", default=default_description)
