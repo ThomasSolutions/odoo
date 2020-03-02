@@ -27,10 +27,15 @@ class ThomasContact(models.Model):
     aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True,track_visibility='onchange')
     preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
                                                   string='Invoice Delivery',default='email',track_visibility='onchange')
-    preferred_payment = fields.Selection([('credit card','Credit Card'),('pad1', 'PAD with Invoice Sent'),
-                                                     ('pad2', 'PAD no Invoice Sent'), ('customer','Customer')],
+    preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
+                                          ('pad2', 'PAD no Invoice Sent'), ('undefined', 'Undefined'),
+                                          ('check', 'Check'), ('eft', 'EFT'), ('other', 'Other')],
                                          string='Preferred Payment Method',
-                                         default='customer',track_visibility='onchange')
+                                         default='undefined',
+                                         track_visibility='onchange')
+
+    other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
+
     lease_agreement_ap_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',

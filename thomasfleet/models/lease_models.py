@@ -97,16 +97,24 @@ class ThomasLease(models.Model):
                         'Unit: ' + rec.vehicle_id.unit_no +
                         ' is currently associated with an Repairs Pending lease agreement: ' + lease_agreement.lease_number)
 
-    @api.depends('customer_id')
-    @api.one
+    @api.onchange('customer_id')
     def _set_preferred_billing_default(self):
-        return self.env['res.partner'].search([('id', '=', self.customer_id)]).preferred_payment
+        for rec in self:
+            if rec.preferred_payment==False:
+                if rec.customer_id.preferred_payment == "customer":
+                    rec.preferred_payment = 'undefined'
+                elif rec.customer_id.preferred_payment == "other":
+                    rec.other_payment= rec.customer_id.other_payment
+                    rec.preferred_payment= rec.customer_id.preferred_payment
+                else:
+                    rec.preferred_payment= rec.customer_id.preferred_payment
 
     @api.onchange("lease_start_date")
     def set_billing_start_date(self):
         print("Setting Billing Start Date")
         if not self.billing_start_date:
             self.billing_start_date = self.lease_start_date
+
 
     @api.onchange("lease_start_date")
     def set_invoice_dates(self):
@@ -180,10 +188,6 @@ class ThomasLease(models.Model):
         else:
             self.partner_shipping_id = addr.get('contact')
 
-    @api.onchange("customer_id")
-    def set_preferred_payment(self):
-        print("Setting Payment Start Date")
-        # self.preferred_payment = self.env['res.partner'].search([('id', '=', self.customer_id)]).preferred_payment
 
     '''
     @api.one
@@ -239,8 +243,11 @@ class ThomasLease(models.Model):
 
     run_initial_invoicing = fields.Boolean(string="Initial Invoice", default=False)
     preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
-                                          ('pad2', 'PAD no Invoice Sent'), ('customer', 'Customer')],
+                                          ('pad2', 'PAD no Invoice Sent'), ('undefined', 'Undefined'),
+                                          ('check', 'Check'), ('eft', 'EFT'), ('other', 'Other')],
                                          track_visibility='onchange')
+    other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
+
     lease_return_date = fields.Date("Unit Returned on", track_visibility='onchange')
     requires_manual_calculations = fields.Boolean("Exception", default=False,
                                                   track_visibility='onchange')

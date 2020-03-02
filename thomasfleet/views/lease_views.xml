@@ -105,53 +105,60 @@
                                     <field name="partner_shipping_id" options="{'no_create': True,'always_reload': True}"/>
 
                                     <field name="driver_id" options="{'no_open':True, 'no_create': True}"/>
+                                    <field name="po_number"/>
+                                    <field name="po_comments"/>
                                     <field name="rate_type"/>
                                 </group>
                             </group>
                         </group>
-                        <notebook>
-                            <page string="Lease Details">
-                                <group colpan="4">
-                                    <group>
-                                        <field name="run_initial_invoicing"/>
-                                        <field name="fuel_at_lease"/>
-                                        <field name="fuel_at_return"/>
-                                        <field name="additional_charges"/>
-                                        <field name="requires_manual_calculations"/>
-                                        <!--<field name="lease_number"/>-->
-                                        <field name="lease_notes"/>
-                                       <!-- <field name="contract_number"/>-->
-                                        <field name="po_number"/>
-                                        <field name="po_comments"/>
-                                    </group>
-                                    <group>
-                                        <field name="outgoing_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
-                                        <field name="incoming_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
-                                        <field name="inspection_notes"/>
-                                        <field name="lease_out_odometer_id"
-                                               context="{'lease':True , 'default_activity':'lease_out', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
-                                        <field name="lease_return_odometer_id"
-                                               context="{'lease':True , 'default_activity':'lease_in', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
-                                        <field name="mileage_at_lease" invisible="1"/>
-                                        <field name="mileage_at_return" invisible="1"/>
+                        <notebook col="4">
+                            <page string="Lease">
+                                <group col="4">
+                                    <group style="margin-bottom:0px"   string="Details">
                                         <field name="lease_start_date"/>
                                         <field name="billing_start_date"/>
                                         <field name="min_lease_end_date"/>
                                         <field name="lease_return_date"/>
                                         <field name="monthly_mileage"/>
                                         <field name="mileage_overage_rate"/>
+                                        <field name="additional_charges"/>
+                                    </group>
+                                    <group style="margin-bottom:0px" string="Outgoing">
+                                        <field name="outgoing_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
+                                        <field name="inspection_notes"/>
+                                        <field name="lease_out_odometer_id"
+                                               context="{'lease':True , 'default_activity':'lease_out', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
+                                        <field name="mileage_at_lease" invisible="1"/>
+                                        <field name="fuel_at_lease"/>
+                                     </group>
+                                    <group style="margin-bottom:0px"  string="Return">
+                                        <field name="incoming_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
+                                        <field name="lease_return_odometer_id"
+                                               context="{'lease':True , 'default_activity':'lease_in', 'default_vehicle_id':vehicle_id, 'default_lease_id':active_id}"/>
+                                        <field name="mileage_at_return" invisible="1"/>
+                                        <field name="fuel_at_return"/>
+                                     </group>
+                                    <group style="margin-bottom:0px" string="Billing">
+                                        <field name="run_initial_invoicing"/>
+                                        <field name="requires_manual_calculations"/>
                                         <field name="preferred_payment"/>
+                                        <field name="other_payment" attrs="{'invisible': [('preferred_payment','!=','other')]}"/>
                                         <field name="last_invoice_date" />
                                         <field name="additional_billing"/>
                                         <field name="delivery_charge"/>
                                         <field name="billing_notes"/>
-                                        <field name="invoice_to"/>
+                                   </group>
+                                    <group style="margin-top:0px" colspan="3">
+                                        <field colspan="3" name="lease_notes"/>
+                                    </group>
+                                </group>
+                                       <!-- <field name="invoice_to"/>
                                         <field name="invoice_from"/>
                                         <field name="last_invoice_to"/>
                                         <field name="invoice_posting_date"/>
-                                        <field name="invoice_generation_date"/>
-                                    </group>
-                                </group>
+                                        <field name="invoice_generation_date"/>-->
+
+
 
 
                                 <field name="lease_lines">
