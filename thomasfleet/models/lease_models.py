@@ -765,15 +765,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         # future value add
         formula = ''
         if day_amount > 0:
-            daily_str = '{0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
+            daily_str = '${0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
                 daily_rate) + " (monthly prorated daily rate) \r\n"
 
         if week_amount > 0:
-            weekly_str = '{0:,.2f}'.format(week_amount) + " - " + str(num_weeks) + " weeks @ " + '{0:,.2f}'.format(
+            weekly_str = '${0:,.2f}'.format(week_amount) + " - " + str(num_weeks) + " weeks @ " + '{0:,.2f}'.format(
                 weekly_rate) + " (monthly prorated weekly rate) \r\n"
 
         if (month_amount + year_amount) > 0:
-            monthly_str = '{0:,.2f}'.format(month_amount + year_amount) + " - " + str(
+            monthly_str = '${0:,.2f}'.format(month_amount + year_amount) + " - " + str(
                 ((date_delta.years * 12) + date_delta.months)) + " months @ " + str(monthly_total) + " (monthly rate)"
 
         if num_days < 7 and num_months == 0:
@@ -781,9 +781,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             formula = daily_str
         elif num_days >= 7 and num_months == 0 and num_days < days_in_month:
             days = num_days % 7
+            week_day_amount = ((days/7) * weekly_rate)
+            week_days_str = ''
+            if days > 0:
+                week_days_str = '${0:,.2f}'.format(week_day_amount) + " - " + "(" + str(
+                    days) + " / 7 days) @ " + '{0:,.2f}'.format(weekly_rate) + \
+                                " (monthly prorated weekly rate) \r\n"
             weeks = math.floor(num_days / 7)
-            amount = (days * daily_rate) + (weeks * weekly_rate)
-            formula = daily_str + weekly_str
+            amount = week_day_amount + (weeks * weekly_rate)
+            formula = week_days_str + weekly_str
         elif num_months == 0 and (num_days_span + 1) == days_in_month:
             amount = monthly_total
             formula = 'Rate Calculation:\r\n' + "Monthly Rate"
@@ -792,14 +798,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             formula = daily_str + weekly_str + monthly_str
             if len(formula) > 0:
                 formula = 'Rate Calculation:\r\n' + formula
-            '''
-            formula = '{0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @" + str(
-                daily_rate) + "(monthly prorated daily rate) \r\n" + "+ " + str(week_amount) + " - " + str(
-                num_weeks) + " weeks @" + str(
-                weekly_rate) + "(monthly prorated weekly rate) \r\n" + "+ " + '{0:,.2f}'.format(
-                month_amount + year_amount) + " - " + str(
-                ((date_delta.years * 12) + date_delta.months)) + " months @" + str(monthly_total) + " (monthly rate)"
-            '''
+
         return {"amount": amount, "formula": formula}
 
 

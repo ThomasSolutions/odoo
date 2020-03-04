@@ -10,8 +10,13 @@
                             <field name="lease_return_date"/>
                             <field name="invoice_pending"/>
                             <field name="repairs_pending"/>
-                            <field name='lease_ids'/>
-
+                            <field name='lease_ids'>
+                                <tree>
+                                    <!--<field name="lease_number"/>-->
+                                    <field name="unit_no"/>
+                                    <field name="customer_id"/>
+                                </tree>
+                            </field>
                         </group>
                     </sheet>
                     <footer>
@@ -31,8 +36,8 @@
             <field name="name">Lease Return Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.return.wizard</field>
-           <!-- <field name="view_id" ref="lease_return_wizard_form"></field>
-            <field name="view_type">form</field>-->
+            <field name="view_id" ref="lease_return_wizard_form"></field>
+            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
