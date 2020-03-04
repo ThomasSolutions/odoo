@@ -102,7 +102,7 @@ class ThomasLease(models.Model):
         for rec in self:
             if rec.preferred_payment==False:
                 if rec.customer_id.preferred_payment == "customer":
-                    rec.preferred_payment = 'undefined'
+                    rec.preferred_payment = False
                 elif rec.customer_id.preferred_payment == "other":
                     rec.other_payment= rec.customer_id.other_payment
                     rec.preferred_payment= rec.customer_id.preferred_payment
@@ -737,7 +737,73 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
-    def calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
+    def  calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
+
+        start_d = datetime.strptime(start_date, '%Y-%m-%d')
+        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+
+        date_delta = relativedelta.relativedelta(end_d, start_d)
+        num_days = date_delta.days + 1  # assumes current day for billing
+
+        num_days_span = date_delta.days
+        num_months = date_delta.months
+        num_weeks = date_delta.weeks
+        # bal_weeks = num_days % num_weeks
+        # bal_days = bal_weeks % 7
+        daily_rate = (monthly_total * 12.5) / 100
+        weekly_rate = (monthly_total * 45) / 100
+        year_amount = (date_delta.years * 12) * monthly_total
+        month_amount = (num_months * monthly_total)
+        week_amount = (num_weeks * weekly_rate)
+        day_amount = (num_days * daily_rate)
+        g_total = year_amount + month_amount + week_amount + day_amount
+        daily_str = ''
+        weekly_str = ''
+        monthly_str = ''
+        days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
+        amount = monthly_total
+        # future value add
+        formula = ''
+        if day_amount > 0:
+            daily_str = '{0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
+                daily_rate) + " (monthly prorated daily rate) \r\n"
+
+        if week_amount > 0:
+            weekly_str = '{0:,.2f}'.format(week_amount) + " - " + str(num_weeks) + " weeks @ " + '{0:,.2f}'.format(
+                weekly_rate) + " (monthly prorated weekly rate) \r\n"
+
+        if (month_amount + year_amount) > 0:
+            monthly_str = '{0:,.2f}'.format(month_amount + year_amount) + " - " + str(
+                ((date_delta.years * 12) + date_delta.months)) + " months @ " + str(monthly_total) + " (monthly rate)"
+
+        if num_days < 7 and num_months == 0:
+            amount = num_days * daily_rate
+            formula = daily_str
+        elif num_days >= 7 and num_months == 0 and num_days < days_in_month:
+            days = num_days % 7
+            weeks = math.floor(num_days / 7)
+            amount = (days * daily_rate) + (weeks * weekly_rate)
+            formula = daily_str + weekly_str
+        elif num_months == 0 and (num_days_span + 1) == days_in_month:
+            amount = monthly_total
+            formula = 'Rate Calculation:\r\n' + "Monthly Rate"
+        else:
+            amount = g_total
+            formula = daily_str + weekly_str + monthly_str
+            if len(formula) > 0:
+                formula = 'Rate Calculation:\r\n' + formula
+            '''
+            formula = '{0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @" + str(
+                daily_rate) + "(monthly prorated daily rate) \r\n" + "+ " + str(week_amount) + " - " + str(
+                num_weeks) + " weeks @" + str(
+                weekly_rate) + "(monthly prorated weekly rate) \r\n" + "+ " + '{0:,.2f}'.format(
+                month_amount + year_amount) + " - " + str(
+                ((date_delta.years * 12) + date_delta.months)) + " months @" + str(monthly_total) + " (monthly rate)"
+            '''
+        return {"amount": amount, "formula": formula}
+
+
+    def calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
