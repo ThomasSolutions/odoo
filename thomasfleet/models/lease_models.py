@@ -242,9 +242,13 @@ class ThomasLease(models.Model):
     invoice_due_date = fields.Date(string="Invoice Due Date", track_visibility='onchange')
 
     run_initial_invoicing = fields.Boolean(string="Initial Invoice", default=False)
-    preferred_payment = fields.Selection([('credit card', 'Credit Card'), ('pad1', 'PAD with Invoice Sent'),
-                                          ('pad2', 'PAD no Invoice Sent'), ('undefined', 'Undefined'),
-                                          ('check', 'Check'), ('eft', 'EFT'), ('other', 'Other')],
+    preferred_payment = fields.Selection([('cheque', 'Cheque'),
+                                          ('credit card', 'Credit Card'),
+                                          ('eft', 'EFT'),
+                                          ('pad2', 'PAD no Invoice Sent'),
+                                          ('pad1', 'PAD with Invoice Sent'),
+                                          ('other', 'Other')],
+                                         string='Preferred Payment Method',
                                          track_visibility='onchange')
     other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
 
@@ -272,8 +276,8 @@ class ThomasLease(models.Model):
     mileage_at_return = fields.Float(string='Lease Return Odometer', related='lease_return_odometer_id.value',
                                      readonly=True, track_visibility='onchange')
 
-    delivery_charge = fields.Float(string='Delivery Charge / Pick up Charge', track_visibility='onchange')
-
+    delivery_charge = fields.Float(string='Delivery Charge', track_visibility='onchange')
+    pickup_charge= fields.Float(string='Pick up Charge', track_visibility='onchange')
     driver_id = fields.Many2one('res.partner', string='Driver', domain="[('parent_id','=',customer_id)]",
                                 track_visibility='onchange')
 
