@@ -248,8 +248,8 @@ class ThomasLease(models.Model):
                                           ('pad2', 'PAD no Invoice Sent'),
                                           ('pad1', 'PAD with Invoice Sent'),
                                           ('other', 'Other')],
-                                         string='Preferred Payment Method',
-                                         track_visibility='onchange')
+                                         string='Preferred Payment Method'
+                                         )
     other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
 
     lease_return_date = fields.Date("Unit Returned on", track_visibility='onchange')
@@ -871,27 +871,79 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             '''
         return {"amount": amount, "formula": formula}
 
-    def calc_rate_weekly_lease(self, weekly_total, start_date, end_date):
+    def calc_rate_weekly_lease(self, weekly_rate, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
-        num_days = (end_d - start_d).days + 1
-        daily_rate = (weekly_total / 7)
+
+        num_days = date_delta.days + 1  # assumes current day for billing
+
+        num_days_span = date_delta.days
+        num_months = date_delta.months
+        num_weeks = date_delta.weeks
+
+        daily_rate = ((weekly_rate * .125) / .45)
+        monthly_rate = weekly_rate / .45
+        year_amount = (date_delta.years * 12) * monthly_rate
+        month_amount = (num_months * monthly_rate)
+        week_amount = (num_weeks * weekly_rate)
+        day_amount = (num_days * daily_rate)
+        g_total = year_amount + month_amount + week_amount + day_amount
+
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
-        monthly_rate = (days_in_month * daily_rate)
+        #monthly_rate = (days_in_month * daily_rate)
         amount = monthly_rate
+        formula = ''
+        if day_amount > 0:
+            daily_str = '${0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
+                daily_rate) + " (prorated weekly rate) \r\n"
+
+        if week_amount > 0:
+            weekly_str = '${0:,.2f}'.format(week_amount) + " - " + str(num_weeks) + " weeks @ " + '{0:,.2f}'.format(
+                weekly_rate) + " (weekly rate) \r\n"
+
+        if (month_amount + year_amount) > 0:
+            monthly_str = '${0:,.2f}'.format(month_amount + year_amount) + " - " + str(
+                ((date_delta.years * 12) + date_delta.months)) + " months @ " + str(monthly_rate) + " (monthly rate)"
 
         if num_days < 7:
             amount = num_days * daily_rate
-        elif num_days >= 7 and num_days < days_in_month:
+            formula = '${0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
+                daily_rate) + " (prorated weekly rate) \r\n"
+
+        #need to handle the case only if it's more than 30 days..
+        #rules are basic...if over 30 days..then use monthly rate basis and prorated accordingly
+        #ie.  42 days should switch to montly rate and then prorate for: monthly_rate /30 * 12..
+        elif num_days >= 7 and num_months ==0 and num_days < days_in_month:
             days = num_days % 7
             weeks = math.floor(num_days / 7)
-            amount = (days * daily_rate) + (weeks * weekly_total)
+            week_day_amount = days*daily_rate
+            amount = week_day_amount + (weeks * weekly_rate)
+            week_days_str = ''
+            if days > 0:
+                week_days_str = '${0:,.2f}'.format(week_day_amount) + " - " + str(
+                    days) + " days @ " + '{0:,.2f}'.format(daily_rate) + \
+                                " (prorated weekly rate) \r\n"
+
+            formula = week_days_str + '${0:,.2f}'.format(week_amount) + " - " + str(weeks) + " weeks @ " + '{0:,.2f}'.format(
+                weekly_rate) + " (weekly rate) \r\n"
+
             if amount > monthly_rate:
+                formula = 'Rate Calculation:\r\n' + "Monthly Rate"
                 amount = monthly_rate
 
-        return amount
+        elif num_months == 0 and (num_days_span + 1) == days_in_month:
+            amount = monthly_rate
+            formula = 'Rate Calculation:\r\n' + "Monthly Rate"
+        else:
+            amount = g_total
+            formula = daily_str + weekly_str + monthly_str
+            if len(formula) > 0:
+                formula = 'Rate Calculation:\r\n' + formula
+
+
+        return {"amount": amount, "formula": formula}
 
     def calc_rate_daily_lease(self, daily_total, start_date, end_date):
 
@@ -906,7 +958,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         if num_days < 7:
             amount = num_days * daily_total
-        elif num_days >= 7 and num_days < days_in_month:
+        elif num_days >= 7 and  num_days < days_in_month:
             days = num_days % 7
             weeks = math.floor(num_days / 7)
             amount = (days * daily_total) + (weeks * weekly_rate)
@@ -1024,7 +1076,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             res['amount'] = the_dict['amount']
             res['formula'] = the_dict['formula']
         elif product.rate_type == 'weekly':
-            res['amount'] = self.calc_rate_weekly_lease(line_amount, start_date, end_date)
+            the_dict = self.calc_rate_weekly_lease(line_amount, start_date, end_date)
+            res['amount'] = the_dict['amount']
+            res['formula'] = the_dict['formula']
         elif product.rate_type == 'daily':
             res['amount'] = self.calc_rate_daily_lease(line_amount, start_date, end_date)
         elif product.rate_type == 'biweekly':
