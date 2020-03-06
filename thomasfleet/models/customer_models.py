@@ -33,7 +33,7 @@ class ThomasContact(models.Model):
                                           ('pad2', 'PAD no Invoice Sent'),
                                           ('pad1', 'PAD with Invoice Sent'),
                                           ('other', 'Other')],
-                                         string='Preferred Payment Method'
+                                         string='Preferred Payment Method',track_visibility='onchange'
                                          )
 
     other_payment = fields.Char(string='Other Payment', track_visibility='onchange')

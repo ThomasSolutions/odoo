@@ -108,11 +108,9 @@
                                     <field name="ops_contact_ids" options="{'no_open':True, 'no_create':True}" widget="many2many_tags"/>
                                     <field name="partner_invoice_id"  options="{'no_create': True,'always_reload': True}" />
                                     <field name="partner_shipping_id" options="{'no_create': True,'always_reload': True}"/>
-
                                     <field name="driver_id" options="{'no_open':True, 'no_create': True}"/>
-                                    <field name="po_number"/>
-                                    <field name="po_comments"/>
                                     <field name="rate_type"/>
+                                    <field name="last_invoice_date" />
                                 </group>
                             </group>
                         </group>
@@ -125,6 +123,8 @@
                                         <field name="min_lease_end_date"/>
                                         <field name="monthly_mileage"/>
                                         <field name="mileage_overage_rate"/>
+                                        <field name="po_number"/>
+                                        <field name="po_comments"/>
                                     </group>
                                     <group style="margin-bottom:0px" string="Outgoing">
                                         <field name="outgoing_inspector" options="{'no_open':True, 'no_create_edit': True}"/>
@@ -147,12 +147,12 @@
                                         <field name="requires_manual_calculations"/>
                                         <field name="preferred_payment"/>
                                         <field name="other_payment" attrs="{'invisible': [('preferred_payment','!=','other')]}"/>
-                                        <field name="last_invoice_date" />
                                         <field name="additional_billing"/>
+                                        <field name="additional_charges"/>
                                         <field name="delivery_charge"/>
                                         <field name ="pickup_charge"/>
                                         <field name="billing_notes"/>
-                                        <field name="additional_charges"/>
+
                                    </group>
                                     <group style="margin-top:0px" colspan="3">
                                         <field colspan="3" name="lease_notes"/>
