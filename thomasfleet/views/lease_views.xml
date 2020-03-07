@@ -147,8 +147,8 @@
                                         <field name="requires_manual_calculations"/>
                                         <field name="preferred_payment"/>
                                         <field name="other_payment" attrs="{'invisible': [('preferred_payment','!=','other')]}"/>
-                                        <field name="additional_billing"/>
                                         <field name="additional_charges"/>
+                                        <field name="additional_billing"/>
                                         <field name="delivery_charge"/>
                                         <field name ="pickup_charge"/>
                                         <field name="billing_notes"/>

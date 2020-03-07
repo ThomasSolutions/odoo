@@ -336,7 +336,7 @@ class ThomasLease(models.Model):
     inclusions_discount = fields.Float('Inclusion Discount', track_visibility='onchange')
     lease_notes = fields.Text("Lease Notes", track_visibility='onchange')
     inspection_notes = fields.Text("Inspection Notes", track_visibility='onchange')
-    additional_billing = fields.Char("Additional Billing", track_visibility='onchange')
+    additional_billing = fields.Char("Additional Notes", track_visibility='onchange')
     payment_method = fields.Char("Payment Method", track_visibility='onchange')
     last_invoice_date = fields.Date("Last Invoice On", track_visibility='onchange')
     additional_charges = fields.Boolean("Additional Charges", track_visibility='onchange')
@@ -1277,7 +1277,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 'price_unit': line_amount,
                 'quantity': quantity,
                 'name': description,
-                'invoice_line_tax_ids': line.tax_ids,# [(6,0,line.product_id.taxes_id.ids)],
+                'invoice_line_tax_ids': [(6,0,line.product_id.taxes_id.ids)],
                 'account_id': line.product_id.property_account_income_id.id
             })
             # call set taxes to set them...otherwise the relationships aren't set properly
@@ -1386,13 +1386,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'price_unit': next_line_amount,
                     'quantity': quantity,
                     'name': description,
-                    'invoice_line_tax_ids':next_line.product_id.taxes_id.ids,
+                    'invoice_line_tax_ids':[(6,0,next_line.product_id.taxes_id.ids)],
                     'account_id': next_line.product_id.property_account_income_id.id
                 })
 
 
 
-                next_month_line_id._set_taxes()
+                #next_month_line_id._set_taxes()
                 next_month_line_id.price_unit = next_line_amount
 
                 next_month_line_ids.append(next_month_line_id.id)
@@ -1577,12 +1577,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'price_unit': line_amount,
                                 'quantity': quantity,
                                 'name': description,
-                                'invoice_line_tax_ids': line.tax_ids,
+                                'invoice_line_tax_ids': [(6,0,product.taxes_id.ids)],
                                 'account_id': product.property_account_income_id.id
                             })
 
                             # call set taxes to set them...otherwise the relationships aren't set properly
-                            line_id._set_taxes()
+                            #line_id._set_taxes()
                             line_id.price_unit = line_amount
                             line_ids.append(line_id.id)
                             if lease.invoice_ids:
@@ -1655,11 +1655,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     'price_unit': next_line_amount,
                                     'quantity': quantity,
                                     'name': description,
-                                    'invoice_line_tax_ids': next_line.tax_ids,
+                                    'invoice_line_tax_ids': [(6,0,product.taxes_id.ids)],
                                     'account_id': product.property_account_income_id.id
                                 })
 
-                                next_month_line_id._set_taxes()
+                                #next_month_line_id._set_taxes()
                                 next_month_line_id.price_unit = next_line_amount
 
                                 next_month_line_ids.append(next_month_line_id.id)
