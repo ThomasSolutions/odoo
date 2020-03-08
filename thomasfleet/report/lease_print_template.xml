@@ -285,7 +285,7 @@
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <hr/>
+                                    <hr class="t_tight_line"/>
                                 </div>
                             </div>
                             <div class="row">
@@ -304,7 +304,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <hr/>
+                                    <hr class="t_tight_line"/>
                                 </div>
                             </div>
                         <div class="row">
@@ -318,7 +318,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-6">
                                 <span t-if="doc.vehicle_id.asset_class.name == 'VAN'">
                                     <img  width="100%" src="/thomasfleet/static/src/img/cube_van.png"/>
                                 </span>
@@ -516,7 +516,7 @@
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
                            <div class="row">
                                 <div class="col-xs-6">
-                                    <hr/>
+                                    <hr class="t_tight_line"/>
                                 </div>
                             </div>
                             <div class="row">
@@ -535,7 +535,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <hr/>
+                                    <hr class="t_tight_line"/>
                                 </div>
                             </div>
                         <div class="row">
@@ -565,7 +565,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-6">
                                 <span t-if="doc.vehicle_id.asset_class.name == 'VAN'">
                                     <img with="100%" src="/thomasfleet/static/src/img/cube_van.png"/>
                                 </span>
