@@ -877,7 +877,57 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
+        just_days = (end_d - start_d).days + 1
+
+        cost_per_day_d_rate =((weekly_rate * .125) / .45)
+        cost_per_day_w_rate = (weekly_rate / 7)
+        cost_per_day_m_rate = (weekly_rate / .45)/30
         num_days = date_delta.days + 1  # assumes current day for billing
+
+        if just_days < 7:
+            amount = cost_per_day_d_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_d_rate) + " (prorated weekly rate) \r\n"
+
+        elif just_days >=7 and just_days < 30:
+            amount = cost_per_day_w_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_w_rate) + " (weekly rate) \r\n"
+
+        elif just_days >= 30:
+            amount = cost_per_day_m_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+            cost_per_day_m_rate) + " (prorated monthly rate) \r\n"
+
+        return {"amount": amount, "formula": formula}
+
+    def calc_rate_weekly_lease_old(self, weekly_rate, start_date, end_date):
+
+        start_d = datetime.strptime(start_date, '%Y-%m-%d')
+        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        date_delta = relativedelta.relativedelta(end_d, start_d)
+
+        just_days = (end_d - start_d).days + 1
+
+        cost_per_day_d_rate =((weekly_rate * .125) / .45)
+        cost_per_day_w_rate = (weekly_rate / 7)
+        cost_per_day_m_rate = (weekly_rate / .45)/30
+        num_days = date_delta.days + 1  # assumes current day for billing
+
+        if just_days < 7:
+            amount = cost_per_day_d_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_d_rate) + " (prorated weekly rate) \r\n"
+
+        elif just_days >=7 and just_days < 30:
+            amount = cost_per_day_w_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_w_rate) + " (weekly rate) \r\n"
+
+        elif just_days <= 30:
+            amount = cost_per_day_m_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+            cost_per_day_m_rate) + " (prorated monthly rate) \r\n"
 
         num_days_span = date_delta.days
         num_months = date_delta.months
@@ -907,15 +957,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             monthly_str = '${0:,.2f}'.format(month_amount + year_amount) + " - " + str(
                 ((date_delta.years * 12) + date_delta.months)) + " months @ " + str(monthly_rate) + " (monthly rate)"
 
-        if num_days < 7:
+        if just_days < 7:
             amount = num_days * daily_rate
             formula = '${0:,.2f}'.format(day_amount) + " - " + str(num_days) + " days @ " + '{0:,.2f}'.format(
                 daily_rate) + " (prorated weekly rate) \r\n"
 
         #need to handle the case only if it's more than 30 days..
         #rules are basic...if over 30 days..then use monthly rate basis and prorated accordingly
-        #ie.  42 days should switch to montly rate and then prorate for: monthly_rate /30 * 12..
-        elif num_days >= 7 and num_months ==0 and num_days < days_in_month:
+        #ie.  42 days should switch to monthly rate and then prorate for: monthly_rate /30 * 12..
+        elif num_days >= 7 and num_days < 30:
             days = num_days % 7
             weeks = math.floor(num_days / 7)
             week_day_amount = days*daily_rate
