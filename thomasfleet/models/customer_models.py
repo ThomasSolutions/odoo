@@ -10,7 +10,6 @@ class ThomasContact(models.Model):
 
     _inherit = 'res.partner'
 
-
     #department = fields.Char(string='Department')
     user_id = fields.Many2one('res.users', string='Thomas Contact',
                               help='The internal user that is in charge of communicating with this contact if any.',track_visibility='onchange')
@@ -35,6 +34,8 @@ class ThomasContact(models.Model):
                                           ('other', 'Other')],
                                          string='Preferred Payment Method',track_visibility='onchange'
                                          )
+
+    discount_rate_calc = fields.Boolean("Discount Rate", track_visibility='onchange', default=True)
 
     other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
 
@@ -66,6 +67,7 @@ class ThomasContact(models.Model):
     internal_division = fields.Char(string="Internal Division")
     compound_name = fields.Char(string="Compound Name", compute="_compute_compound_name")
     #name = fields.Char(string="Name",index=True)
+
 
     @api.depends('name','internal_division')
     def _compute_compound_name(self):

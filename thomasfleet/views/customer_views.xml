@@ -222,6 +222,7 @@
                                         <field name="user_id"/>
                                         <field name="aggregate_invoicing"/>
                                         <field name="preferred_payment"/>
+                                        <field name="discount_rate_calc"/>
                                         <field name="other_payment" attrs="{'invisible': [('preferred_payment','!=','other')]}"/>
                                         <field name="preferred_invoice_delivery"/>
                                     </group>
