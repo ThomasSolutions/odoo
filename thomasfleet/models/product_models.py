@@ -15,6 +15,7 @@ class ThomasProduct(models.Model):
                                   ('amd_daily_ts', 'AMD Daily Tandem Stake'),
                                   ('amd_daily_tr', 'AMD Daily Tractor'),
                                   ('amd_daily_ft', 'AMD Daily Flat Truck'),
+                                  ('stelco_daily_van', 'Stelco Daily Van'),
                                   ('stelco_daily','Stelco Daily'),
                                   ('stelco_weekly','Stelco Weekly'),
                                   ('stelco_monthly','Stelco Monthly')
