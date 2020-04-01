@@ -33,13 +33,13 @@
                             <div class="row">
                                <h1 class="text-center">Lease Agreement</h1>
                             </div>
-                        <div class="row">
+                        <!--<div class="row">
                             <div class="col-xs-8">
                                 <b>Lease #:</b>
                                 <t t-esc="doc.lease_number"/>
                                 <br/>
                             </div>
-                        </div>
+                        </div>-->
                         <div class="row">
                             <div class="col-xs-3">
                                 <b>Lease Start Date:</b>
