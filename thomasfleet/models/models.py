@@ -30,7 +30,7 @@ class ThomasAsset(models.Model):
     disposal_proceeds = fields.Float('Disposal Proceeds', track_visibility='onchange')
     sold_to = fields.Char('Sold To', track_visibility='onchange')
     betterment_cost = fields.Char("Betterment Cost", track_visibility='onchange')
-    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Status', track_visibility='onchange')
+    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Agreement Status', track_visibility='onchange')
    # lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set', track_visibility='onchange')
     inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions', track_visibility='onchange')
@@ -151,7 +151,7 @@ class ThomasFleetVehicle(models.Model):
     rim_bolts = fields.Char('Rim Bolts', track_visibility='onchange')
     engine = fields.Char('Engine', track_visibility='onchange')
     fuel_type = fields.Many2one('thomasfleet.fueltype', 'Fuel Type', track_visibility='onchange')
-    fleet_status = fields.Many2one('fleet.vehicle.state', 'Fleet Status', track_visibility='onchange')
+    fleet_status = fields.Many2one('fleet.vehicle.state', 'Unit Status', track_visibility='onchange')
     air_conditioning = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Air Conditioning', default='yes', track_visibility='onchange')
     transmission = fields.Char("Transmission", track_visibility='onchange')
     protractor_guid = fields.Char(compute='protractor_guid_compute', change_default=True)
@@ -163,6 +163,9 @@ class ThomasFleetVehicle(models.Model):
     production_date = fields.Char("Production Date", track_visibility='onchange')
     pulled_protractor_data = fields.Boolean(default=False,String="Got Data from Protractor")
     protractor_owner_guid = fields.Char(compute='_get_protractor_notes_and_owner', string= 'Protractor Owner ID')
+    unit_quality = fields.Selection([('new','New'), ('good','Good'),('satisfactory','Satisfactory'),('poor','Poor')],
+                                    'Unit Quality',track_visibility='onchange')
+
 
     @api.multi
     @api.depends('unit_no')

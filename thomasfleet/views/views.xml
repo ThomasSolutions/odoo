@@ -22,12 +22,12 @@
             <field name="arch" type="xml">
                 <xpath expr="//form[1]" position="replace">
                     <form string="Vehicle">
-                        <header>
+                       <!-- <header>
                             <button name="check_update_portractor"
                                     string="Update Protractor" type="object" class="btn-primary" groups="fleet.fleet_group_manager"/>
                             <button name="do_something_else" string="Second action" groups="fleet.fleet_group_manager"/>
                             <field name="lease_status" widget="statusbar"/>
-                        </header>
+                        </header>-->
                         <sheet>
                             <div class="oe_button_box" name="button_box">
                                 <!-- <button name="return_action_to_open"
@@ -107,10 +107,19 @@
                                 <label for="license_plate"/>
                                 <field name="license_plate"/>
                                 <br/>
-
-                                <label for="lease_status"/>
-                                <field name="lease_status"/>
                             </div>
+                            <group col="3">
+                                <!--<label for="lease_status"/-->
+                                <group>
+                                    <field name="unit_quality"/>
+                                </group>
+                                <group>
+                                    <field name="lease_status"/>
+                                </group>
+                                <group>
+                                    <field name="fleet_status"/>
+                                </group>
+                            </group>
                             <notebook>
                                 <page string="Unit Specs">
                                     <group col="2">
