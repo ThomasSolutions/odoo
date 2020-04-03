@@ -1244,7 +1244,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         print("CALC AMOUNT FOR : " + product.categ_id.name)
         the_amount = line_amount
         the_formula = ''
-        res = {'amount': the_amount, 'formula': the_formula}
+        res = {'amount': the_amount, 'formula': the_formula, 'rate': ''}
         if lease.lease_return_date:
             end_date = lease.lease_return_date
 
