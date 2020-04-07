@@ -25,6 +25,9 @@ class ThomasProduct(models.Model):
 
     gp_tax_schedule_id = fields.Char(compute="_compute_tax_schedule_id")
 
+
     def _compute_tax_schedule_id(self):
         for rec in self:
             rec.gp_tax_schedule_id = 'HST ONT'
+
+

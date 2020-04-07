@@ -193,6 +193,10 @@
                                     <field name="monthly_total" nolabel="1" class="oe_subtotal_footer_separator"
                                            widget='monetary' options="{'currency_field': 'currency_id'}"/>
                                 </group>
+                                <group>
+                                    <field name="rate_calc_description"/>
+                                    <field name="rate_calc_example"/>
+                                </group>
                             </page>
                             <page string="Customer Insurance Details">
                                 <group colspan="4">

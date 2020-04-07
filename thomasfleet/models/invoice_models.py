@@ -74,6 +74,11 @@ class ThomasAccountingInvoice(models.Model):
             invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
             lease.last_invoice_date = False
             lease.last_invoice_date = invoice.date_invoice
+            lease.message_post(
+                body='<p><b>Invoice Canceled</b></p><p>Invoice dated: ' + str(self.invoice_posting_date) +
+                     ' for: $' + str(self.amount_total_signed) + ' for this lease was canceled</p>',
+                subject="Invoice Canceled", subtype="mt_note")
+
         return res
 
     @api.multi
@@ -93,6 +98,11 @@ class ThomasAccountingInvoice(models.Model):
                     lease.last_invoice_date = invoice.date_invoice
                 else:
                     lease.last_invoice_date = False
+
+                lease.message_post(
+                    body='<p><b>Invoice Deleted:</b></p><p>Invoice dated: ' + str(invoice.invoice_posting_date) +
+                         ' for: $' + str(invoice.amount_total_signed) + ' for this lease was deleted</p>',
+                    subject="Invoice Deleted", subtype="mt_note")
 
         return super(ThomasAccountingInvoice, self).unlink()
 
