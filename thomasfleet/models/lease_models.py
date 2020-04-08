@@ -528,11 +528,11 @@ class ThomasFleetLeaseLine(models.Model):
         amt = False
         r_type = self.product_id.rate_type
         if r_type == 'monthly' or 'stelco_monthly':
-            amt = self.price * .125
+            amt = round(self.price * .125,2)
         elif r_type == 'weekly' or 'stelco_weekly':
-            amt = (self.price/.45)*.125
+            amt = round((self.price/.45)*.125,2)
         elif r_type == 'daily' or 'stelco_daily':
-            amt = self.price
+            amt = round(self.price,2)
         elif r_type == 'amd_daily_pu':
             amt = 31.90
         elif r_type == 'amd_daily_cc':
@@ -550,11 +550,11 @@ class ThomasFleetLeaseLine(models.Model):
         amt = False
         r_type = self.product_id.rate_type
         if r_type == 'monthly' or 'stelco_monthly':
-            amt = self.price * .45
+            amt = round(self.price * .45,2)
         elif r_type == 'weekly' or 'stelco_weekly':
-            amt = self.price
+            amt = round(self.price,2)
         elif r_type == 'daily' or 'stelco_daily':
-            amt = (self.price / .125) * .45
+            amt = round((self.price / .125) * .45,2)
         elif r_type == 'amd_daily_pu':
             amt = 140.00
         elif r_type == 'amd_daily_cc':
@@ -572,11 +572,11 @@ class ThomasFleetLeaseLine(models.Model):
         amt = False
         r_type = self.product_id.rate_type
         if r_type == 'monthly' or 'stelco_monthly':
-            amt = self.price
+            amt = round(self.price,2)
         elif r_type == 'weekly' or 'stelco_weekly':
-            amt = self.price/.45
+            amt = round(self.price/.45,2)
         elif r_type == 'daily' or 'stelco_daily':
-            amt = self.price/.125
+            amt = round(self.price/.125,2)
         elif r_type == 'amd_daily_pu':
             amt = 663.00
         elif r_type == 'amd_daily_cc':
@@ -831,7 +831,46 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
-    def  calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
+    def calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
+
+        '''
+        Takes the montlhy amount and detemines daily and weekly rates
+        Doesn't discount the rate but rather charges a premium if the lease is held less than 1 month
+        :param monthly_total:
+        :param start_date:
+        :param end_date:
+        :return:
+        '''
+        start_d = datetime.strptime(start_date, '%Y-%m-%d')
+        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        date_delta = relativedelta.relativedelta(end_d, start_d)
+
+        just_days = (end_d - start_d).days + 1
+
+        cost_per_day_d_rate = round((monthly_total * .125),2)
+        cost_per_day_w_rate = round(((monthly_total * .45) / 7),2)
+        cost_per_day_m_rate = round((monthly_total / 30),2)
+        rate = cost_per_day_m_rate
+        num_days = date_delta.days + 1  # assumes current day for billing
+
+        if just_days < 7:
+            amount = cost_per_day_d_rate * just_days
+            rate = cost_per_day_d_rate
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_d_rate) + " (prorated monthly rate) \r\n"
+        elif just_days >= 7 and just_days < 30:
+            amount = cost_per_day_w_rate * just_days
+            rate = cost_per_day_w_rate
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_w_rate) + " (prorated monthly rate) \r\n"
+        elif just_days >= 30:
+            amount = cost_per_day_m_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_m_rate) + " (prorated monthly rate) \r\n"
+
+        return {"amount": amount, "formula": formula, "rate": rate}
+
+    def  calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
@@ -896,7 +935,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         return {"amount": amount, "formula": formula}
 
 
-    def calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
+    def calc_rate_monthly_lease_older(self, monthly_total, start_date, end_date):
 
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
@@ -973,10 +1012,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         just_days = (end_d - start_d).days + 1
 
-        cost_per_day_d_rate =((weekly_rate * .125) / .45)
-        cost_per_day_w_rate = (weekly_rate / 7)
+        cost_per_day_d_rate =round(((weekly_rate * .125) / .45),2)
+        cost_per_day_w_rate =round((weekly_rate / 7),2)
         rate=cost_per_day_w_rate
-        cost_per_day_m_rate = (weekly_rate / .45)/30
+        cost_per_day_m_rate = round((weekly_rate / .45)/30,2)
         num_days = date_delta.days + 1  # assumes current day for billing
 
         if not discount:
@@ -1008,10 +1047,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         just_days = (end_d - start_d).days + 1
 
-        cost_per_day_d_rate = daily_rate
+        cost_per_day_d_rate = round(daily_rate,2)
         rate = daily_rate
-        cost_per_day_w_rate = ((daily_rate / .125) * .45) / 7
-        cost_per_day_m_rate = (((daily_rate / .125) * .45)/.45) / 30
+        cost_per_day_w_rate = round(((daily_rate / .125) * .45) / 7,2)
+        cost_per_day_m_rate = round((((daily_rate / .125) * .45)/.45) / 30,2)
         num_days = date_delta.days + 1  # assumes current day for billing
 
         if not discount:
@@ -1302,10 +1341,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             the_dict = self.calc_rate_monthly_lease(line_amount,start_date, end_date)
             res['amount'] = the_dict['amount']
             res['formula'] = the_dict['formula']
+            res['rate'] = the_dict['rate']
         elif product.rate_type == 'weekly' or product.rate_type == 'stelco_weekly':
             the_dict = self.calc_rate_weekly_lease(lease.discount_rate_calc,line_amount,start_date, end_date)
             res['amount'] = the_dict['amount']
             res['formula'] = the_dict['formula']
+            res['rate'] = the_dict['rate']
         elif product.rate_type == 'daily' or product.rate_type == 'stelco_daily':
             the_dict = self.calc_rate_daily_lease(lease.discount_rate_calc,line_amount,start_date, end_date)
             res['amount'] = the_dict['amount']

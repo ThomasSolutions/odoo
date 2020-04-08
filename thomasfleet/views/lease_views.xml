@@ -174,9 +174,9 @@
                                         <field name="vehicle_id" readonly="True"/>
                                         <field name="description"></field>
                                         <field name="price"></field>
-                                        <field name="monthly_rate"></field>
-                                        <field name="daily_rate"/>
-                                        <field name="weekly_rate"/>
+                                        <field name="monthly_rate" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="weekly_rate" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="daily_rate" options="{'currency_field': 'currency_id'}"/>
                                         <field name="tax_id"></field>
                                         <field name="tax_amount"></field>
                                         <field name="total"></field>
