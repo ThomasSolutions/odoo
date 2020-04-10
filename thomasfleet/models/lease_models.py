@@ -854,6 +854,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             amount = monthly_total
             rate = monthly_total
             formula = '${0:,.2f}'.format(amount) + " - per month \r\n"
+        else:
+            amount = cost_per_day_m_rate * just_days
+            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
+        '''
         elif just_days < 7:
             amount = cost_per_day_d_rate * just_days
             rate = cost_per_day_d_rate
@@ -868,7 +873,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             amount = cost_per_day_m_rate * just_days
             formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
                 cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
-
+        '''
         return {"amount": amount, "formula": formula, "rate": rate}
 
     def calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
@@ -1510,7 +1515,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             else:
                 unit_str = str(product.name)
 
-            if num_days < end_of_month and not the_lease.id.rate_type == 'Bi-Weekly':
+            if num_days < end_of_month and not the_lease.id.rate_type == 'Bi-Weekly' \
+                    and not the_lease.id.rate_type == 'Monthly':
 
                 description = self.create_daily_invoice_line_description(start_date, end_date, the_lease.id)
                 quantity = num_days
@@ -1621,11 +1627,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 else:
                     unit_str = str(product.name)
 
-                if num_days < prev_month_days and not the_lease.id.rate_type == 'Bi-Weekly':
+                if num_days < prev_month_days and not the_lease.id.rate_type == 'Bi-Weekly' \
+                        and not the_lease.id.rate_type == 'Monthly':
 
                     description = self.create_daily_invoice_line_description(prev_month_from, prev_month_to,
                                                                              the_lease.id)
                     quantity = prev_days_quantity
+                    next_line_amount = res['rate']
 
                 elif the_lease.id.rate_type == 'Bi-Weekly':  # need to determine what to do here
                     if not the_lease.id.last_invoice_to:
@@ -1811,7 +1819,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             else:
                                 unit_str = str(product.name)
 
-                            if num_days < end_of_month and not lease.rate_type == 'Bi-Weekly':
+                            if num_days < end_of_month and not lease.rate_type == 'Bi-Weekly' \
+                                    and not lease.rate_type == 'Monthly':
 
                                 description = self.create_daily_invoice_line_description(start_date, end_date,
                                                                                          lease)
@@ -1903,7 +1912,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                                 pro_rated = prev_month + ' ' + prev_year
                                 quantity = 1
-                                if num_days < prev_month_days and not lease.rate_type == 'Bi-Weekly':
+                                if num_days < prev_month_days and not lease.rate_type == 'Bi-Weekly' \
+                                        and not lease.rate_type == 'Monthly':
                                     description = self.create_daily_invoice_line_description(prev_month_from,
                                                                                              prev_month_to,
                                                                                              lease)
@@ -1945,18 +1955,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     t_quantity = str(weeks) + " week " + str(days) + " days "
                                     description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
                                 elif lease.rate_type == 'Monthly' or lease.rate_type == 'stelco_monthly':
-                                    if num_months >= 1 or num_years >= 1:
-                                        description = prev_month_from.strftime(
-                                            '%Y-%m-%d') + ' - ' + prev_month_to.strftime(
-                                            '%Y-%m-%d') + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                    if "Dofasco" in lease.customer_id.name:
+                                        description = self.create_dofasco_monthly_invoice_line_description(lease)
                                     else:
-                                        if "Dofasco" in lease.customer_id.name:
-                                            description = self.create_dofasco_monthly_invoice_line_description(lease)
-                                        else:
-                                            description = self.create_monthly_invoice_line_description(prev_month_from,
-                                                                                                       prev_month_to,
-                                                                                                       prev_month,
-                                                                                                       prev_year, lease)
+                                        description = self.create_monthly_invoice_line_description(prev_month_from,
+                                                                                                   prev_month_to,
+                                                                                                   prev_month,
+                                                                                                   prev_year, lease)
                                 else:
                                     description = next_line.description
 
