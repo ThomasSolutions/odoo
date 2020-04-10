@@ -826,7 +826,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return amount
 
-    def calc_rate_monthly_lease(self, monthly_total, start_date, end_date):
+    def calc_rate_monthly_lease(self, monthly_total, start_date, end_date, lease):
 
         '''
         Takes the montlhy amount and detemines daily and weekly rates
@@ -834,10 +834,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         :param monthly_total:
         :param start_date:
         :param end_date:
+        :param lease:
         :return:
         '''
         start_d = datetime.strptime(start_date, '%Y-%m-%d')
         end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        lease_start = datetime.strptime(lease.lease_start_date,'%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
         just_days = (end_d - start_d).days + 1
@@ -849,31 +851,38 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         rate = cost_per_day_m_rate
         num_days = date_delta.days + 1  # assumes current day for billing
 
-        #this first case should always handle the full month
-        if end_d.month == start_d.month and just_days == days_in_end_month:
-            amount = monthly_total
-            rate = monthly_total
-            formula = '${0:,.2f}'.format(amount) + " - per month \r\n"
-        else:
-            amount = cost_per_day_m_rate * just_days
-            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
-                cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
-        '''
-        elif just_days < 7:
-            amount = cost_per_day_d_rate * just_days
-            rate = cost_per_day_d_rate
-            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
-                cost_per_day_d_rate) + " (12.5 % of ${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
-        elif just_days >= 7 and just_days < 30:
-            amount = cost_per_day_w_rate * just_days
-            rate = cost_per_day_w_rate
-            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
-                cost_per_day_w_rate) + " (45% of ${0:,.2f}".format(monthly_total) + ", monthly rate, per week, per day) \r\n"
-        elif just_days >= 30:
-            amount = cost_per_day_m_rate * just_days
-            formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
-                cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
-        '''
+        #unit has been returned...determine if rates are adjusted
+        if lease.lease_return_date:
+            lease_end = datetime.strptime(lease.lease_return_date,'%Y-%m-%d')
+            days_in_lease = (lease_end - lease_start).days + 1
+            if end_d.month == start_d.month and just_days == days_in_end_month:
+                amount = monthly_total
+                rate = monthly_total
+                formula = '${0:,.2f}'.format(amount) + " - per month \r\n"
+            elif days_in_lease < 7:
+                amount = cost_per_day_d_rate * just_days
+                rate = cost_per_day_d_rate
+                formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                    cost_per_day_d_rate) + " (12.5 % of ${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
+            elif days_in_lease >= 7 and days_in_lease < 30:
+                amount = cost_per_day_w_rate * just_days
+                rate = cost_per_day_w_rate
+                formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                    cost_per_day_w_rate) + " (45% of ${0:,.2f}".format(monthly_total) + ", monthly rate, per week, per day) \r\n"
+            elif days_in_lease >= 30:
+                amount = cost_per_day_m_rate * just_days
+                formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                    cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
+        else: #unit is not returned assumes monthly rate even if it's a short duration
+            if end_d.month == start_d.month and just_days == days_in_end_month:
+                amount = monthly_total
+                rate = monthly_total
+                formula = '${0:,.2f}'.format(amount) + " - per month \r\n"
+            else:
+                amount = cost_per_day_m_rate * just_days
+                formula = '${0:,.2f}'.format(amount) + " - " + str(just_days) + " days @ " + '{0:,.2f}'.format(
+                    cost_per_day_m_rate) + " (${0:,.2f}".format(monthly_total) + ", monthly rate, per day) \r\n"
+
         return {"amount": amount, "formula": formula, "rate": rate}
 
     def calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
@@ -1343,7 +1352,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         if product.rate_type == 'monthly' or product.rate_type == 'stelco_monthly':
             # future value add
-            the_dict = self.calc_rate_monthly_lease(line_amount, start_date, end_date)
+            the_dict = self.calc_rate_monthly_lease(line_amount, start_date, end_date, lease)
             res['amount'] = the_dict['amount']
             res['formula'] = the_dict['formula']
             res['rate'] = the_dict['rate']
