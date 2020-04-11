@@ -25,12 +25,15 @@
     </record>-->
       <record id="thomase_invoice_form" model="ir.ui.view">
             <field name="model">account.invoice</field>
-            <field name="inherit_id" ref="sale.account_invoice_form" />
+            <field name="inherit_id" ref="account.invoice_form" />
             <field name="arch" type="xml">
                 <data>
-                    <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                    <!--<xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                        <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
-                    </xpath>
+                    </xpath>-->
+                    <xpath expr="//field[@name='partner_id']" position="after">
+                       <field name="partner_shipping_id" attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
+                   </xpath>
                      <xpath expr="//field[@name='partner_id']" position="after">
                         <field name="po_number" />
                     <field name="lease_ids" widget="many2many_tags"/>
