@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="thomasfleet.report_styles" name="Report Styles" inherit_id="web.report_assets_common">
-        <xpath expr="link[last()]" position="after">
+   <!-- <template id="thomasfleet.report_styles" name="Report Styles" inherit_id="web.report_layout">
+        <xpath expr="//head/t" position="after">
             <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
+            <link href="/thomasfleet/static/src/less/utility_field.less" rel="stylesheet" type="text/less"/>
+            <script src="/thomasfleet/static/src/js/utility_field.js" type="text/javascript" />
         </xpath>
-    </template>
+    </template>-->
    <!-- <template id="thomasfleet.lease_agreement_footer" inherit_id="web.external_layout_background">
         <xpath expr="//div[@class='footer o_background_footer']" position="replace">
             <div class="footer o_background_footer">
@@ -383,7 +385,7 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-6">
-                                <p>A) Rental Period is from:
+                                <p>A) <b>Rental Period is from:</b>
                                     <t t-esc="doc.lease_start_date"/>
                                     to:
                                     <t t-esc="doc.min_lease_end_date"/>
@@ -393,9 +395,17 @@
                                 </p>
                             </div>
                         </div>
+                         <div class="row">
+                            <div class="col-xs-8">
+                                <p>B) <b>Rate Type:</b>
+                                    <t t-esc="doc.rate_calc_description"/></p>
+                                <u>Lease Duration Calculations:</u>
+                                    <t t-raw="doc.rate_calc_example_for_report"/>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-xs-6">
-                                <p>B) Customer is responsible for Insurance</p>
+                                <p>C) Customer is responsible for Insurance</p>
                             </div>
                         </div>
                         <dl class="row">
@@ -429,14 +439,14 @@
                         </dl>
                         <div class="row">
                             <div class="col-xs-6">
-                                <p>C) Monthly rate <b>does not</b> include towing charges for
+                                <p>D) Monthly rate <b>does not</b> include towing charges for
                                     vehicle in case of breakdown
                                 </p>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-xs-6">
-                                <p>D) Customer responsible for all damage regardless of fault
+                                <p>E) Customer responsible for all damage regardless of fault
                                     (including tires)
                                 </p>
                             </div>
@@ -444,7 +454,7 @@
                         <div class="row">
 
                             <div class="col-xs-6">
-                                <p>E) It is the customer's responsibility to bring the
+                                <p>F) It is the customer's responsibility to bring the
                                     vehicle to the shop for service
                                 </p>
                             </div>
@@ -452,7 +462,7 @@
                         <div class="row">
 
                             <div class="col-xs-6">
-                                <p>F) Please note tht the "normal allotted" mileage is
+                                <p>G) Please note tht the "normal allotted" mileage is
                                     <t t-esc="doc.monthly_mileage"/>
                                     per month. Any
                                     additional mileage will be incur a $
@@ -464,7 +474,7 @@
                         <div class="row">
 
                             <div class="col-xs-6">
-                                <p>G) Delivery Charge: $
+                                <p>H) Delivery Charge: $
                                     <t t-esc="doc.delivery_charge"/>
                                 </p>
                             </div>

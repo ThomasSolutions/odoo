@@ -18,16 +18,38 @@
         <!--     </t> -->
         <!--   </dl> -->
         <!-- </template> -->
-<template id="thomas_less_helpers" name="thomas less helpers" inherit_id="web.less_helpers" priority='16'>
-        <xpath expr="//link[@href='/web_enterprise/static/src/less/variables.less']" position="after">
-            <link rel="stylesheet" type="text/less" href="/thomasfleet/static/src/less/variables.less"/>
-        </xpath>
-    </template>
+        <template id="thomas_less_helpers" name="thomas less helpers" inherit_id="web.less_helpers" priority='16'>
+                <xpath expr="//link[@href='/web_enterprise/static/src/less/variables.less']" position="after">
+                    <link rel="stylesheet" type="text/less" href="/thomasfleet/static/src/less/variables.less"/>
+                </xpath>
+        </template>
 
-        <template id="thomas_styles" name="thomas styles" inherit_id="web.assets_backend">
-    <xpath expr="//link[last()]" position="after">
-        <link href="/thomasfleet/static/src/less/styles.less" rel="stylesheet" type="text/less"/>
-    </xpath>
-</template>
+        <!--<template id="thomas_styles" name="thomas styles" inherit_id="web.assets_backend">
+            <xpath expr="//link[last()]" position="after">
+                <link href="/thomasfleet/static/src/less/styles.less" rel="stylesheet" type="text/less"/>
+            </xpath>
+        </template>-->
+        <template id="assets_backend" inherit_id="web.assets_common">
+        <xpath expr="." position="inside">
+            <link href="/thomasfleet/static/src/less/styles.less" rel="stylesheet" type="text/less"/>
+            <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
+            <link href="/thomasfleet/static/src/less/utility_field.less" rel="stylesheet" type="text/less"/>
+<!--
+            <script src="/web/static/src/js/fields/abstract_field.js" type="text/javascript" />
+
+            <script src="/web/static/src/js/fields/field_registry.js" type="text/javascript" />
+
+            <script src="/thomasfleet/static/src/js/utility_field.js" type="text/javascript" />-->
+         </xpath>
+       </template>
+        <!--<template id="report_styles" name="Report Styles" inherit_id="web.report_assets_common">
+        <xpath expr="." position="inside">
+             <link href="/thomasfleet/static/src/less/styles.less" rel="stylesheet" type="text/less"/>
+            <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
+            <link href="/thomasfleet/static/src/less/utility_field.less" rel="stylesheet" type="text/less"/>
+        </xpath>
+    </template>-->
+
+
     </data>
 </odoo>

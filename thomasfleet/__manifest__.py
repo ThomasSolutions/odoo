@@ -58,6 +58,7 @@
 
 
     ],
+    #'qweb': ['static/src/xml/utility_field_qweb.xml'],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',

@@ -359,6 +359,8 @@ class ThomasLease(models.Model):
     aggregation_id = fields.Char("Aggregate ID", track_visibility='onchange')
     rate_calc_description = fields.Char("Rate Note", compute='_compute_rate_calc_description')
     rate_calc_example = fields.Text("Rate Calculations", compute='_compute_rate_calc_example')
+    rate_calc_example_for_report = fields.Html("Rate Calculations", compute='_compute_rate_calc_example_html')
+
 
     @api.depends('lease_lines')
     def _compute_rate_calc_description(self):
@@ -408,6 +410,43 @@ class ThomasLease(models.Model):
                 else:
                     rec.rate_calc_example = str(example)
 
+    @api.depends('lease_lines')
+    def _compute_rate_calc_example_html(self):
+        for rec in self:
+            for line in rec.lease_lines:
+                example = ''
+
+                if line.product_id.rate_type == 'monthly' or line.product_id.rate_type == 'stelco_monthly':
+                    example = '1-6 days: ${0:,.2f}'.format(line.daily_rate) + " per day<br/>" \
+                              + '7-29 days: ${0:,.2f}'.format(line.weekly_rate / 7) + " per day, " + \
+                              '${0:,.2f}'.format(line.weekly_rate) + " per week<br/>" \
+                              + '30+ days: ${0:,.2f}'.format(line.monthly_rate / 30) + " per day, " + \
+                              '${0:,.2f}'.format(line.monthly_rate) + " per month<br/>"
+
+                elif line.product_id.rate_type == 'weekly' or line.product_id.rate_type == 'stelco_weekly':
+                    example = '1-6 days: ${0:,.2f}'.format(line.daily_rate) + " per day<br/>" \
+                              + '7-29 days: ${0:,.2f}'.format(line.weekly_rate / 7) + " per day, " + \
+                              '${0:,.2f}'.format(line.weekly_rate) + " per week<br/>" \
+                              + '30+ days: ${0:,.2f}'.format(line.monthly_rate / 30) + " per day, " + \
+                              '${0:,.2f}'.format(line.monthly_rate) + " per month<br/>"
+
+                elif line.product_id.rate_type == 'daily' or line.product_id.rate_type == 'stelco_daily':
+                    example = '1-6 days: ${0:,.2f}'.format(line.daily_rate) + " per day<br/>" \
+                              + '7-29 days: ${0:,.2f}'.format(line.weekly_rate / 7) + " per day, " + \
+                              '${0:,.2f}'.format(line.weekly_rate) + " per week<br/>" \
+                              + '30+ days: ${0:,.2f}'.format(line.monthly_rate / 30) + " per day, " + \
+                              '${0:,.2f}'.format(line.monthly_rate) + " per month<br/>"
+                elif line.product_id.rate_type == 'bi-weekly':
+                    example = ''
+                elif line.product_id.rate_type == 'term':
+                    example = ''
+                elif line.product_id.rate_type == 'stelco_daily_van':
+                    example = ''
+
+                if rec.rate_calc_example_for_report:
+                    rec.rate_calc_example_for_report = str(rec.rate_calc_example) + str(example)
+                else:
+                    rec.rate_calc_example_for_report = str(example)
     # last_invoice_age = fields.Integer("Last Invoice Age", compute='calc_invoice_age')
 
     # inclusion_rate= fields.float(compute="_calIncRate",string='Inclusion Rate')

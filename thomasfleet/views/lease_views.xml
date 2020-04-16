@@ -194,7 +194,7 @@
                                            widget='monetary' options="{'currency_field': 'currency_id'}"/>
                                 </group>
                                 <group>
-                                    <field name="rate_calc_description"/>
+                                    <field name="rate_calc_description" />
                                     <field name="rate_calc_example"/>
                                 </group>
                             </page>
