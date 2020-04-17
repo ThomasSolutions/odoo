@@ -286,7 +286,7 @@
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
                             <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
@@ -299,13 +299,13 @@
                                     <b>Make:</b>
                                     <t t-esc="doc.vehicle_id.brand_id.name"/>
                                 </div>
-                                <div class="col-xs-2">
+                                <div class="col-xs-4">
                                     <b>Model:</b>
                                     <t t-esc="doc.vehicle_id.model_id.name"/>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
@@ -520,7 +520,7 @@
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
                            <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
@@ -533,13 +533,13 @@
                                     <b>Make:</b>
                                     <t t-esc="doc.vehicle_id.brand_id.name"/>
                                 </div>
-                                <div class="col-xs-2">
+                                <div class="col-xs-4">
                                     <b>Model:</b>
                                     <t t-esc="doc.vehicle_id.model_id.name"/>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
