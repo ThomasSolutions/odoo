@@ -355,7 +355,7 @@
                     </div>
                         <div class="page" style="page-break-after:always;page-break-inside:avoid">
                        <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
@@ -368,13 +368,13 @@
                                     <b>Make:</b>
                                     <t t-esc="doc.vehicle_id.brand_id.name"/>
                                 </div>
-                                <div class="col-xs-2">
+                                <div class="col-xs-4">
                                     <b>Model:</b>
                                     <t t-esc="doc.vehicle_id.model_id.name"/>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-xs-6">
+                                <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
                                 </div>
                             </div>
@@ -384,7 +384,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-xs-6">
+                            <div class="col-xs-12">
                                 <p>A) <b>Rental Period is from:</b>
                                     <t t-esc="doc.lease_start_date"/>
                                     to:
@@ -396,7 +396,7 @@
                             </div>
                         </div>
                          <div class="row">
-                            <div class="col-xs-8">
+                            <div class="col-xs-12">
                                 <p>B) <b>Rate Type:</b>
                                     <t t-esc="doc.rate_calc_description"/></p>
                                 <u>Lease Duration Calculations:</u>
@@ -404,7 +404,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-xs-8">
+                            <div class="col-xs-12">
                                 <p>C) Customer is responsible for Insurance</p>
                             </div>
                         </div>
@@ -438,18 +438,18 @@
                             </dd>
                         </dl>
                         <div class="row">
-                            <div class="col-xs-6">
+                            <div class="col-xs-12">
                                 <p>D) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-xs-8">
+                            <div class="col-xs-12">
                                 <p>E) Customer responsible for all damage regardless of fault (including tires)</p>
                             </div>
                         </div>
                         <div class="row">
 
-                            <div class="col-xs-8">
+                            <div class="col-xs-12">
                                 <p>F) It is the customer's responsibility to bring the  vehicle to the shop for service
                                 </p>
                             </div>
