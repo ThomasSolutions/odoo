@@ -51,7 +51,7 @@
                                 <b>Unit #:</b>
                                 <t t-esc="doc.vehicle_id.unit_no"/>
                             </div>
-                            <div class="col-xs-2">
+                            <div class="col-xs-4">
                                 <b>Purchase Order #:</b>
                                 <t t-esc="doc.po_number"/>
                             </div>
