@@ -1776,7 +1776,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             unit_invoices.append(a_next_invoice.id)
 
         the_lease.id.invoice_ids = [(6, 0, lease_invoices)]
-        the_lease.id.vehicle_id.lease_invoice_ids = [(6, 0, unit_invoices)]
+        the_lease.id.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
         the_lease.id.run_initial_invoicing = False
         the_lease.id.last_invoice_to = self.determine_last_invoice_to(the_lease.id)
         return new_invoices

@@ -433,7 +433,7 @@ class ThomasFleetVehicle(models.Model):
     @api.multi
     def write(self, values):
         #we only want to update protractor if the unit doesn't exist the firt time
-        #subsequent updates should happen
+        #subsequent updates shouldn't happen
 
         print("IN WRITE FUNCTION")
 
