@@ -404,6 +404,8 @@ class ThomasLease(models.Model):
                     example = ''
                 elif line.product_id.rate_type == 'stelco_daily_van':
                     example = ''
+                else:
+                    example = ''
 
                 if rec.rate_calc_example:
                     rec.rate_calc_example = str(rec.rate_calc_example) + str(example)
@@ -2038,7 +2040,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             if "Dofasco" in lease.customer_id.name:
                                 inv_date = datetime(last_to_date.year, last_to_date.month, 1)
                             comment = ''
-                            if len(lease.lease_lines) == 1:
+                            if len(leases)==1 and len(lease.lease_lines) == 1:
                                 comment = n_resp['formula']
                             a_next_invoice = accounting_invoice.create({
                                 'partner_id': lease.customer_id.id,
@@ -2065,7 +2067,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             lease.aggregation_id = False
                     # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
                 comment = ''
-                if len(lease.lease_lines) == 1:
+                if len(leases) == 1 and len(lease.lease_lines) == 1:
                     comment = l_resp['formula']
                 a_invoice = accounting_invoice.create({
                     'partner_id': lease.customer_id.id,
