@@ -1634,11 +1634,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             line_id.price_unit = line_amount
             line_ids.append(line_id.id)
 
+        comment = ''
+        if len(the_lease.id.lease_lines) == 1:
+            comment = res['formula']
+
         # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
         a_invoice = accounting_invoice.create({
             'partner_id': the_lease.id.customer_id.id,
             'vehicle_id': the_lease.id.vehicle_id.id,
-            'comment': res['formula'],
+            'comment': comment,
             'date_invoice': inv_date,  # self.invoice_date,#the_lease.id.invoice_generation_date,
             'date_due': the_lease.id.invoice_due_date,
             'invoice_from': the_lease.id.invoice_from,
@@ -1749,10 +1753,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 next_month_line_ids.append(next_month_line_id.id)
 
             # moved this in the loop...test initial invoicing again
+            comment = ''
+            if len(the_lease.id.lease_lines) == 1:
+                comment = res['formula']
             a_next_invoice = accounting_invoice.create({
                 'partner_id': the_lease.id.customer_id.id,
                 'vehicle_id': the_lease.id.vehicle_id.id,
-                'comment': res['formula'],
+                'comment': comment,
                 'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
                 'date_due': the_lease.id.invoice_due_date,
                 'invoice_from': prev_month_from,
@@ -2030,11 +2037,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                             if "Dofasco" in lease.customer_id.name:
                                 inv_date = datetime(last_to_date.year, last_to_date.month, 1)
-
+                            comment = ''
+                            if len(lease.lease_lines) == 1:
+                                comment = n_resp['formula']
                             a_next_invoice = accounting_invoice.create({
                                 'partner_id': lease.customer_id.id,
                                 'vehicle_id': lease.vehicle_id.id,
-                                'comment': n_resp['formula'],
+                                'comment': comment,
                                 'date_invoice': inv_date,  # lease.invoice_generation_date,
                                 'date_due': lease.invoice_due_date,
                                 'invoice_from': prev_month_from,
@@ -2055,10 +2064,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             unit_invoices.append(a_next_invoice.id)
                             lease.aggregation_id = False
                     # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
+                comment = ''
+                if len(lease.lease_lines) == 1:
+                    comment = l_resp['formula']
                 a_invoice = accounting_invoice.create({
                     'partner_id': lease.customer_id.id,
                     'vehicle_id': lease.vehicle_id.id,
-                    'comment': l_resp['formula'],
+                    'comment': comment,
                     'date_invoice': the_wizard.invoice_date,  # lease.invoice_generation_date,
                     'date_due': lease.invoice_due_date,
                     'invoice_from': lease.invoice_from,

@@ -210,8 +210,8 @@ class ThomasFleetVehicle(models.Model):
     # accessories = fields.Many2many()
     @api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
-        if self:
-            print('HERE IS THE STORED PGUID:' + str(self.stored_protractor_guid))
+        #if self:
+        #    print('HERE IS THE STORED PGUID:' + str(self.stored_protractor_guid))
 
         for record in self:
            # print('Computing GUID ' + str(record.stored_protractor_guid))
