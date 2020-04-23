@@ -457,10 +457,11 @@
                         <div class="row">
 
                             <div class="col-xs-12">
-                                <p>G) Please note tht the "normal allotted" mileage is
+                                <p>G) Please note the "normal allotted" kilometers is
                                     <t t-esc="doc.monthly_mileage"/> per
                                     <span t-if="doc.rate_type=='Weekly'"> week</span>
                                     <span t-elif="doc.rate_type=='Daily'"> day</span>
+                                    <span t-elif="doc.rate_type=='Term'"> term</span>
                                     <span t-else=""> month</span>. Any  additional mileage will be incur a
                                     $<t t-esc="doc.mileage_overage_rate"/> charge/km
                                 </p>
