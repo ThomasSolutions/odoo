@@ -26,7 +26,9 @@
                             <button name="check_update_portractor"
                                     string="Update Protractor" type="object" class="btn-primary" groups="fleet.fleet_group_manager"/>
                           <!--  <button name="do_something_else" string="Second action" groups="fleet.fleet_group_manager"/>-->
-                            <field name="lease_status" widget="statusbar"/>
+                            <!--<field name="state_id" widget="statusbar"/>-->
+
+                          <!-- <field name="lease_status" widget="statusbar"/>-->
                         </header>
                         <sheet>
                             <div class="oe_button_box" name="button_box">

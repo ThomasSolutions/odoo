@@ -225,6 +225,7 @@ class ThomasLease(models.Model):
         return self.env.ref('thomasfleet.lease_agreement').report_action(self)
 
     _name = 'thomaslease.lease'
+    active = fields.Boolean('Active', default=True, track_visibility="onchange")
     lease_number = fields.Char('Lease ID', track_visibility='onchange')
     po_number = fields.Char("Purchase Order #", track_visibility='onchange')
     po_comments = fields.Char("Purchase Order Comments", track_visibility='onchange')
@@ -569,11 +570,11 @@ class ThomasFleetLeaseLine(models.Model):
     def calc_daily_rate(self):
         amt = False
         r_type = self.product_id.rate_type
-        if r_type == 'monthly' or 'stelco_monthly':
+        if r_type == 'monthly' or r_type=='stelco_monthly':
             amt = round(self.price * .125, 2)
-        elif r_type == 'weekly' or 'stelco_weekly':
+        elif r_type == 'weekly' or r_type=='stelco_weekly':
             amt = round((self.price / .45) * .125, 2)
-        elif r_type == 'daily' or 'stelco_daily':
+        elif r_type == 'daily' or r_type=='stelco_daily':
             amt = round(self.price, 2)
         elif r_type == 'amd_daily_pu':
             amt = 31.90
@@ -591,11 +592,11 @@ class ThomasFleetLeaseLine(models.Model):
     def calc_weekly_rate(self):
         amt = False
         r_type = self.product_id.rate_type
-        if r_type == 'monthly' or 'stelco_monthly':
+        if r_type == 'monthly' or r_type=='stelco_monthly':
             amt = round(self.price * .45, 2)
-        elif r_type == 'weekly' or 'stelco_weekly':
+        elif r_type == 'weekly' or r_type=='stelco_weekly':
             amt = round(self.price, 2)
-        elif r_type == 'daily' or 'stelco_daily':
+        elif r_type == 'daily' or r_type=='stelco_daily':
             amt = round((self.price / .125) * .45, 2)
         elif r_type == 'amd_daily_pu':
             amt = 140.00
@@ -613,11 +614,11 @@ class ThomasFleetLeaseLine(models.Model):
     def calc_monthly_rate(self):
         amt = False
         r_type = self.product_id.rate_type
-        if r_type == 'monthly' or 'stelco_monthly':
+        if r_type == 'monthly' or r_type=='stelco_monthly':
             amt = round(self.price, 2)
-        elif r_type == 'weekly' or 'stelco_weekly':
+        elif r_type == 'weekly' or r_type=='stelco_weekly':
             amt = round(self.price / .45, 2)
-        elif r_type == 'daily' or 'stelco_daily':
+        elif r_type == 'daily' or r_type=='stelco_daily':
             amt = round(self.price / .125, 2)
         elif r_type == 'amd_daily_pu':
             amt = 663.00
