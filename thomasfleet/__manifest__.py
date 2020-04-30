@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.186',
+    'version': '0.188',
 
 
 
@@ -26,6 +26,7 @@
 
     # always loaded
     'data': [
+        'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
         'views/message_views.xml',
         'views/views.xml',
@@ -38,7 +39,6 @@
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
         'report/invoice_report_template.xml',
-        'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
         'data/thomasfleet.lease_status.csv',
         'data/thomasfleet.location.csv',

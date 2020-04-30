@@ -506,6 +506,11 @@ class ThomasFleetVehicle(models.Model):
 
         return res
 
+    def getMakeModelTrim(self,make,model,trim):
+        theTrim = self.env['thomasfleet.trim'].search(
+            [('brand_id.name', '=ilike', make), ('model_id.name', '=ilike', model), ('name', '=ilike', trim)],limit=1)
+        return theTrim
+
     @api.onchange('vin_id')
     #@api.one
     def _get_protractor_data(self):
@@ -554,31 +559,37 @@ class ThomasFleetVehicle(models.Model):
                 self.color = color
                 self.model_year = year
                 self.odometer = int(usage)
-
-                the_brand = self.env['fleet.vehicle.model.brand'].search([('name', '=ilike', themake)])
-                if the_brand:
-                    self.brand_id = the_brand.id
+                #try and find the complete product make,model,trim if not, try to add the missing part
+                vehicleMakeModelTrim = self.getMakeModelTrim(themake,themodel,thesubmodel)
+                if vehicleMakeModelTrim:
+                    self.brand_id = vehicleMakeModelTrim.brand_id
+                    self.model_id = vehicleMakeModelTrim.model_id
+                    self.trim_id = vehicleMakeModelTrim.id
                 else:
-                    brand_data={'name':themake}
-                    the_new_brand = self.env['fleet.vehicle.model.brand'].create(brand_data)
-                    self.brand_id = the_new_brand.id
+                    the_brand = self.env['fleet.vehicle.model.brand'].search([('name', '=ilike', themake)], limit=1)
+                    if the_brand:
+                        self.brand_id = the_brand.id
+                    else:
+                        brand_data={'name':themake}
+                        the_new_brand = self.env['fleet.vehicle.model.brand'].create(brand_data)
+                        self.brand_id = the_new_brand.id
 
-                the_model = self.env['fleet.vehicle.model'].search([('brand_id', '=', the_brand.id),('name', '=ilike', themodel)])
-                if the_model:
-                    self.model_id = the_model.id
-                else:
-                    model_data={'name': themodel, 'brand_id':self.brand_id.id}
-                    the_new_model = self.env['fleet.vehicle.model'].create(model_data)
-                    self.model_id = the_new_model.id
+                    the_model = self.env['fleet.vehicle.model'].search([('brand_id', '=', the_brand.id),('name', '=ilike', themodel)],limit=1)
+                    if the_model:
+                        self.model_id = the_model.id
+                    else:
+                        model_data={'name': themodel, 'brand_id':self.brand_id.id}
+                        the_new_model = self.env['fleet.vehicle.model'].create(model_data)
+                        self.model_id = the_new_model.id
 
-                the_trim = self.env['thomasfleet.trim'].search([('brand_id', '=', the_brand.id),('model_id', '=', the_model.id),('name', '=ilike', thesubmodel)])
-                if the_trim:
-                    print("Found Trim "+ the_trim.name)
-                    self.trim_id = the_trim.id
-                else:
-                    trim_data = {'name':thesubmodel, 'model_id':self.model_id.id, 'brand_id': self.brand_id.id}
-                    the_new_trim = self.env['thomasfleet.trim'].create(trim_data)
-                    self.trim_id = the_new_trim.id
+                    the_trim = self.env['thomasfleet.trim'].search([('brand_id', '=', the_brand.id),('model_id', '=', the_model.id),('name', '=ilike', thesubmodel)],limit=1)
+                    if the_trim:
+                        print("Found Trim "+ the_trim.name)
+                        self.trim_id = the_trim.id
+                    else:
+                        trim_data = {'name':thesubmodel, 'model_id':self.model_id.id, 'brand_id': self.brand_id.id}
+                        the_new_trim = self.env['thomasfleet.trim'].create(trim_data)
+                        self.trim_id = the_new_trim.id
 
                 self.engine = engine
                 self.license_plate = plate
