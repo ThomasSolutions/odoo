@@ -271,7 +271,8 @@ class ThomasFleetVehicle(models.Model):
         the_invoices = self.env['account.invoice']
         for record in self:
             record.lease_agreements_count = the_agreements.search_count([('vehicle_id', '=', record.id)])
-            record.lease_invoices_count = the_invoices.search_count([('vehicle_id', '=', record.id)])
+            record.lease_invoices_count = the_invoices.search_count([('id', 'in', tuple(record.lease_invoice_ids.ids))])
+
 
     def ok_pressed(self):
         self.with_context(manual_update=True).update_protractor()
@@ -761,7 +762,7 @@ class ThomasFleetVehicle(models.Model):
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_lease_invoices_action')
         res.update(
             #context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
-            domain=[('vehicle_id', '=', self.id)]
+            domain=[('id','in',tuple(self.lease_invoice_ids.ids))]
         )
         print("Unit" + str(self.unit_no))
 

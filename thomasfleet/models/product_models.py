@@ -24,10 +24,13 @@ class ThomasProduct(models.Model):
                                  track_visibility='onchange')
 
     gp_tax_schedule_id = fields.Char(compute="_compute_tax_schedule_id")
-
+    gp_uom = fields.Char(compute="_compute_uom")
 
     def _compute_tax_schedule_id(self):
         for rec in self:
             rec.gp_tax_schedule_id = 'HST ONT'
 
+    def _compute_uom(self):
+        for rec in self:
+            rec.gp_uom = 'EACH'
 

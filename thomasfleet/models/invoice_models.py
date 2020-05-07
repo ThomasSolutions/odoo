@@ -21,6 +21,7 @@ class ThomasAccountingInvoice(models.Model):
 
     units_display = fields.Char(string='Unit #s', compute='_compute_units_display')
     po_number = fields.Char(string='Purchase Order #')
+    gp_po_number = fields.Char(string='GP Purchase Order #', compute='_compute_gp_po')
     requires_manual_calculations = fields.Char(string="Needs Manual Calculation")
     invoice_from = fields.Date(string="Invoice From")
     invoice_to = fields.Date(string="Invoice To")
@@ -33,15 +34,19 @@ class ThomasAccountingInvoice(models.Model):
         states={'draft': [('readonly', False)]},
         help="Delivery address for current invoice.")
     customer_name = fields.Char("Customer", related="partner_id.compound_name")
-
+    initial_invoice = fields.Boolean("Initial Invoice", default=False)
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_delivery_address(self):
         addr = self.partner_id.address_get(['delivery'])
         self.partner_shipping_id = addr and addr.get('delivery')
 
-    def _compute_units_display(self):
+    def _compute_gp_po(self):
+        for rec in self:
+            if rec.po_number:
+                rec.gp_po_number = str.upper(rec.po_number)[0:20]
 
+    def _compute_units_display(self):
         for rec in self:
             units = []
             for veh in rec.vehicle_ids:
@@ -151,6 +156,7 @@ class ThomasAccountInvoiceLine(models.Model):
 
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
+
 
     # def init(self):
     #     recs = self.env['account.invoice.line'].search([])

@@ -1837,6 +1837,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 line_ids = []
                 next_month_line_ids = []
                 lease_invoices = []
+                initial_lease_ids=[]
+                initial_lease_invoices=[]
+                initial_unit_invoices=[]
                 unit_invoices = []
                 l_resp = {}
                 n_resp = {}
@@ -2039,36 +2042,45 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 next_month_line_id.price_unit = next_line_amount
 
                                 next_month_line_ids.append(next_month_line_id.id)
+                                if lease.invoice_ids:
+                                    initial_lease_invoices.extend(lease.invoice_ids.ids)
+                                if lease.vehicle_id.lease_invoice_ids:
+                                    initial_unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
 
                             if "Dofasco" in lease.customer_id.name:
                                 inv_date = datetime(last_to_date.year, last_to_date.month, 1)
                             comment = ''
                             if len(leases)==1 and len(lease.lease_lines) == 1:
                                 comment = n_resp['formula']
-                            a_next_invoice = accounting_invoice.create({
-                                'partner_id': lease.customer_id.id,
-                                'vehicle_id': lease.vehicle_id.id,
-                                'comment': comment,
-                                'date_invoice': inv_date,  # lease.invoice_generation_date,
-                                'date_due': lease.invoice_due_date,
-                                'invoice_from': prev_month_from,
-                                'invoice_to': prev_month_to,
-                                'invoice_posting_date': lease.invoice_generation_date,
-                                'invoice_generation_date': lease.invoice_generation_date,
-                                'type': 'out_invoice',
-                                'state': 'draft',
-                                'po_number': lease.po_number,
-                                # 'partner_invoice_id': lease.partner_invoice_id.id,
-                                'partner_shipping_id': lease.partner_shipping_id.id,
-                                'requires_manual_calculations': lease.requires_manual_calculations,
-                                'invoice_line_ids': [(6, 0, next_month_line_ids)]
-                            })
+                            initial_lease_ids.append(lease.id)
+                a_next_invoice = accounting_invoice.create({
+                    'partner_id': lease.customer_id.id,
+                    'vehicle_id': lease.vehicle_id.id,
+                    'comment': comment,
+                    'date_invoice': inv_date,  # lease.invoice_generation_date,
+                    'date_due': lease.invoice_due_date,
+                    'invoice_from': prev_month_from,
+                    'invoice_to': prev_month_to,
+                    'invoice_posting_date': lease.invoice_generation_date,
+                    'invoice_generation_date': lease.invoice_generation_date,
+                    'type': 'out_invoice',
+                    'initial_invoice':True,
+                    'state': 'draft',
+                    'po_number': lease.po_number,
+                    # 'partner_invoice_id': lease.partner_invoice_id.id,
+                    'partner_shipping_id': lease.partner_shipping_id.id,
+                    'requires_manual_calculations': lease.requires_manual_calculations,
+                    'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                })
 
-                            lease_invoices.append(a_next_invoice.id)
-                            new_invoices.append(a_next_invoice)
-                            unit_invoices.append(a_next_invoice.id)
-                            lease.aggregation_id = False
-                    # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
+                #lease_invoices.append(a_next_invoice.id)
+                initial_lease_invoices.append(a_next_invoice.id)
+                new_invoices.append(a_next_invoice)
+                #unit_invoices.append(a_next_invoice.id)
+                initial_unit_invoices.append(a_next_invoice.id)
+                lease.aggregation_id = False
+                #lease.run_initial_invoicing = False
+                # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
                 comment = ''
                 if len(leases) == 1 and len(lease.lease_lines) == 1:
                     comment = l_resp['formula']
@@ -2098,12 +2110,44 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 # set the invoice ids for the lease agreement
                 for lease in leases:
                     if self.aggregate_lease_selected(lease):
-                        lease.invoice_ids = [(6, 0, lease_invoices)]
-                        lease.run_initial_invoicing = False
-                        lease.last_invoice_to = self.determine_last_invoice_to(lease)
+                        if lease.id in initial_lease_ids:
+                            if lease.invoice_ids:
+                                initial_lease_invoices.extend(lease.invoice_ids.ids)
+                            if lease_invoices:
+                                initial_lease_invoices.extend(lease_invoices)
+                            lease.invoice_ids = [(6, 0, initial_lease_invoices)]
+                            #lease.last_invoice_to = self.determine_last_invoice_to(lease)
+                            #unit_invoices.extend(initial_unit_invoices)
+                            #lease_invoices.extend(initial_lease_invoices)
+                            if lease.vehicle_id.lease_invoice_ids:
+                                initial_unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            if unit_invoices:
+                                initial_unit_invoices.extend(unit_invoices)
+                            for vehicle in lease.vehicle_id:
+                               vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, initial_unit_invoices)]
+                            initial_lease_ids.remove(lease.id)
+                            #if lease.invoice_ids:
+                            #    lease_invoices.extend(lease.invoice_ids.ids)
+                            #if lease.vehicle_id.lease_invoice_ids:
+                             #   unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            #lease.invoice_ids = [(6, 0, lease_invoices)]
+                            #lease.run_initial_invoicing = False
+                            lease.last_invoice_to = self.determine_last_invoice_to(lease)
 
-                        for vehicle in lease.vehicle_id:
-                            vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
+                            #for vehicle in lease.vehicle_id:
+                            #    vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
+
+                        else:
+                            if lease.invoice_ids:
+                                lease_invoices.extend(lease.invoice_ids.ids)
+                            if lease.vehicle_id.lease_invoice_ids:
+                                unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            lease.invoice_ids = [(6, 0, lease_invoices)]
+                            #lease.run_initial_invoicing = False
+                            lease.last_invoice_to = self.determine_last_invoice_to(lease)
+
+                            for vehicle in lease.vehicle_id:
+                                vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
 
         return new_invoices
 
