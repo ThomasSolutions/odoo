@@ -19,7 +19,7 @@ class ThomasAccountingInvoice(models.Model):
     vehicle_ids = fields.Many2many('fleet.vehicle',string='Units',
                                   relation='unit_lease_account_invoice_rel')
 
-    units_display = fields.Char(string='Unit #s', compute='_compute_units_display')
+    units_display = fields.Text(string='Unit #s', compute='_compute_units_display')
     po_number = fields.Char(string='Purchase Order #')
     gp_po_number = fields.Char(string='GP Purchase Order #', compute='_compute_gp_po')
     requires_manual_calculations = fields.Char(string="Needs Manual Calculation")
@@ -89,7 +89,7 @@ class ThomasAccountingInvoice(models.Model):
     @api.multi
     def unlink(self):
         for invoice in self:
-            if invoice.state not in ('draft', 'cancel'):
+            if invoice.state not in ('draft', 'cancel', 'paid'):
                 raise models.UserError(_(
                     'You cannot delete an invoice which is not draft or cancelled. You should create a credit note instead.'))
             elif invoice.move_name:

@@ -23,6 +23,7 @@
         <field name="domain">[('type','=','out_invoice')]</field>
         <field name="context">{'type':'out_invoice', 'journal_type': 'sale'}</field>
     </record>-->
+
       <record id="thomase_invoice_form" model="ir.ui.view">
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form" />
@@ -31,6 +32,9 @@
                     <!--<xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                        <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
                     </xpath>-->
+                     <xpath expr="//button[@name='action_invoice_draft']" position="before">
+                    <button name="action_invoice_cancel" type="object" states="draft,open,paid" string="Cancel Invoice" groups="account.group_account_invoice"/>
+                </xpath>
                     <xpath expr="//field[@name='partner_id']" position="after">
                        <field name="partner_shipping_id" attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
                    </xpath>
