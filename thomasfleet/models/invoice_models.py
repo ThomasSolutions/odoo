@@ -44,7 +44,8 @@ class ThomasAccountingInvoice(models.Model):
     def _compute_gp_po(self):
         for rec in self:
             if rec.po_number:
-                rec.gp_po_number = str.upper(rec.po_number)[0:20]
+                s = ''.join([i if ord(i) < 128 else '' for i in str.upper(rec.po_number)[0:20]])
+                rec.gp_po_number = s
 
     def _compute_units_display(self):
         for rec in self:

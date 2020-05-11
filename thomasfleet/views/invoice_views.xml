@@ -65,6 +65,8 @@
                         <field name="partner_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload': True}"/>
                         <field name="customer_name"/>
                         <field name="units_display"/>
+                        <field name="gp_po_number"/>
+                        <field name="initial_invoice"/>
              </xpath>
                  </data>
            </field>

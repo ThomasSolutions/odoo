@@ -2053,25 +2053,25 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             if len(leases)==1 and len(lease.lease_lines) == 1:
                                 comment = n_resp['formula']
                             initial_lease_ids.append(lease.id)
-                a_next_invoice = accounting_invoice.create({
-                    'partner_id': lease.customer_id.id,
-                    'vehicle_id': lease.vehicle_id.id,
-                    'comment': comment,
-                    'date_invoice': inv_date,  # lease.invoice_generation_date,
-                    'date_due': lease.invoice_due_date,
-                    'invoice_from': prev_month_from,
-                    'invoice_to': prev_month_to,
-                    'invoice_posting_date': lease.invoice_generation_date,
-                    'invoice_generation_date': lease.invoice_generation_date,
-                    'type': 'out_invoice',
-                    'initial_invoice':True,
-                    'state': 'draft',
-                    'po_number': lease.po_number,
-                    # 'partner_invoice_id': lease.partner_invoice_id.id,
-                    'partner_shipping_id': lease.partner_shipping_id.id,
-                    'requires_manual_calculations': lease.requires_manual_calculations,
-                    'invoice_line_ids': [(6, 0, next_month_line_ids)]
-                })
+                            a_next_invoice = accounting_invoice.create({
+                                'partner_id': lease.customer_id.id,
+                                'vehicle_id': lease.vehicle_id.id,
+                                'comment': comment,
+                                'date_invoice': inv_date,  # lease.invoice_generation_date,
+                                'date_due': lease.invoice_due_date,
+                                'invoice_from': prev_month_from,
+                                'invoice_to': prev_month_to,
+                                'invoice_posting_date': lease.invoice_generation_date,
+                                'invoice_generation_date': lease.invoice_generation_date,
+                                'type': 'out_invoice',
+                                'initial_invoice':True,
+                                'state': 'draft',
+                                'po_number': lease.po_number,
+                                # 'partner_invoice_id': lease.partner_invoice_id.id,
+                                'partner_shipping_id': lease.partner_shipping_id.id,
+                                'requires_manual_calculations': lease.requires_manual_calculations,
+                                'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                            })
 
                 #lease_invoices.append(a_next_invoice.id)
                 initial_lease_invoices.append(a_next_invoice.id)
