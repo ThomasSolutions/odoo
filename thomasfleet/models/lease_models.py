@@ -1617,10 +1617,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 quantity = num_days  # (weeks*7) + days
                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
             elif the_lease.id.rate_type == 'Monthly' or the_lease.id.rate_type == 'stelco_monthly':
-                if "Dofasco" in the_lease.id.customer_id.name:
-                    description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
-                else:
-                    description = self.create_monthly_invoice_line_description(start_date, end_date, month, year,
+                #if "Dofasco" in the_lease.id.customer_id.name:
+                #    description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
+                #else:
+                #    description = self.create_monthly_invoice_line_description(start_date, end_date, month, year,
+                #                                                               the_lease.id)
+                description = self.create_monthly_invoice_line_description(start_date, end_date, month, year,
                                                                                the_lease.id)
             else:
                 description = line.description
@@ -1733,12 +1735,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                     description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
                 elif the_lease.id.rate_type == 'Monthly' or the_lease.id.rate_type == 'stelco_monthly':
-                    if "Dofasco" in the_lease.id.customer_id.name:
-                        description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
-                    else:
-                        description = self.create_monthly_invoice_line_description(prev_month_from, prev_month_to,
-                                                                                   prev_month, prev_year,
-                                                                                   the_lease.id)
+                    # if "Dofasco" in the_lease.id.customer_id.name:
+                    #     description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
+                    # else:
+                    #     description = self.create_monthly_invoice_line_description(prev_month_from, prev_month_to,
+                    #                                                                prev_month, prev_year,
+                    #                                                                the_lease.id)
+                    description = self.create_monthly_invoice_line_description(prev_month_from, prev_month_to,
+                                                                               prev_month, prev_year,
+                                                                               the_lease.id)
                 else:
                     description = next_line.description
 
@@ -1848,6 +1853,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                 for lease in leases:
                     if self.aggregate_lease_selected(lease):
+                        print("==========aggregate lease agreement loop===================")
                         dt_inv_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
                         end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
 
@@ -1932,12 +1938,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 t_quantity = str(weeks) + " weeks " + str(days) + " days "
                                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
                             elif lease.rate_type == 'Monthly' or lease.rate_type == 'stelco_monthly':
-                                if "Dofasco" in lease.customer_id.name:
-                                    description = self.create_dofasco_monthly_invoice_line_description(lease)
-                                else:
-                                    description = self.create_monthly_invoice_line_description(start_date, end_date,
-                                                                                               month, year,
-                                                                                               lease)
+                                description = self.create_monthly_invoice_line_description(start_date,end_date,month,year,lease)
                             else:
                                 description = line.description
 
@@ -2018,13 +2019,17 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     t_quantity = str(weeks) + " week " + str(days) + " days "
                                     description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
                                 elif lease.rate_type == 'Monthly' or lease.rate_type == 'stelco_monthly':
-                                    if "Dofasco" in lease.customer_id.name:
-                                        description = self.create_dofasco_monthly_invoice_line_description(lease)
-                                    else:
-                                        description = self.create_monthly_invoice_line_description(prev_month_from,
-                                                                                                   prev_month_to,
-                                                                                                   prev_month,
-                                                                                                   prev_year, lease)
+                                    # if "Dofasco" in lease.customer_id.name:
+                                    #     description = self.create_dofasco_monthly_invoice_line_description(lease)
+                                    # else:
+                                    #     description = self.create_monthly_invoice_line_description(prev_month_from,
+                                    #                                                                prev_month_to,
+                                    #                                                                prev_month,
+                                    #                                                                prev_year, lease)
+                                    description = self.create_monthly_invoice_line_description(prev_month_from,
+                                                                                               prev_month_to,
+                                                                                               prev_month,
+                                                                                               prev_year, lease)
                                 else:
                                     description = next_line.description
 
@@ -2073,12 +2078,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'invoice_line_ids': [(6, 0, next_month_line_ids)]
                             })
 
-                #lease_invoices.append(a_next_invoice.id)
-                initial_lease_invoices.append(a_next_invoice.id)
-                new_invoices.append(a_next_invoice)
-                #unit_invoices.append(a_next_invoice.id)
-                initial_unit_invoices.append(a_next_invoice.id)
-                lease.aggregation_id = False
+                            #lease_invoices.append(a_next_invoice.id)
+                            initial_lease_invoices.append(a_next_invoice.id)
+                            new_invoices.append(a_next_invoice)
+                            #unit_invoices.append(a_next_invoice.id)
+                            initial_unit_invoices.append(a_next_invoice.id)
+                            lease.aggregation_id = False
                 #lease.run_initial_invoicing = False
                 # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
                 comment = ''
@@ -2131,7 +2136,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             #if lease.vehicle_id.lease_invoice_ids:
                              #   unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
                             #lease.invoice_ids = [(6, 0, lease_invoices)]
-                            #lease.run_initial_invoicing = False
+                            #
+
+                            lease.run_initial_invoicing = False
                             lease.last_invoice_to = self.determine_last_invoice_to(lease)
 
                             #for vehicle in lease.vehicle_id:
