@@ -1496,7 +1496,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 year_start_str = ' ' + start_d.strftime('%Y')
 
             description = start_d_str + year_start_str + ' - ' + end_d_str + ' (' + str(just_days) +' days) ' \
-                          + year_end_str + ' - Monthly Lease: for Unit # ' + unit_str
+                          + year_end_str + ' - Lease: for Unit # ' + unit_str
 
 
         return description
@@ -1569,7 +1569,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 unit_str = str(product.name)
 
             if num_days < end_of_month and not the_lease.id.rate_type == 'Bi-Weekly' \
-                    and not the_lease.id.rate_type == 'Monthly':
+                    and not the_lease.id.rate_type == 'Monthly' and not the_lease.id.rate_type == 'Stelco Monthly':
 
                 description = self.create_daily_invoice_line_description(start_date, end_date, the_lease.id)
                 quantity = num_days
@@ -1601,7 +1601,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 quantity = '{0:,.2f}'.format((rel_days + 1) / 14)
                 # (rel_weeks + (rel_days - (rel_weeks*7))/7)/ 2
                 # (3 + ((rel_days - (rel_weeks * 7)) / 7)) / 2
-            elif the_lease.id.rate_type == 'Daily' or the_lease.id.rate_type == 'stelco_daily':
+            elif the_lease.id.rate_type == 'Daily' or the_lease.id.rate_type == 'Stelco Daily':
                 quantity = num_days
                 line_amount = res['rate']  # line.price
 
@@ -1609,14 +1609,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 # \Daily Lease for Unit # ' + the_lease.id.vehicle_id.unit_no + ' - '+ \
                 # start_date_str + ' to ' + end_date_str + ' ' + year
 
-            elif the_lease.id.rate_type == 'Weekly' or the_lease.id.rate_type == 'stelco_weekly':
+            elif the_lease.id.rate_type == 'Weekly' or the_lease.id.rate_type == 'Stelco Weekly':
                 days = num_days % 7
                 weeks = math.floor(num_days / 7)
                 t_quantity = str(weeks) + " weeks " + str(days) + " days "
                 line_amount = res["rate"]  # line.price / 7
                 quantity = num_days  # (weeks*7) + days
                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
-            elif the_lease.id.rate_type == 'Monthly' or the_lease.id.rate_type == 'stelco_monthly':
+            elif the_lease.id.rate_type == 'Monthly' or the_lease.id.rate_type == 'Stelco Monthly':
                 #if "Dofasco" in the_lease.id.customer_id.name:
                 #    description = self.create_dofasco_monthly_invoice_line_description(the_lease.id)
                 #else:
@@ -1889,7 +1889,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 unit_str = str(product.name)
 
                             if num_days < end_of_month and not lease.rate_type == 'Bi-Weekly' \
-                                    and not lease.rate_type == 'Monthly':
+                                    and not lease.rate_type == 'Monthly' and not lease.rate_type == 'Stelco Monthly':
 
                                 description = self.create_daily_invoice_line_description(start_date, end_date,
                                                                                          lease)
@@ -1923,21 +1923,21 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 quantity = '{0:,.2f}'.format(
                                     (rel_days + 1) / 14)  # (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
 
-                            elif lease.rate_type == 'Daily' or lease.rate_type == 'stelco_daily':
+                            elif lease.rate_type == 'Daily' or lease.rate_type == 'Stelco Daily':
                                 quantity = num_days
                                 line_amount = l_resp['rate']  # line.price
 
                                 description = self.create_daily_invoice_line_description(start_date, end_date, lease)
                                 # start_date_str + ' - ' + end_date_str + ' ' + year + ' - Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
 
-                            elif lease.rate_type == 'Weekly' or lease.rate_type == 'stelco_weekly':
+                            elif lease.rate_type == 'Weekly' or lease.rate_type == 'Stelco Weekly':
                                 days = num_days % 7
                                 weeks = math.floor(num_days / 7)
                                 line_amount = l_resp["rate"]  # line.price / 7
                                 quantity = (weeks * 7) + days
                                 t_quantity = str(weeks) + " weeks " + str(days) + " days "
                                 description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
-                            elif lease.rate_type == 'Monthly' or lease.rate_type == 'stelco_monthly':
+                            elif lease.rate_type == 'Monthly' or lease.rate_type == 'Stelco Monthly':
                                 description = self.create_monthly_invoice_line_description(start_date,end_date,month,year,lease)
                             else:
                                 description = line.description
