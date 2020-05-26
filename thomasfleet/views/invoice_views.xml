@@ -33,7 +33,7 @@
                        <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
                     </xpath>-->
                      <xpath expr="//button[@name='action_invoice_draft']" position="before">
-                    <button name="action_invoice_cancel" type="object" states="draft,open,paid" string="Cancel Invoice" groups="account.group_account_invoice"/>
+                   <!-- <button name="action_invoice_cancel" type="object" states="draft,open,paid" string="Cancel Invoice" groups="account.group_account_invoice"/>-->
                 </xpath>
                     <xpath expr="//field[@name='partner_id']" position="after">
                        <field name="partner_shipping_id" attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
@@ -52,7 +52,6 @@
                     </xpath>
                       <xpath expr="//tree/field[@name='sequence']" position="after">
                         <field name="vehicle_id"  context="{'lease':True}"/>
-                        <field name="unit_no"/>
                       </xpath>
                  </data>
            </field>
