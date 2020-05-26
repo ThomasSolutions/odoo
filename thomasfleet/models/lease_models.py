@@ -539,7 +539,7 @@ class ThomasLease(models.Model):
 
 class ThomasFleetLeaseLine(models.Model):
     _name = 'thomaslease.lease_line'
-
+    '''
     def init(self):
         recs = self.env['thomaslease.lease_line'].search([])
 
@@ -553,7 +553,7 @@ class ThomasFleetLeaseLine(models.Model):
                     rec.monthly_rate = rec.calc_monthly_rate()
             if not rec.description:
                 rec.description = rec.product_id.description_sale
-
+    '''
     @api.depends('product_id')
     def default_description(self):
         return self.product_id.description_sale
@@ -1630,6 +1630,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             line_id = invoice_line.create({
                 'product_id': product.id,
                 'lease_line_id': line.id,
+                'vehicle_id': line.vehicle_id.id,
                 'price_unit': line_amount,
                 'quantity': quantity,
                 'name': description,
@@ -1750,6 +1751,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 next_month_line_id = invoice_line.create({
                     'product_id': next_line.product_id.id,
                     'lease_line_id': next_line.id,
+                    'vehicle_id': next_line.vehicle_id.id,
                     'price_unit': next_line_amount,
                     'quantity': quantity,
                     'name': description,
@@ -1946,6 +1948,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             line_id = invoice_line.create({
                                 'product_id': product.id,
                                 'lease_line_id': line.id,
+                                'vehicle_id': line.vehicle_id.id,
                                 'price_unit': line_amount,
                                 'quantity': quantity,
                                 'name': description,
@@ -2036,6 +2039,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 next_month_line_id = invoice_line.create({
                                     'product_id': product.id,
                                     'lease_line_id': next_line.id,
+                                    'vehicle_id': next_line.vehicle_id.id,
                                     'price_unit': next_line_amount,
                                     'quantity': quantity,
                                     'name': description,

@@ -157,7 +157,7 @@ class ThomasAccountInvoiceLine(models.Model):
 
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
-
+    vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")
 
     # def init(self):
     #     recs = self.env['account.invoice.line'].search([])

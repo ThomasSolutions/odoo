@@ -51,7 +51,8 @@
                     </field>
                     </xpath>
                       <xpath expr="//tree/field[@name='sequence']" position="after">
-                        <field name="unit_no" />
+                        <field name="vehicle_id"  context="{'lease':True}"/>
+                        <field name="unit_no"/>
                       </xpath>
                  </data>
            </field>
@@ -72,17 +73,6 @@
            </field>
         </record>
 
-    <!--  <record id="thomase_invoice_form_sale" model="ir.ui.view">
-            <field name="model">account.invoice</field>
-            <field name="inherit_id" ref="sale.account_invoice_form" />
-            <field name="arch" type="xml">
-                <data>
-                    <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
-                       <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
-                    </xpath>
-                 </data>
-           </field>
-        </record>-->
        <record id="thomas_view_account_invoice_filter" model="ir.ui.view">
             <field name="name">thomas.invoice.select</field>
             <field name="model">account.invoice</field>
@@ -95,72 +85,19 @@
                 </data>
             </field>
         </record>
-        <!--
-        <record id="view_account_invoice_filter_inherit_invoices" model="ir.ui.view">
-            <field name="name">account.invoice.select.invoices</field>
-            <field name="model">account.invoice</field>
-            <field name="mode">primary</field>
-            <field name="inherit_id" ref="view_account_invoice_filter"/>
-            <field name="arch" type="xml">
-                <data>
-                    <xpath expr="filter[@name='invoices']" position="attributes">
-                        <attribute name="string">Not Draft</attribute>
-                    </xpath>
-                    <filter name="refunds" position="replace"/>
-                </data>
-            </field>
-        </record>
-        <record id="thomaslease_lease_invoice_action" model="ir.actions.act_window">
-            <field name="name">Customer Invoices</field>
-            <field name="res_model">account.invoice</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
-            <field eval="False" name="view_id"/>
-            <field name="domain">[('type','=','out_invoice')]</field>
-            <field name="context">{'type':'out_invoice', 'journal_type': 'sale', 'lease':True}</field>
-            <field name="search_view_id" ref="account.view_account_invoice_filter_inherit_invoices"/>
-            <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
-                Click to create a customer invoice.
-              </p><p>
-                Odoo's electronic invoicing allows to ease and fasten the
-                collection of customer payments. Your customer receives the
-                invoice by email and he can pay online and/or import it
-                in his own system.
-              </p><p>
-                The discussions with your customer are automatically displayed at
-                the bottom of each invoice.
-              </p>
-            </field>
-        </record>-->
-    <record id="thomaslease_action_invoice_tree1" model="ir.actions.act_window">
-            <field name="name">Customer Invoices</field>
-            <field name="res_model">account.invoice</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
-            <field eval="False" name="view_id"/>
-            <field name="domain">[('type','=','out_invoice')]</field>
+
+      <!--inherited invoie action to pass along context-->
+    <record id="account.action_invoice_tree1" model="ir.actions.act_window">
+            <field name="name">Lease Invoices</field>
             <field name="context">{'type':'out_invoice','show_internal_division':True, 'journal_type': 'sale', 'lease':True}</field>
-            <field name="search_view_id" ref="account.view_account_invoice_filter_inherit_invoices"/>
-            <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
-                Click to create a customer invoice.
-              </p><p>
-                Odoo's electronic invoicing allows to ease and fasten the
-                collection of customer payments. Your customer receives the
-                invoice by email and he can pay online and/or import it
-                in his own system.
-              </p><p>
-                The discussions with your customer are automatically displayed at
-                the bottom of each invoice.
-              </p>
-            </field>
         </record>
 
 
 
         <menuitem name="Customer Invoices"  id="work_orders_main" sequence="2" groups="account.group_account_invoice"/>
 
-        <menuitem name="Customer Invoices" action="account.action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+       <menuitem name="Customer Invoices" action="account.action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+       <!-- <menuitem name="Customer Invoices" action="thomaslease_action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />-->
+
   </data>
 </odoo>
