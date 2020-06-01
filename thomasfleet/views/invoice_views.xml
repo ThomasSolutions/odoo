@@ -36,8 +36,9 @@
                    <!-- <button name="action_invoice_cancel" type="object" states="draft,open,paid" string="Cancel Invoice" groups="account.group_account_invoice"/>-->
                 </xpath>
                     <xpath expr="//field[@name='partner_id']" position="after">
-                       <field name="partner_shipping_id" attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
+                       <field name="partner_shipping_id" context="{'default_type':'delivery'}" options='{"always_reload": True}' attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
                    </xpath>
+
                      <xpath expr="//field[@name='partner_id']" position="after">
                         <field name="po_number" />
                     <field name="lease_ids" widget="many2many_tags"/>
