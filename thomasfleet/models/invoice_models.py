@@ -35,6 +35,9 @@ class ThomasAccountingInvoice(models.Model):
         help="Delivery address for current invoice.")
     customer_name = fields.Char("Customer", related="partner_id.compound_name")
     initial_invoice = fields.Boolean("Initial Invoice", default=False)
+    invoice_line_ids = fields.One2many('account.invoice.line', 'invoice_id', string='Invoice Lines',
+                                       oldname='invoice_line',
+                                       readonly=True, states={'draft': [('readonly', False)]}, copy=True)
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_delivery_address(self):
@@ -154,7 +157,7 @@ class ThomasAccountingInvoice(models.Model):
 
 class ThomasAccountInvoiceLine(models.Model):
     _inherit = "account.invoice.line"
-
+    _order = 'vehicle_id'
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")
