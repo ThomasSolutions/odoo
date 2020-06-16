@@ -53,10 +53,6 @@
                     </xpath>
                       <xpath expr="//tree/field[@name='sequence']" position="after">
                         <field name="vehicle_id"  context="{'lease':True}"/>
-<<<<<<< HEAD
-                        <field name="unit_no"/>
-=======
->>>>>>> master
                       </xpath>
                  </data>
            </field>
