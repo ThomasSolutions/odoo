@@ -33,7 +33,7 @@
                 <t t-call="web.external_layout">
                     <div class="page" style="page-break-after:always;page-break-inside:avoid">
                             <div class="row">
-                               <h1 class="text-center">Lease Agreement</h1>
+                               <h1 class="text-center">Rental Agreement</h1>
                             </div>
                         <!--<div class="row">
                             <div class="col-xs-8">
@@ -44,7 +44,7 @@
                         </div>-->
                         <div class="row">
                             <div class="col-xs-3">
-                                <b>Lease Start Date:</b>
+                                <b>Rental Start Date:</b>
                                 <t t-esc="doc.lease_start_date"/>
                             </div>
                             <div class="col-xs-2">
@@ -223,7 +223,7 @@
                         <br/>
                         <div class="row">
                             <div class="col-xs-4">
-                                <h3>Lease Rates</h3>
+                                <h3>Rental Rates</h3>
                             </div>
                         </div>
                         <table class="table table-condensed">
@@ -343,7 +343,7 @@
                                 <b>Fuel:</b>
                                 <t t-esc="doc.fuel_at_lease"/>
                                 <br/>
-                                <b>Lease Notes:</b>
+                                <b>Rental Notes:</b>
                                 <t t-esc="doc.lease_notes"/>
                                 <br/>
                                 <b>Inspection Notes:</b>
@@ -399,7 +399,7 @@
                             <div class="col-xs-12">
                                 <p>B) <b>Rate Type:</b>
                                     <t t-esc="doc.rate_calc_description"/></p>
-                                <u>Lease Duration Calculations:</u>
+                                <u>Rental Duration Calculations:</u>
                                     <t t-raw="doc.rate_calc_example_for_report"/>
                             </div>
                         </div>
@@ -477,6 +477,24 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-8">
+                                <p>I) Vehicles returned with shareable damages will stay on rent unit repair costs are authorized by customer
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>J) Surcharges will apply for any tickets or 407 charges
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>K) Off-rented vehicles that require Thomas Solution to pick up vehicle - charges will apply
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
                                 <p>Other:
                                     <hr/>
                                 </p>
@@ -546,7 +564,7 @@
                             </div>
                         <div class="row">
                             <div class="col-xs-4">
-                                <h3>Lease Return</h3>
+                                <h3>Rental Return</h3>
                             </div>
                         </div>
                         <div class="row">
@@ -594,7 +612,7 @@
                                 <b>Fuel:</b>
                                 <!--<t t-esc="doc.fuel_at_lease"/>-->
                                 <br/>
-                                <b>Lease Notes:</b>
+                                <b>Rental Notes:</b>
                                 <t t-esc="doc.lease_notes"/>
                                 <br/>
                                 <b>Inspection Notes:</b>
