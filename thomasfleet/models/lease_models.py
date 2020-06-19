@@ -228,7 +228,7 @@ class ThomasLease(models.Model):
 
     _name = 'thomaslease.lease'
     active = fields.Boolean('Active', default=True, track_visibility="onchange")
-    lease_number = fields.Char('Lease ID', track_visibility='onchange')
+    lease_number = fields.Char('Rental ID', track_visibility='onchange')
     po_number = fields.Char("Purchase Order #", track_visibility='onchange')
     po_comments = fields.Char("Purchase Order Comments", track_visibility='onchange')
     contract_number = fields.Char("Contract #", track_visibility='onchange')
@@ -241,7 +241,7 @@ class ThomasLease(models.Model):
                               ('both', 'Repairs and Invoice Pending'),
                               ('closed', 'Closed')], string="Status", default='draft', track_visibility='onchange')
 
-    lease_start_date = fields.Date("Lease Start Date", track_visibility='onchange')  # , required=True)
+    lease_start_date = fields.Date("Rental Start Date", track_visibility='onchange')  # , required=True)
 
     billing_start_date = fields.Date("Billing Start Date", track_visibility='onchange')
 
@@ -269,7 +269,7 @@ class ThomasLease(models.Model):
     requires_manual_calculations = fields.Boolean("Exception", default=False,
                                                   track_visibility='onchange')
     billing_notes = fields.Char("Billing Notes", track_visibility='onchange')
-    min_lease_end_date = fields.Date("Minimum Lease End Date", track_visibility='onchange')
+    min_lease_end_date = fields.Date("Minimum Rental End Date", track_visibility='onchange')
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                       ('three_quarter', '3/4'), ('full', 'Full')], default='full'
                                      , track_visibility='onchange')
@@ -277,16 +277,16 @@ class ThomasLease(models.Model):
                                        ('three_quarter', '3/4'), ('full', 'Full')],
                                       track_visibility='onchange')
 
-    lease_out_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Lease",
+    lease_out_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Rent",
                                             domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_out')]",
                                             track_visibility='onchange')
     lease_return_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Return",
                                                domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_in')]",
                                                track_visibility='onchange')
-    mileage_at_lease = fields.Float(string='Lease Start Odometer', related='lease_out_odometer_id.value', readonly=True,
+    mileage_at_lease = fields.Float(string='Rent Start Odometer', related='lease_out_odometer_id.value', readonly=True,
                                     track_visibility='onchange')
 
-    mileage_at_return = fields.Float(string='Lease Return Odometer', related='lease_return_odometer_id.value',
+    mileage_at_return = fields.Float(string='Rent Return Odometer', related='lease_return_odometer_id.value',
                                      readonly=True, track_visibility='onchange')
 
     delivery_charge = fields.Float(string='Delivery Charge', track_visibility='onchange')
@@ -314,7 +314,7 @@ class ThomasLease(models.Model):
                                  track_visibility='onchange')  # required=True)
 
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True, track_visibility='onchange')
-    lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default=True,
+    lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Rental Lines', change_default=True,
                                   copy=True, auto_join=True, track_visibility='onchange')
     # product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
 
@@ -348,7 +348,7 @@ class ThomasLease(models.Model):
                                   track_visibility='onchange')
     # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
     inclusions_discount = fields.Float('Inclusion Discount', track_visibility='onchange')
-    lease_notes = fields.Text("Lease Notes", track_visibility='onchange')
+    lease_notes = fields.Text("Rental Notes", track_visibility='onchange')
     inspection_notes = fields.Text("Inspection Notes", track_visibility='onchange')
     additional_billing = fields.Char("Additional Notes", track_visibility='onchange')
     payment_method = fields.Char("Payment Method", track_visibility='onchange')
@@ -359,7 +359,7 @@ class ThomasLease(models.Model):
     transponder_id = fields.Many2one('thomasfleet.accessory', string="407 Transponder",
                                      domain="[('type.name','=','407 Transponder')]", track_visibility='onchange')
 
-    aggregation_id = fields.Char("Aggregate ID", track_visibility='onchange')
+    aggregation_id = fields.Char("Aggregate ID")
     rate_calc_description = fields.Char("Rate Note", compute='_compute_rate_calc_description')
     rate_calc_example = fields.Text("Rate Calculations", compute='_compute_rate_calc_example')
     rate_calc_example_for_report = fields.Html("Rate Calculations", compute='_compute_rate_calc_example_html')
