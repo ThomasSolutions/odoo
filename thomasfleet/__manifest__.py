@@ -16,14 +16,11 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.202',
-
-
-
+    'version': '0.203',
 
 
     # any module necessary for this one to work correctly
-    'depends': ['base','fleet', 'account'],
+    'depends': ['base','fleet','account', 'web_progress'],
 
     # always loaded
     'data': [
@@ -64,5 +61,7 @@
     'demo': [
         'demo/demo.xml',
     ],
+    'installable': True,
+    'auto_install': True,
 }
 

@@ -709,10 +709,32 @@ class ThomasFleetReturnWizard(models.TransientModel):
 class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     _name = 'thomaslease.lease.invoice.wizard'
     lease_records = []
+
     def _default_lease_ids(self):
         # for the_id in self.env.context.get('active_ids'):
         #    print(the_id.name)
-        leases_ids = self.env.context.get('active_ids')
+        leases_ids = self.env.context.get('active_ids',[])
+        the_leases = self.env['thomaslease.lease'].browse(leases_ids)
+        for a_lease in self.web_progress_iter(the_leases, msg="Processing Agreements"):
+            #a_lease = self.env['thomaslease.lease'].browse(lease)
+            #print("Validating Lease: "+ a_lease.lease_number)
+            if not a_lease.lease_lines:
+                raise models.ValidationError(
+                    'Lease for Unit #' + a_lease.unit_no + ' needs a line item product before it can be invoiced')
+            if a_lease.state == 'closed':
+                raise models.ValidationError('Lease for Unit #' + a_lease.unit_no + ' is Closed and cannot be invoiced')
+            else:
+                #print("Setting Dates " + a_lease.lease_number)
+                vals = self.get_invoice_dates(a_lease, False)
+                a_lease.write(vals)
+                #a_lease.update(vals)
+            #self.lease_records.append(a_lease)
+        return leases_ids
+
+    def _default_lease_ids_old(self):
+        # for the_id in self.env.context.get('active_ids'):
+        #    print(the_id.name)
+        leases_ids = self.env.context.get('active_ids',[])
         updated_leases = []
         trans = []
         for lease in leases_ids:
@@ -879,7 +901,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     i_from = datetime(i_to.year, i_to.month, 1)
                     if l_sdt > i_from:
                         i_from = lease.billing_start_date
-
+        '''
         lease.update({
             'billing_start_date': billing_strt_date,
             'invoice_from': i_from,
@@ -888,6 +910,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             'invoice_generation_date': dt,
             'invoice_posting_date':dt
         })
+        '''
+        lease['billing_start_date'] = billing_strt_date
+        lease['invoice_from'] = i_from
+        lease['invoice_to'] = i_to
+        lease['invoice_due_date'] = inv_due_date
+        lease['invoice_generation_date'] = dt
+        lease['invoice_posting_date'] = dt
 
         #lease.invoice_from = i_from
         #lease.invoice_to = i_to
@@ -2387,10 +2416,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         str_lease_closed = ''
 
         for wizard in self:
-            leases = wizard.lease_ids
-            for lease in leases:
+            leases = self.env['thomaslease.lease'].browse(wizard.lease_ids)
+            for a_lease in self.web_progress_iter(leases, msg="Creating Invoices"):
                 # determine if an invoice already exists for the lease and don't create again...warn user
-                a_lease = self.env['thomaslease.lease'].browse(lease)
+                #a_lease = self.env['thomaslease.lease'].browse(lease)
                 print("Processing Lease:" +a_lease.id.lease_number)
                 if self.invoice_exists(a_lease.id):
                     lease_with_existing_invoice.append(a_lease.id)

@@ -436,7 +436,7 @@ class ThomasFleetVehicle(models.Model):
         #we only want to update protractor if the unit doesn't exist the firt time
         #subsequent updates shouldn't happen
 
-        print("IN WRITE FUNCTION")
+        print("IN WRITE FUNCTION for Unit #" + str(self.unit_no))
 
         record = super(ThomasFleetVehicle,self).write(
             values)
