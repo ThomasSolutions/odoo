@@ -1,7 +1,7 @@
 <odoo>
     <data>
         <record id='lease_return_wizard_form' model='ir.ui.view'>
-            <field name='name'>Rental Return wizard form view</field>
+            <field name='name'>Lease Return wizard form view</field>
             <field name='model'>thomaslease.lease.return.wizard</field>
             <field name='arch' type='xml'>
                 <form string="Lease Return">
@@ -33,7 +33,7 @@
         </record>
 
         <record id="open_lease_return_wizard_action" model="ir.actions.act_window">
-            <field name="name">Rental Return Wizard</field>
+            <field name="name">Lease Return Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.return.wizard</field>
             <field name="view_id" ref="lease_return_wizard_form"></field>
@@ -43,7 +43,7 @@
         </record>
 
         <record id="open_lease_invoice_wizard_action" model="ir.actions.act_window">
-            <field name="name">Rental Invoice Wizard</field>
+            <field name="name">Lease Invoice Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.invoice.wizard</field>
             <field name="view_id" ref="lease_invoice_wizard_form"></field>
@@ -341,7 +341,7 @@
         </record>
 
         <record id='thomaslease_lease_action' model='ir.actions.act_window'>
-            <field name="name">Rental Agreements</field>
+            <field name="name">Lease Agreements</field>
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,kanban,form</field>
@@ -354,7 +354,7 @@
             </field>
         </record>
 
-        <act_window name="Generate Rental Invoices"
+        <act_window name="Generate Lease Invoices"
                     res_model="thomaslease.lease.invoice.wizard"
                     src_model="thomaslease.lease"
                     view_mode="form"
@@ -362,7 +362,7 @@
                     key2="client_action_multi"
                     id="action_generate_lease_invoices"
         />
-        <act_window name="Rental Return"
+        <act_window name="Lease Return"
                     res_model="thomaslease.lease.return.wizard"
                     view_mode="form"
                     target="new"
@@ -372,7 +372,7 @@
 
 
         <record id='lease_invoice_wizard_form' model='ir.ui.view'>
-            <field name='name'>Rental Invoice wizard form view</field>
+            <field name='name'>Lease Invoice wizard form view</field>
             <field name='model'>thomaslease.lease.invoice.wizard</field>
             <field name='arch' type='xml'>
                 <form string="Generate Lease Invoices">
@@ -409,10 +409,10 @@
         </record>
 
 
-        <menuitem name="Rental Agreements" id="lease_agreements_main" sequence="2"/>
+        <menuitem name="Lease Agreements" id="lease_agreements_main" sequence="2"/>
         <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
                   id="thomaslease_return_menu"/>
-        <menuitem name="Rental Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
+        <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
                   id="thomaslease_lease_menu"/>
 
 

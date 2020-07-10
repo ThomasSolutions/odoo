@@ -228,7 +228,7 @@ class ThomasLease(models.Model):
 
     _name = 'thomaslease.lease'
     active = fields.Boolean('Active', default=True, track_visibility="onchange")
-    lease_number = fields.Char('Rental ID', track_visibility='onchange')
+    lease_number = fields.Char('Lease ID', track_visibility='onchange')
     po_number = fields.Char("Purchase Order #", track_visibility='onchange')
     po_comments = fields.Char("Purchase Order Comments", track_visibility='onchange')
     contract_number = fields.Char("Contract #", track_visibility='onchange')
@@ -241,7 +241,7 @@ class ThomasLease(models.Model):
                               ('both', 'Repairs and Invoice Pending'),
                               ('closed', 'Closed')], string="Status", default='draft', track_visibility='onchange')
 
-    lease_start_date = fields.Date("Rental Start Date", track_visibility='onchange')  # , required=True)
+    lease_start_date = fields.Date("Lease Start Date", track_visibility='onchange')  # , required=True)
 
     billing_start_date = fields.Date("Billing Start Date", track_visibility='onchange')
 
@@ -269,7 +269,7 @@ class ThomasLease(models.Model):
     requires_manual_calculations = fields.Boolean("Exception", default=False,
                                                   track_visibility='onchange')
     billing_notes = fields.Char("Billing Notes", track_visibility='onchange')
-    min_lease_end_date = fields.Date("Minimum Rental End Date", track_visibility='onchange')
+    min_lease_end_date = fields.Date("Minimum Lease End Date", track_visibility='onchange')
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                       ('three_quarter', '3/4'), ('full', 'Full')], default='full'
                                      , track_visibility='onchange')
@@ -314,7 +314,7 @@ class ThomasLease(models.Model):
                                  track_visibility='onchange')  # required=True)
 
     unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True, track_visibility='onchange')
-    lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Rental Lines', change_default=True,
+    lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default=True,
                                   copy=True, auto_join=True, track_visibility='onchange')
     # product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
 
@@ -348,7 +348,7 @@ class ThomasLease(models.Model):
                                   track_visibility='onchange')
     # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
     inclusions_discount = fields.Float('Inclusion Discount', track_visibility='onchange')
-    lease_notes = fields.Text("Rental Notes", track_visibility='onchange')
+    lease_notes = fields.Text("Lease Notes", track_visibility='onchange')
     inspection_notes = fields.Text("Inspection Notes", track_visibility='onchange')
     additional_billing = fields.Char("Additional Notes", track_visibility='onchange')
     payment_method = fields.Char("Payment Method", track_visibility='onchange')
@@ -1944,7 +1944,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
             inv_date = the_wizard.invoice_date
 
-            for lease in customer.lease_agreements:
+            for lease in self.web_progress_iter(customer.lease_agreements, msg="Processing Aggregate Customers"):
                 lease.aggregation_id='False' #cleanse any dirty agg ids
                 if self.aggregate_lease_selected(lease):
                     if lease.po_number:
@@ -1971,7 +1971,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             po_numbers = list(dict.fromkeys(po_numbers))
             aggregation_ids = list(dict.fromkeys(aggregation_ids))
             # find leases by PO
-            for ags_id in aggregation_ids:
+            for ags_id in self.web_progress_iter(aggregation_ids, msg="Locating Aggregate IDs"):
                 line_ids = []
                 next_month_line_ids = []
                 lease_invoices = []
@@ -1984,7 +1984,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 leases = self.env['thomaslease.lease'].search(
                     [('aggregation_id', '=', ags_id), ('customer_id', '=', customer.id)])
 
-                for lease in leases:
+                for lease in self.web_progress_iter(leases, msg="Generating Aggregate Invoice"):
                     if self.aggregate_lease_selected(lease):
                         print("==========aggregate lease agreement loop===================")
                         dt_inv_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
@@ -2093,8 +2093,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             line_ids.append(line_id.id)
                             if lease.invoice_ids:
                                 lease_invoices.extend(lease.invoice_ids.ids)
-                            if lease.vehicle_id.lease_invoice_ids:
-                                unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+
+                            for l_id in lease.vehicle_id.lease_invoice_ids:
+                                if l_id.id not in unit_invoices:
+                                    unit_invoices.append(l_id.id)
+                            #if lease.vehicle_id.lease_invoice_ids:
+                            #    if lease.vehicle_id.lease_invoice_ids.ids not in unit_invoices:
+                            #        unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
 
                         if lease.run_initial_invoicing:
                             for next_line in lease.lease_lines:
@@ -2245,10 +2250,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                 lease_invoices.append(a_invoice.id)
                 new_invoices.append(a_invoice)
-                unit_invoices.append(a_invoice.id)
+                if a_invoice.id not in unit_invoices:
+                    unit_invoices.append(a_invoice.id)
                 lease.aggregation_id=False
                 # set the invoice ids for the lease agreement
-                for lease in leases:
+                for lease in self.web_progress_iter(leases, msg="Updating Units"):
                     if self.aggregate_lease_selected(lease):
                         if lease.id in initial_lease_ids:
                             if lease.invoice_ids:
@@ -2282,8 +2288,13 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         else:
                             if lease.invoice_ids:
                                 lease_invoices.extend(lease.invoice_ids.ids)
-                            if lease.vehicle_id.lease_invoice_ids:
-                                unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+
+                            for llid in lease.vehicle_id.lease_invoice_ids:
+                                if llid.id not in unit_invoices:
+                                    unit_invoices.append(llid.id)
+                            #if lease.vehicle_id.lease_invoice_ids:
+                            #    if lease.vehicle_id.lease_invoice_ids.ids not in unit_invoices:
+                            #        unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
                             lease.invoice_ids = [(6, 0, lease_invoices)]
                             #lease.run_initial_invoicing = False
                             lease.last_invoice_to = self.determine_last_invoice_to(lease)
