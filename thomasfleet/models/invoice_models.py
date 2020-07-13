@@ -160,7 +160,6 @@ class ThomasAccountInvoiceLine(models.Model):
     _order = 'vehicle_id'
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
-    misc_id = field.Char(string="Unit #")
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")
 
     # def init(self):
