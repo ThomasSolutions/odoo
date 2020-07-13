@@ -44,17 +44,17 @@
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-book"
-                                        help="Show all the Lease Agreements for this vehicle"
+                                        help="Show all the Rental Agreements for this vehicle"
                                         groups="fleet.fleet_group_manager">
-                                    <field name="lease_agreements_count" widget="statinfo" string="Lease Agreements"/>
+                                    <field name="lease_agreements_count" widget="statinfo" string="Rental Agreements"/>
                                 </button>
                                 <button name="act_show_vehicle_lease_invoices"
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-book"
-                                        help="Show all the Lease Invoices for this vehicle"
+                                        help="Show all the Rental Invoices for this vehicle"
                                         groups="fleet.fleet_group_manager">
-                                    <field name="lease_invoices_count" widget="statinfo" string="Lease Invoices"/>
+                                    <field name="lease_invoices_count" widget="statinfo" string="Rental Invoices"/>
                                 </button>
                                 <button name="act_get_invoices"
                                         string="Work Orders"
@@ -569,7 +569,7 @@
         </record>
 
         <record id='thomas_lease_agreements_action' model='ir.actions.act_window'>
-            <field name="name">Vehicle Lease Agreements</field>
+            <field name="name">Vehicle Rental Agreements</field>
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -577,7 +577,7 @@
         </record>
 
         <record id='thomas_lease_invoices_action' model='ir.actions.act_window'>
-            <field name="name">Vehicle Lease Invoices</field>
+            <field name="name">Vehicle Rental Invoices</field>
             <field name="res_model">account.invoice</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -723,7 +723,7 @@
             <field name="name">thomasfleet.lease_status.tree</field>
             <field name="model">thomasfleet.lease_status</field>
             <field name="arch" type="xml">
-                <tree string="Lease Status" editable="top">
+                <tree string="Rental Status" editable="top">
                     <field name="name"/>
                     <field name="description" invisible="1"/>
                 </tree>
@@ -731,7 +731,7 @@
         </record>
 
         <record id='thomas_lease_status_action' model='ir.actions.act_window'>
-            <field name="name">Lease Status</field>
+            <field name="name">Rental Status</field>
             <field name="res_model">thomasfleet.lease_status</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>

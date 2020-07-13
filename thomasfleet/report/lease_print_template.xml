@@ -353,7 +353,7 @@
 
                         </div>
                     </div>
-                        <div class="page" style="page-break-after:always;page-break-inside:avoid">
+                    <div class="page" style="page-break-after:always;page-break-inside:avoid">
                        <div class="row">
                                 <div class="col-xs-8">
                                     <hr class="t_tight_line"/>
@@ -385,7 +385,7 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-12">
-                                <p>A) <b>Rental Period is from:</b>
+                                <p>A) <b>Lease Period is from:</b>
                                     <t t-esc="doc.lease_start_date"/>
                                     to:
                                     <t t-esc="doc.min_lease_end_date"/>
@@ -468,13 +468,30 @@
                             </div>
                         </div>
                         <div class="row">
-
                             <div class="col-xs-8">
                                 <p>H) Delivery Charge: $
                                     <t t-esc="doc.delivery_charge"/>
                                 </p>
                             </div>
                         </div>
+                        <!--<div class="row">
+                            <div class="col-xs-8">
+                                <p>I) Vehicles returned with shareable damages will stay on rent unit repair costs are authorized by customer
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>J) Surcharges will apply for any tickets or 407 charges
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>K) Off-rented vehicles that require Thomas Solution to pick up vehicle - charges will apply
+                                </p>
+                            </div>
+                        </div>-->
                         <div class="row">
                             <div class="col-xs-8">
                                 <p>Other:
