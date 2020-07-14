@@ -1932,7 +1932,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         return new_invoices
 
     @api.multi
-    def record_aggregate_invoice(self, customers, the_wizard):
+    def record_aggregate_invoice_tbd(self, customers, the_wizard):
         new_invoices = []
         for customer in customers:
             accounting_invoice = self.env['account.invoice']
@@ -2304,6 +2304,385 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return new_invoices
 
+    @api.multi
+    def record_aggregate_invoice(self, customers, the_wizard):
+        new_invoices = []
+        for customer in customers:
+            accounting_invoice = self.env['account.invoice']
+            po_numbers = []
+            ap_groups = []
+            aggregation_ids = []
+
+            month = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%b')
+            year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+            inv_date = the_wizard.invoice_date
+
+            for lease in self.web_progress_iter(customer.lease_agreements, msg="Processing Aggregate Customers"):
+                lease.aggregation_id = 'False'  # cleanse any dirty agg ids
+                if self.aggregate_lease_selected(lease):
+                    if lease.po_number:
+                        lease.aggregation_id = lease.po_number
+                        po_numbers.append(lease.po_number)
+                        aggregation_ids.append(lease.aggregation_id)
+                    else:
+                        if lease.ap_contact_ids:
+                            ag_id = ''
+                            for ap_id in lease.ap_contact_ids:
+                                ag_id += str(ap_id.id)
+                            lease.aggregation_id = ag_id
+                            ap_groups.append(lease.ap_contact_ids)
+                            aggregation_ids.append(ag_id)
+
+                        else:
+                            raise models.ValidationError(
+                                'Lease agreement issue: Customer is marked for Aggregate '
+                                'invoicing but lease agreement does not contain a PO or AP Contact '
+                                'Agreement: ' + lease.lease_number + "Customer: " + lease.customer_id.name
+                            )
+
+            # make po_number list unique
+            po_numbers = list(dict.fromkeys(po_numbers))
+            aggregation_ids = list(dict.fromkeys(aggregation_ids))
+            # find leases by PO
+            for ags_id in self.web_progress_iter(aggregation_ids, msg="Locating Aggregate IDs"):
+                line_ids = []
+                next_month_line_ids = []
+                lease_invoices = []
+                initial_lease_ids = []
+                initial_lease_invoices = []
+                initial_unit_invoices = []
+                unit_invoices = []
+                l_resp = {}
+                n_resp = {}
+                leases = self.env['thomaslease.lease'].search(
+                    [('aggregation_id', '=', ags_id), ('customer_id', '=', customer.id)])
+
+                for lease in self.web_progress_iter(leases, msg="Generating Aggregate Invoice"):
+                    if self.aggregate_lease_selected(lease):
+                        print("==========aggregate lease agreement loop===================")
+                        dt_inv_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
+                        end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
+
+                        if lease.run_initial_invoicing:
+                            last_to_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
+                            last_from_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+
+                            prev_relative_month = last_to_date + relativedelta.relativedelta(months=-1)
+
+                            prev_month_from = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                            prev_month_days = calendar.monthrange(prev_relative_month.year, prev_relative_month.month)[
+                                1]
+                            prev_month_to = last_from_date + relativedelta.relativedelta(days=-1)
+                            # datetime(prev_relative_month.year, prev_relative_month.month,prev_month_days)
+                            prev_month = prev_month_from.strftime('%b')
+                            prev_year = prev_month_from.strftime('%Y')
+
+                        for line in lease.lease_lines:
+                            product = line.product_id
+                            invoice_line = self.env['account.invoice.line']
+                            l_resp = self.calculate_line_amount(
+                                product, line, line.price, lease.invoice_from, lease.invoice_to, lease)
+                            line_amount = l_resp['amount']
+                            start_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d').date()
+                            end_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d').date()
+
+                            num_days = (end_date - start_date).days + 1
+                            quantity = 1
+                            unit_str = ''
+                            if lease.vehicle_id.unit_no:
+                                unit_str = 'Unit # ' + str(lease.vehicle_id.unit_no)
+                            else:
+                                unit_str = str(product.name)
+
+                            if num_days < end_of_month and not lease.rate_type == 'Bi-Weekly' \
+                                    and not lease.rate_type == 'Monthly' and not lease.rate_type == 'Stelco Monthly':
+
+                                description = self.create_daily_invoice_line_description(start_date, end_date,
+                                                                                         lease)
+                                quantity = num_days
+                                line_amount = l_resp['rate']
+
+                            elif lease.rate_type == 'Bi-Weekly':
+                                if not lease.last_invoice_to:
+                                    last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                else:
+                                    last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+
+                                # changing description model
+                                last_to_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+                                # end
+
+                                start_date = last_to_date  # + relativedelta.relativedelta(days=+1)
+
+                                if lease.lease_return_date:
+                                    end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                # else:
+                                #    end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
+
+                                start_date_str = start_date.strftime('%b %d')
+                                end_date_str = end_date.strftime('%b %d')
+                                description = 'Bi Weekly Lease for ' + unit_str + ' - ' + \
+                                              start_date_str + ' to ' + end_date_str + ', ' + year
+                                line_amount = line.price
+                                rel_days = relativedelta.relativedelta(end_date, start_date).days
+                                rel_weeks = relativedelta.relativedelta(end_date, start_date).weeks
+                                quantity = '{0:,.2f}'.format(
+                                    (rel_days + 1) / 14)  # (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
+
+                            elif lease.rate_type == 'Daily' or lease.rate_type == 'Stelco Daily':
+                                quantity = num_days
+                                line_amount = l_resp['rate']  # line.price
+
+                                description = self.create_daily_invoice_line_description(start_date, end_date, lease)
+                                # start_date_str + ' - ' + end_date_str + ' ' + year + ' - Lease: for Unit # ' + the_lease.id.vehicle_id.unit_no
+
+                            elif lease.rate_type == 'Weekly' or lease.rate_type == 'Stelco Weekly':
+                                days = num_days % 7
+                                weeks = math.floor(num_days / 7)
+                                line_amount = l_resp["rate"]  # line.price / 7
+                                quantity = (weeks * 7) + days
+                                t_quantity = str(weeks) + " weeks " + str(days) + " days "
+                                description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
+                            elif lease.rate_type == 'Monthly' or lease.rate_type == 'Stelco Monthly':
+                                description = self.create_monthly_invoice_line_description(start_date, end_date, month,
+                                                                                           year, lease)
+                            else:
+                                description = line.description
+
+                            # create the invoice line
+                            line_id = invoice_line.create({
+                                'product_id': product.id,
+                                'lease_line_id': line.id,
+                                'vehicle_id': line.vehicle_id.id,
+                                'price_unit': line_amount,
+                                'quantity': quantity,
+                                'name': description,
+                                'invoice_line_tax_ids': [(6, 0, product.taxes_id.ids)],
+                                'account_id': product.property_account_income_id.id
+                            })
+
+                            # call set taxes to set them...otherwise the relationships aren't set properly
+                            # line_id._set_taxes()
+                            line_id.price_unit = line_amount
+                            line_ids.append(line_id.id)
+                            if lease.invoice_ids:
+                                lease_invoices.extend(lease.invoice_ids.ids)
+
+                            for l_id in lease.vehicle_id.lease_invoice_ids:
+                                if l_id.id not in unit_invoices:
+                                    unit_invoices.append(l_id.id)
+                            # if lease.vehicle_id.lease_invoice_ids:
+                            #    if lease.vehicle_id.lease_invoice_ids.ids not in unit_invoices:
+                            #        unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+
+                        if lease.run_initial_invoicing:
+                            for next_line in lease.lease_lines:
+                                n_resp = self.calculate_line_amount(product, next_line, next_line.price,
+                                                                    prev_month_from.strftime(
+                                                                        '%Y-%m-%d'), prev_month_to.strftime('%Y-%m-%d'),
+                                                                    lease)
+                                next_line_amount = n_resp['amount']
+                                num_days = (prev_month_to - prev_month_from).days + 1
+                                date_delta = relativedelta.relativedelta(prev_month_from, prev_month_to)
+                                num_months = date_delta.months
+                                num_years = date_delta.years
+
+                                pro_rated = prev_month + ' ' + prev_year
+                                quantity = 1
+                                if num_days < prev_month_days and not lease.rate_type == 'Bi-Weekly' \
+                                        and not lease.rate_type == 'Monthly':
+                                    description = self.create_daily_invoice_line_description(prev_month_from,
+                                                                                             prev_month_to,
+                                                                                             lease)
+                                    quantity = num_days
+                                    next_line_amount = n_resp['rate']
+
+                                elif lease.rate_type == 'Bi-Weekly':  # need to determine what to do here
+                                    if not lease.last_invoice_to:
+                                        last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                    else:
+                                        last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+
+                                    start_date = last_to_date + relativedelta.relativedelta(days=+1)
+
+                                    if lease.lease_return_date:
+                                        end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                    else:
+                                        end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
+
+                                    start_date_str = start_date.strftime('%b %d')
+                                    end_date_str = end_date.strftime('%b %d')
+                                    description = 'Bi Weekly Lease for Unit # ' + lease.vehicle_id.unit_no + ' - ' + \
+                                                  start_date_str + ' to ' + end_date_str + ', ' + year
+                                    next_line_amount = next_line.price
+                                    rel_days = relativedelta.relativedelta(end_date, start_date).days
+                                    rel_weeks = relativedelta.relativedelta(end_date, start_date).weeks
+                                    quantity = '{0:,.2f}'.format((rel_days + 1) / 14)
+                                    # (rel_weeks + (rel_days - (rel_weeks * 7)) / 7) / 2
+                                elif lease.rate_type == 'Daily' or lease.rate_type == 'stelco_daily':
+                                    quantity = num_days
+                                    next_line_amount = n_resp["rate"]  # next_line.price
+                                    description = self.create_daily_invoice_line_description(prev_month_from,
+                                                                                             prev_month_to, lease)
+                                elif lease.rate_type == 'Weekly' or lease.rate_type == 'stelco_weekly':
+                                    days = prev_month_days % 7
+                                    weeks = math.floor(prev_month_days / 7)
+                                    next_line_amount = n_resp["rate"]  # next_line.price / 7
+                                    quantity = (weeks * 7) + days
+                                    t_quantity = str(weeks) + " week " + str(days) + " days "
+                                    description = month + ' ' + year + ' - ' + t_quantity + 'Lease: for Unit # ' + lease.vehicle_id.unit_no
+                                elif lease.rate_type == 'Monthly' or lease.rate_type == 'stelco_monthly':
+                                    # if "Dofasco" in lease.customer_id.name:
+                                    #     description = self.create_dofasco_monthly_invoice_line_description(lease)
+                                    # else:
+                                    #     description = self.create_monthly_invoice_line_description(prev_month_from,
+                                    #                                                                prev_month_to,
+                                    #                                                                prev_month,
+                                    #                                                                prev_year, lease)
+                                    description = self.create_monthly_invoice_line_description(prev_month_from,
+                                                                                               prev_month_to,
+                                                                                               prev_month,
+                                                                                               prev_year, lease)
+                                else:
+                                    description = next_line.description
+
+                                next_month_line_id = invoice_line.create({
+                                    'product_id': product.id,
+                                    'lease_line_id': next_line.id,
+                                    'vehicle_id': next_line.vehicle_id.id,
+                                    'price_unit': next_line_amount,
+                                    'quantity': quantity,
+                                    'name': description,
+                                    'invoice_line_tax_ids': [(6, 0, product.taxes_id.ids)],
+                                    'account_id': product.property_account_income_id.id
+                                })
+
+                                # next_month_line_id._set_taxes()
+                                next_month_line_id.price_unit = next_line_amount
+
+                                next_month_line_ids.append(next_month_line_id.id)
+                                if lease.invoice_ids:
+                                    initial_lease_invoices.extend(lease.invoice_ids.ids)
+                                if lease.vehicle_id.lease_invoice_ids:
+                                    initial_unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+
+                            if "Dofasco" in lease.customer_id.name:
+                                inv_date = datetime(last_to_date.year, last_to_date.month, 1)
+                            comment = ''
+                            if len(leases) == 1 and len(lease.lease_lines) == 1:
+                                comment = n_resp['formula']
+                            initial_lease_ids.append(lease.id)
+                            a_next_invoice = accounting_invoice.create({
+                                'partner_id': lease.customer_id.id,
+                                'vehicle_id': lease.vehicle_id.id,
+                                'comment': comment,
+                                'date_invoice': inv_date,  # lease.invoice_generation_date,
+                                'date_due': lease.invoice_due_date,
+                                'invoice_from': prev_month_from,
+                                'invoice_to': prev_month_to,
+                                'invoice_posting_date': lease.invoice_generation_date,
+                                'invoice_generation_date': lease.invoice_generation_date,
+                                'type': 'out_invoice',
+                                'initial_invoice': True,
+                                'state': 'draft',
+                                'po_number': lease.po_number,
+                                # 'partner_invoice_id': lease.partner_invoice_id.id,
+                                'partner_shipping_id': lease.partner_shipping_id.id,
+                                'requires_manual_calculations': lease.requires_manual_calculations,
+                                'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                            })
+
+                            # lease_invoices.append(a_next_invoice.id)
+                            initial_lease_invoices.append(a_next_invoice.id)
+                            new_invoices.append(a_next_invoice)
+                            # unit_invoices.append(a_next_invoice.id)
+                            initial_unit_invoices.append(a_next_invoice.id)
+                            lease.aggregation_id = False
+                # lease.run_initial_invoicing = False
+                # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
+                comment = ''
+                if len(leases) == 1 and len(lease.lease_lines) == 1:
+                    comment = l_resp['formula']
+                a_invoice = accounting_invoice.create({
+                    'partner_id': lease.customer_id.id,
+                    'vehicle_id': lease.vehicle_id.id,
+                    'comment': comment,
+                    'date_invoice': the_wizard.invoice_date,  # lease.invoice_generation_date,
+                    'date_due': lease.invoice_due_date,
+                    'invoice_from': lease.invoice_from,
+                    'invoice_to': lease.invoice_to,
+                    'invoice_posting_date': lease.invoice_posting_date,
+                    'invoice_generation_date': lease.invoice_generation_date,
+                    'type': 'out_invoice',
+                    'state': 'draft',
+                    'po_number': lease.po_number,
+                    # 'partner_invoice_id': lease.partner_invoice_id.id,
+                    'partner_shipping_id': lease.partner_shipping_id.id,
+                    'requires_manual_calculations': lease.requires_manual_calculations,
+                    'invoice_line_ids': [(6, 0, line_ids)]
+                })
+
+                lease_invoices.append(a_invoice.id)
+                new_invoices.append(a_invoice)
+                if a_invoice.id not in unit_invoices:
+                    unit_invoices.append(a_invoice.id)
+                lease.aggregation_id = False
+                # set the invoice ids for the lease agreement
+                for lease in self.web_progress_iter(leases, msg="Updating Units"):
+                    if self.aggregate_lease_selected(lease):
+                        if lease.id in initial_lease_ids:
+                            if lease.invoice_ids:
+                                initial_lease_invoices.extend(lease.invoice_ids.ids)
+                            if lease_invoices:
+                                initial_lease_invoices.extend(lease_invoices)
+                            lease.invoice_ids = [(6, 0, initial_lease_invoices)]
+                            # lease.last_invoice_to = self.determine_last_invoice_to(lease)
+                            # unit_invoices.extend(initial_unit_invoices)
+                            # lease_invoices.extend(initial_lease_invoices)
+                            if lease.vehicle_id.lease_invoice_ids:
+                                initial_unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            if unit_invoices:
+                                initial_unit_invoices.extend(unit_invoices)
+                            for vehicle in lease.vehicle_id:
+                                vehicle.with_context(skip_update=True).lease_invoice_ids = [
+                                    (6, 0, initial_unit_invoices)]
+                            initial_lease_ids.remove(lease.id)
+                            # if lease.invoice_ids:
+                            #    lease_invoices.extend(lease.invoice_ids.ids)
+                            # if lease.vehicle_id.lease_invoice_ids:
+                            #   unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            # lease.invoice_ids = [(6, 0, lease_invoices)]
+                            #
+
+                            lease.run_initial_invoicing = False
+                            lease.last_invoice_to = self.determine_last_invoice_to(lease)
+
+                            # for vehicle in lease.vehicle_id:
+                            #    vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
+
+                        else:
+                            for l_inv in new_invoices:
+                                lease.invoice_ids=[(4,l_inv.id)]
+                                lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4,l_inv.id)]
+                            #if lease.invoice_ids:
+                            #    lease_invoices.extend(lease.invoice_ids.ids)
+
+                            #for llid in lease.vehicle_id.lease_invoice_ids:
+                            #    if llid.id not in unit_invoices:
+                            #        unit_invoices.append(llid.id)
+                            # if lease.vehicle_id.lease_invoice_ids:
+                            #    if lease.vehicle_id.lease_invoice_ids.ids not in unit_invoices:
+                            #        unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
+                            #lease.invoice_ids = [(6, 0, lease_invoices)]
+                            # lease.run_initial_invoicing = False
+                            lease.last_invoice_to = self.determine_last_invoice_to(lease)
+
+
+                            #for vehicle in lease.vehicle_id:
+                            #    for inv in new_invoices:
+                            #        vehicle.with_context(skip_update=True).lease_invoice_ids = [(4, inv.id)]
+
+        return new_invoices
     def invoice_exists(self, lease):
         in_range = False
         if lease.last_invoice_date:
