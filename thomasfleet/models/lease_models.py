@@ -5,7 +5,9 @@ from datetime import date, datetime, timedelta
 from dateutil import relativedelta
 import calendar
 import math
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class ThomasLease(models.Model):
     _inherit = 'mail.thread'
@@ -2631,6 +2633,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 for lease in self.web_progress_iter(leases, msg="Updating Units"):
                     if self.aggregate_lease_selected(lease):
                         if lease.id in initial_lease_ids:
+                            _logger.info("Instide Initial Lease id aggregate U")
                             if lease.invoice_ids:
                                 initial_lease_invoices.extend(lease.invoice_ids.ids)
                             if lease_invoices:
@@ -2659,7 +2662,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                             # for vehicle in lease.vehicle_id:
                             #    vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
-
                         else:
                             for l_inv in new_invoices:
                                 lease.invoice_ids=[(4,l_inv.id)]
