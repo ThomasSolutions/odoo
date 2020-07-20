@@ -2631,7 +2631,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 lease.aggregation_id = False
                 # set the invoice ids for the lease agreement
                 for lease in self.web_progress_iter(leases, msg="Updating Units"):
-                    _logger.debug("out loop...updating unit # " + str(lease.vehicle_id.unit_no))
+                    _logger.info("out loop...updating unit # " + str(lease.vehicle_id.unit_no))
                     if self.aggregate_lease_selected(lease):
                         if lease.id in initial_lease_ids:
                             _logger.info("Instide Initial Lease id aggregate U")
@@ -2665,7 +2665,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             #    vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
                         else:
                             for l_inv in new_invoices:
-                                _logger.debug("updating unit # " +str(lease.vehicle_id.unit_no))
+                                _logger.info("updating unit # " +str(lease.vehicle_id.unit_no))
                                 lease.invoice_ids=[(4,l_inv.id)]
                                 lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4,l_inv.id)]
                             #if lease.invoice_ids:
