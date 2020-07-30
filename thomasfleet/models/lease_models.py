@@ -41,6 +41,8 @@ class ThomasLease(models.Model):
             print(str(rec.lease_number) + " Shipping ID: " +str(rec.partner_shipping_id.id))
     '''
 
+
+
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
 
@@ -108,8 +110,8 @@ class ThomasLease(models.Model):
     @api.onchange('customer_id')
     def _set_discount_rate_calc(self):
         for rec in self:
-            if rec.discount_rate_calc is None:
-                rec.discount_rate_calc = rec.cusomer_id.discount_rate_calc
+            if rec.customer_id:
+                rec.discount_rate_calc = rec.customer_id.discount_rate_calc
 
     @api.onchange('customer_id')
     def _set_preferred_billing_default(self):
@@ -230,7 +232,7 @@ class ThomasLease(models.Model):
 
     _name = 'thomaslease.lease'
     active = fields.Boolean('Active', default=True, track_visibility="onchange")
-    lease_number = fields.Char('Lease ID', track_visibility='onchange')
+    lease_number = fields.Char('Rental ID', track_visibility='onchange')
     po_number = fields.Char("Purchase Order #", track_visibility='onchange')
     po_comments = fields.Char("Purchase Order Comments", track_visibility='onchange')
     contract_number = fields.Char("Contract #", track_visibility='onchange')
@@ -243,7 +245,7 @@ class ThomasLease(models.Model):
                               ('both', 'Repairs and Invoice Pending'),
                               ('closed', 'Closed')], string="Status", default='draft', track_visibility='onchange')
 
-    lease_start_date = fields.Date("Lease Start Date", track_visibility='onchange')  # , required=True)
+    lease_start_date = fields.Date("Rent Start Date", track_visibility='onchange')  # , required=True)
 
     billing_start_date = fields.Date("Billing Start Date", track_visibility='onchange')
 
@@ -263,7 +265,7 @@ class ThomasLease(models.Model):
                                           ('other', 'Other')],
                                          string='Preferred Payment Method', track_visibility='onchange'
                                          )
-    discount_rate_calc = fields.Boolean("Discount Rate", track_visibility='onchange')
+    discount_rate_calc = fields.Boolean("Rate Adjust by Duration", default=None, track_visibility='onchange')
 
     other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
 
@@ -300,7 +302,7 @@ class ThomasLease(models.Model):
     weekly_rate = fields.Float("Weekly Rate", track_visibility='onchange')
     daily_rate = fields.Float("Daily Rate", track_visibility='onchange')
     monthly_tax = fields.Float("Tax(HST-13%)", track_visibility='onchange')
-    monthly_total = fields.Float("Monthly Lease Total", track_visibility='onchange')
+    monthly_total = fields.Float("Monthly Rent Total", track_visibility='onchange')
     monthly_mileage = fields.Integer("Mileage Allowance", default=3500, track_visibility='onchange')
     mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14, track_visibility='onchange')
 
@@ -2665,9 +2667,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             #    vehicle.with_context(skip_update=True).lease_invoice_ids = [(6, 0, unit_invoices)]
                         else:
                             for l_inv in new_invoices:
-                                _logger.info("updating unit # " +str(lease.vehicle_id.unit_no))
+                                _logger.info("Start updating lease invoice ids for unit# " +str(lease.vehicle_id.unit_no))
                                 lease.invoice_ids=[(4,l_inv.id)]
+                                _logger.inf("end update lease")
+                                _logger.info("Start unit Update with Context")
                                 lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4,l_inv.id)]
+                                _logger.info("End unit Update with Context")
                             #if lease.invoice_ids:
                             #    lease_invoices.extend(lease.invoice_ids.ids)
 

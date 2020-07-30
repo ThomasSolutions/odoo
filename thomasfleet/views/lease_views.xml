@@ -1,10 +1,10 @@
 <odoo>
     <data>
         <record id='lease_return_wizard_form' model='ir.ui.view'>
-            <field name='name'>Lease Return wizard form view</field>
+            <field name='name'>Rental Return wizard form view</field>
             <field name='model'>thomaslease.lease.return.wizard</field>
             <field name='arch' type='xml'>
-                <form string="Lease Return">
+                <form string="Rental Return">
                     <sheet>
                         <group>
                             <field name="lease_return_date"/>
@@ -33,7 +33,7 @@
         </record>
 
         <record id="open_lease_return_wizard_action" model="ir.actions.act_window">
-            <field name="name">Lease Return Wizard</field>
+            <field name="name">Rental Return Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.return.wizard</field>
             <field name="view_id" ref="lease_return_wizard_form"></field>
@@ -43,7 +43,7 @@
         </record>
 
         <record id="open_lease_invoice_wizard_action" model="ir.actions.act_window">
-            <field name="name">Lease Invoice Wizard</field>
+            <field name="name">Rental Invoice Wizard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.invoice.wizard</field>
             <field name="view_id" ref="lease_invoice_wizard_form"></field>
@@ -54,7 +54,7 @@
             <field name="name">thomaslease.lease.form</field>
             <field name="model">thomaslease.lease</field>
             <field name="arch" type="xml">
-                <form string="Lease Agreements">
+                <form string="Rental Agreements">
                     <header>
                         <button name="lease_print" class="btn-primary" string="Print" type="object"/>
                         <button name="btn_validate" class="oe_highlight" string="Rent" type="object" groups="fleet.fleet_group_manager"/>
@@ -129,7 +129,7 @@
                             </group>
                         </group>
                         <notebook col="4">
-                            <page string="Lease">
+                            <page string="Rental">
                                 <group col="4">
                                     <group style="margin-bottom:0px"   string="Details">
                                         <field name="lease_start_date"/>
@@ -178,9 +178,6 @@
                                         <field name="last_invoice_to"/>
                                         <field name="invoice_posting_date"/>
                                         <field name="invoice_generation_date"/>-->
-
-
-
 
                                 <field name="lease_lines">
                                     <tree editable="bottom">
@@ -262,7 +259,7 @@
             <field name="name">thomaslease.lease.tree</field>
             <field name="model">thomaslease.lease</field>
             <field name="arch" type="xml">
-                <tree string="Lease Agreements">
+                <tree string="Rental Agreements">
                     <field name="active" invisible="1"/>
                     <field name="vehicle_id" context="{'lease':True}"/>
                     <field name="requires_manual_calculations"/>
@@ -316,7 +313,7 @@
             <field name="name">thomaslease.lease.search</field>
             <field name="model">thomaslease.lease</field>
             <field name="arch" type="xml">
-                <search string="Lease Agreements">
+                <search string="Rental Agreements">
                     <field name="vehicle_id" context="{'lease':True}"/>
                     <field name="customer_id" context="{'show_internal_division':True}"  options="{'always_reload':True}" domain="[('is_company', '=', True)]"/>
                     <field name="lease_number"/>
@@ -332,7 +329,7 @@
                         <filter name="groupby_additional_charges" context="{'group_by' : 'additional_charges'}"
                                 string="Additional Charges"/>
                         <filter name="groupby_lease_status" context="{'group_by' : 'state'}"
-                                string="Lease Status"/>
+                                string="Rental Status"/>
                         <filter name="groupby_payment_method" context="{'group_by' : 'preferred_payment'}"
                                 string="Payment Method"/>
                     </group>
@@ -341,7 +338,7 @@
         </record>
 
         <record id='thomaslease_lease_action' model='ir.actions.act_window'>
-            <field name="name">Lease Agreements</field>
+            <field name="name">Rental Agreements</field>
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,kanban,form</field>
@@ -354,7 +351,7 @@
             </field>
         </record>
 
-        <act_window name="Generate Lease Invoices"
+        <act_window name="Generate Rental Invoices"
                     res_model="thomaslease.lease.invoice.wizard"
                     src_model="thomaslease.lease"
                     view_mode="form"
@@ -362,7 +359,7 @@
                     key2="client_action_multi"
                     id="action_generate_lease_invoices"
         />
-        <act_window name="Lease Return"
+        <act_window name="Rental Return"
                     res_model="thomaslease.lease.return.wizard"
                     view_mode="form"
                     target="new"
@@ -372,10 +369,10 @@
 
 
         <record id='lease_invoice_wizard_form' model='ir.ui.view'>
-            <field name='name'>Lease Invoice wizard form view</field>
+            <field name='name'>Rental Invoice wizard form view</field>
             <field name='model'>thomaslease.lease.invoice.wizard</field>
             <field name='arch' type='xml'>
-                <form string="Generate Lease Invoices">
+                <form string="Generate Rental Invoices">
                     <sheet>
                         <group>
                             <field name="invoice_date"/>
@@ -409,10 +406,10 @@
         </record>
 
 
-        <menuitem name="Lease Agreements" id="lease_agreements_main" sequence="2"/>
+        <menuitem name="Rental Agreements" id="lease_agreements_main" sequence="2"/>
         <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
                   id="thomaslease_return_menu"/>
-        <menuitem name="Lease Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
+        <menuitem name="Rental Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
                   id="thomaslease_lease_menu"/>
 
 

@@ -39,7 +39,8 @@
                        <field name="partner_shipping_id" context="{'default_type':'delivery'}" options='{"always_reload": True}' attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
                    </xpath>
                      <xpath expr="//field[@name='partner_id']" position="after">
-                        <field name="po_number" />
+                    <field name="po_number" />
+                    <field name="thomas_invoice_type"/>
                     <field name="lease_ids" widget="many2many_tags"/>
                     <field name="vehicle_ids">
                         <tree>
@@ -51,7 +52,8 @@
                     </field>
                     </xpath>
                       <xpath expr="//tree/field[@name='sequence']" position="after">
-                        <field name="vehicle_id"  context="{'lease':True}"/>
+                        <field name="vehicle_id" context="{'lease':True}" invisible="1"/>
+                        <field name="reference" context="{'lease':True}"/>
                       </xpath>
                  </data>
            </field>
@@ -84,19 +86,62 @@
                 </data>
             </field>
         </record>
+         <!--  <record id="thomas_general_invoice_tree" model="ir.ui.view">
+            <field name="name">thomas.general_invoice.select</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree" />
+           <field name="context">{'type':'out_invoice','show_internal_division':True, 'journal_type': 'sale', 'lease':True}</field>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//field[@name='partner_id']" position="replace">
+                        <field name="partner_id" invisible="1" context="{'show_internal_division':True}" options="{'always_reload': True}"/>
+                        <field name="customer_name"/>
+                        <field name="gp_po_number"/>
+                    </xpath>
+                 </data>
+           </field>
+        </record>-->
+    <!--  <record id="thomas_general_invoice_form" model="ir.ui.view">
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="thomase.invoice_form" />
+            <field name="context">{'type':'out_invoice','show_internal_division':True, 'journal_type': 'sale', 'lease':True}</field>
+            <field name="arch" type="xml">
+                <data>
 
+                     <xpath expr="//button[@name='action_invoice_draft']" position="before">
+                </xpath>
+                    <xpath expr="//field[@name='partner_id']" position="after">
+                       <field name="partner_shipping_id" context="{'default_type':'delivery'}" options='{"always_reload": True}' attr="{'invisible': [('partner_shipping_id','==',False)]}"/>
+                   </xpath>
+                     <xpath expr="//field[@name='partner_id']" position="after">
+                        <field name="po_number" />
+                    <field name="lease_ids" widget="many2many_tags"/>
+                    <field name="vehicle_ids">
+                        <tree>
+                            <field name="unit_no"/>
+                            <field name="brand_id"/>
+                            <field name="model_id"/>
+                            <field name="license_plate"/>
+                        </tree>
+                    </field>
+                    </xpath>
+                      <xpath expr="//tree/field[@name='sequence']" position="after">
+                        <field name="misc_id"  context="{'lease':True}"/>
+                      </xpath>
+                 </data>
+           </field>
+      </record>-->
       <!--inherited invoie action to pass along context-->
     <record id="account.action_invoice_tree1" model="ir.actions.act_window">
-            <field name="name">Lease Invoices</field>
+            <field name="name">Rental Invoices</field>
             <field name="context">{'type':'out_invoice','show_internal_division':True, 'journal_type': 'sale', 'lease':True}</field>
         </record>
 
+      <menuitem name="Customer Invoices"  id="work_orders_main" sequence="2" groups="account.group_account_invoice"/>
 
-
-        <menuitem name="Customer Invoices"  id="work_orders_main" sequence="2" groups="account.group_account_invoice"/>
-
-       <menuitem name="Customer Invoices" action="account.action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />
-       <!-- <menuitem name="Customer Invoices" action="thomaslease_action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />-->
+      <menuitem name="Rental Invoices" action="account.action_invoice_tree1" parent="work_orders_main" id="thomasfleet_workorder_menu" />
+      <!-- <menuitem name="Rental Invoices" action="account.action_invoice_tree1" parent="thomasfleet_workorder_menu" id="thomasfleet_rental_invoices_menu" />-->
+     <!-- <menuitem name="General Invoices" action="account.action_invoice_tree2" parent="work_orders_main" id="thomasfleet_general_invoices_menu" />-->
 
   </data>
 </odoo>

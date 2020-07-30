@@ -3,6 +3,6 @@
         <report id="lease_agreement"
                 name="thomasfleet.lease_agreement_template"
                 model="thomaslease.lease"
-                string="Lease Agreement"
+                string="Rental Agreement"
                 report_type="qweb-pdf"/>
     </odoo>
