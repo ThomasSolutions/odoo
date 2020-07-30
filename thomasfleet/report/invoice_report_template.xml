@@ -50,7 +50,7 @@
          <table class="table table-condensed" name="invoice_line_table">
                         <thead>
                             <tr>
-                                <th>Unit #</th>
+                                <th>Reference</th>
                                 <th>Description</th>
                                 <th class="hidden">Source Document</th>
                                 <th class="text-right">Quantity</th>
@@ -62,7 +62,8 @@
                         </thead>
                         <tbody class="invoice_tbody">
                             <tr t-foreach="o.invoice_line_ids" t-as="l">
-                                <td><span t-field="l.vehicle_id.unit_no"></span></td>
+                                <td><span t-field="l.reference"></span></td>
+                                <!--<td><span t-field="l.vehicle_id.unit_no"></span></td>-->
                                 <td><span t-field="l.name"/></td>
                                 <td class="hidden"><span t-field="l.origin"/></td>
                                 <td class="text-right">

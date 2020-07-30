@@ -10,7 +10,8 @@ class ThomasAccountingInvoice(models.Model):
 
     #department = fields.Char(string='Department')
     qc_check = fields.Boolean(string='Data Accuracy Validation')
-    invoice_type = fields.Selection([('lease','Lease'),('maintenance', 'Maintenance')])
+    thomas_invoice_type = fields.Selection( [('lease','Lease'),('maintenance', 'Maintenance'),('general', 'General')],
+                                            string="Thomas Invoice Type", default='lease')
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
 
     unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
@@ -43,6 +44,12 @@ class ThomasAccountingInvoice(models.Model):
     def _onchange_delivery_address(self):
         addr = self.partner_id.address_get(['delivery'])
         self.partner_shipping_id = addr and addr.get('delivery')
+
+
+    @api.onchange('thomas_invoice_type')
+    def _onchange_thomas_invoice_type(self):
+        for rec in self:
+            print("Thomas Invoice Type " + str(rec.thomas_invoice_type))
 
     def _compute_gp_po(self):
         for rec in self:
@@ -160,7 +167,28 @@ class ThomasAccountInvoiceLine(models.Model):
     _order = 'vehicle_id'
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
+    #thomas_invoice_type = fields.Char(string="Invoice Type", related="invoice_id.")
+    reference = fields.Char(string="Reference", compute="_compute_reference", inverse="_set_reference")
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")
+    invoice_id = fields.Many2one('account.invoice', 'invoice_line_ids')
+    thomas_invoice_type = fields.Char(string="Thomas Invoice Type", default="lease")
+
+                                            #related="invoice_id.thomas_invoice_type")
+
+    @api.depends("unit_no")
+    def _compute_reference(self):
+        for rec in self:
+            rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
+
+    def _set_reference(self):
+        for rec in self:
+            rec.reference = rec.refrence if rec.reference else False
+# class ThomasAccountGeneralInvoice(models.Model):
+#     _inherit = "account.invoice"
+#
+# class ThomasAccountGeneralInvoiceLine(models.Model):
+#     _inherit = "account.invoice.line"
+#     misc_id = fields.Char(string="Unit #")
 
     # def init(self):
     #     recs = self.env['account.invoice.line'].search([])

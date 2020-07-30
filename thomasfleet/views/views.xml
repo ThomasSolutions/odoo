@@ -708,7 +708,7 @@
             <field name="name">thomasfleet.lease_status.form</field>
             <field name="model">thomasfleet.lease_status</field>
             <field name="arch" type="xml">
-                <form string="Lease Status">
+                <form string="Rental Status">
                     <sheet>
                         <group>
                             <field name="name"/>

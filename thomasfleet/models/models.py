@@ -30,13 +30,13 @@ class ThomasAsset(models.Model):
     disposal_proceeds = fields.Float('Disposal Proceeds', track_visibility='onchange')
     sold_to = fields.Char('Sold To', track_visibility='onchange')
     betterment_cost = fields.Char("Betterment Cost", track_visibility='onchange')
-    lease_status = fields.Many2one('thomasfleet.lease_status', 'Lease Agreement Status', track_visibility='onchange')
+    lease_status = fields.Many2one('thomasfleet.lease_status', 'Rental Agreement Status', track_visibility='onchange')
    # lease_status = fields.Selection([('spare','Spare'), ('maint_req','Maintenance Required'),('road_test','Road Test'),('detail','Detail'),('reserved','Customer/Reserved'),('leased', 'Leased'), ('available','Available for Lease'),('returned_inspect','Returned waiting Inspection')], 'Lease Status')
     photoSets = fields.One2many('thomasfleet.asset_photo_set', 'vehicle_id', 'Photo Set', track_visibility='onchange')
     inclusions = fields.Many2many('thomasfleet.inclusions', string='Inclusions', track_visibility='onchange')
     state = fields.Selection(
         [('spare', 'Spare'), ('maint_req', 'Maintenance Required'), ('road_test', 'Road Test'), ('detail', 'Detail'),
-         ('reserved', 'Customer/Reserved'), ('leased', 'Leased'), ('available', 'Available for Lease'),
+         ('reserved', 'Customer/Reserved'), ('leased', 'Rented'), ('available', 'Available for Rent'),
          ('returned_inspect', 'Returned waiting Inspection')], string="Status", default='available')
 
 
@@ -109,11 +109,11 @@ class ThomasFleetVehicle(models.Model):
     #plate registration?
     unit_no = fields.Char("Unit #", default=default_unit_no, required=True, track_visibility='onchange')
     protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service Invoices')
-    lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Lease Agreements')
+    lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Rental Agreements')
     lease_invoice_ids = fields.Many2many('account.invoice',string='Invoices',
                                    relation='unit_lease_account_invoice_rel')
-    lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Agreements Count')
-    lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Lease Invoices Count')
+    lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Rental Agreements Count')
+    lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Rental Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N', track_visibility='onchange')
     license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
@@ -436,19 +436,19 @@ class ThomasFleetVehicle(models.Model):
         #we only want to update protractor if the unit doesn't exist the firt time
         #subsequent updates shouldn't happen
 
-        print("IN WRITE FUNCTION for Unit #" + str(self.unit_no))
+        self.log.info("IN WRITE FUNCTION for Unit #" + str(self.unit_no))
 
         record = super(ThomasFleetVehicle,self).write(
             values)
 
         #self.message_post(body=values)
 
-        print("Loop Breaker" + str(self.env.context.get('skip_update')))
+        self.log.info("Loop Breaker" + str(self.env.context.get('skip_update')))
         if self.env.context.get('skip_update'):
             print("BUSTING OUT")
 
         else:
-            print("updating protractor")
+            self.log.info("updating protractor")
             self.update_protractor()
 
 
@@ -795,9 +795,9 @@ class ThomasFleetVehicle(models.Model):
 
 class ThomasFleetOdometer(models.Model):
     _inherit= 'fleet.vehicle.odometer'
-    lease_id = fields.Many2one('thomaslease.lease', 'Lease Agreement')
+    lease_id = fields.Many2one('thomaslease.lease', 'Rental Agreement')
     customer_id =fields.Many2one(related="lease_id.customer_id", string="Customer", readonly=True)
-    activity = fields.Selection([('lease_out', 'Lease Start'), ('lease_in', 'Lease Return'),('service', 'Service'),('spare_swap', 'Spare Swap'), ('spare_swap_back','Spare Swap Back')], string="Activity", track_visibility='onchange')
+    activity = fields.Selection([('lease_out', 'Rent Start'), ('lease_in', 'Rent Return'),('service', 'Service'),('spare_swap', 'Spare Swap'), ('spare_swap_back','Spare Swap Back')], string="Activity", track_visibility='onchange')
 
     def name_get(self):
         if self._context.get('lease'):
@@ -843,7 +843,7 @@ class ThomasFleetTrim(models.Model):
 
 class ThomasFleetLeaseStatus(models.Model):
     _name = 'thomasfleet.lease_status'
-    name = fields.Char('Lease Status')
+    name = fields.Char('Rental Status')
     description = fields.Char('Description')
 
 class ThomasFleetLocation(models.Model):
@@ -1190,7 +1190,7 @@ class ThomasFleetAccessory(models.Model):
 
 class ThomasFleetMXInvoiceWizard(models.TransientModel):
     _name = 'thomasfleet.mx.invoice.wizard'
-    lease_ids = fields.Many2many('thomaslease.lease', string="Lease")
+    lease_ids = fields.Many2many('thomaslease.lease', string="Rent")
     invoice_date = fields.Date(string="Invoice Date")
 
     @api.multi
