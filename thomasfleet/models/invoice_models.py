@@ -182,7 +182,7 @@ class ThomasAccountInvoiceLine(models.Model):
 
     def _set_reference(self):
         for rec in self:
-            rec.reference = rec.reference if rec.reference else False
+            return
 # class ThomasAccountGeneralInvoice(models.Model):
 #     _inherit = "account.invoice"
 #
