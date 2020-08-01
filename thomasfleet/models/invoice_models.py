@@ -168,7 +168,7 @@ class ThomasAccountInvoiceLine(models.Model):
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
     unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
     #thomas_invoice_type = fields.Char(string="Invoice Type", related="invoice_id.")
-    reference = fields.Char(string="Reference", compute="_compute_reference", inverse="_set_reference")
+    reference = fields.Char(string="Reference", compute="_compute_reference", inverse="_set_reference", store=True)
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")
     invoice_id = fields.Many2one('account.invoice', 'invoice_line_ids')
     thomas_invoice_type = fields.Char(string="Thomas Invoice Type", default="lease")
@@ -178,11 +178,16 @@ class ThomasAccountInvoiceLine(models.Model):
     @api.depends("unit_no")
     def _compute_reference(self):
         for rec in self:
-            rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
+            if not rec.reference:
+                rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
 
     def _set_reference(self):
         for rec in self:
-            return
+            if rec.reference:
+                continue
+            else:
+                rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
+
 # class ThomasAccountGeneralInvoice(models.Model):
 #     _inherit = "account.invoice"
 #
