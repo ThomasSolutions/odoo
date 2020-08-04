@@ -51,7 +51,7 @@
                     </field>
                     </xpath>
                       <xpath expr="//tree/field[@name='sequence']" position="after">
-                        <field name="vehicle_id" context="{'lease':True}" invisible="1"/>
+                        <field name="vehicle_id" context="{'lease':True}"/>
                         <field name="reference" context="{'lease':True}"/>
                       </xpath>
                  </data>

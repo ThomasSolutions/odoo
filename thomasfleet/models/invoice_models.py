@@ -175,18 +175,18 @@ class ThomasAccountInvoiceLine(models.Model):
 
                                             #related="invoice_id.thomas_invoice_type")
 
-    @api.depends("unit_no")
+    @api.depends("vehicle_id")
     def _compute_reference(self):
         for rec in self:
             if not rec.reference:
-                rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
+                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "Misc"
 
     def _set_reference(self):
         for rec in self:
             if rec.reference:
                 continue
             else:
-                rec.reference = "Unit # " + rec.unit_no if rec.unit_no else "Misc"
+                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "Misc"
 
 # class ThomasAccountGeneralInvoice(models.Model):
 #     _inherit = "account.invoice"
