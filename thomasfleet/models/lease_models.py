@@ -2707,10 +2707,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         if i_inv_to == invoice_to and i_inv_from == invoice_from:
                             in_range = True
                     else:
-                        in_range = {'warning': {
-                            'title': 'Found incomplete invoices',
-                            'message':'Invoice: '+ inv.name + ' for Rental Agreement ' + lease.lease_number +
-                                       ' is missing Start and End dates'}}
+                        raise Warning('Invoice: '+ inv.name + ' for Rental Agreement ' + lease.lease_number +
+                                       ' is missing Invoice From and To dates')
             # if last_invoice_dt <= invoice_to and last_invoice_dt >= invoice_from:
             #    in_range = True
 
