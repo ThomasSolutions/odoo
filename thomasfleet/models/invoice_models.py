@@ -59,12 +59,19 @@ class ThomasAccountingInvoice(models.Model):
 
     def _compute_units_display(self):
         for rec in self:
-            units = []
+            units = ''
+            counter = 0
             for veh in rec.vehicle_ids:
-                units.append(veh.unit_no)
+                if units == '':
+                    units = str(veh.unit_no)
+                elif counter % 5 == 0:
+                    units = units + "," + (str('\n')) + str(veh.unit_no)
+                else:
+                    units = units + "," + str(veh.unit_no)
+                counter += 1
+            rec.units_display = units
 
-            units =list(dict.fromkeys(units))
-            rec.units_display = ',' .join(units)
+
 
     @api.multi
     def get_delivery_partner_id(self):

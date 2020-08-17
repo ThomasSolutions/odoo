@@ -40,6 +40,8 @@
                    </xpath>
                      <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="po_number" />
+                    <field name="invoice_to"/>
+                    <field name="invoice_from"/>
                     <field name="lease_ids" widget="many2many_tags"/>
                     <field name="vehicle_ids">
                         <tree>
