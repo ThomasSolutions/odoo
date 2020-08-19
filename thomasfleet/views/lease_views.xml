@@ -267,6 +267,7 @@
                     <field name="customer_name"/>
                     <field name="lease_start_date"/>
                     <field name="lease_return_date" string="Unit Returned On"/>
+                    <field name="transponder_id"/>
                     <field name="additional_charges"/>
                     <field name="po_number"/>
                     <field name="rate_type"/>
