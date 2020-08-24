@@ -186,14 +186,14 @@ class ThomasAccountInvoiceLine(models.Model):
     def _compute_reference(self):
         for rec in self:
             if not rec.reference:
-                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "Misc"
+                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "MISC"
 
     def _set_reference(self):
         for rec in self:
             if rec.reference:
                 continue
             else:
-                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "Misc"
+                rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "MISC"
 
 # class ThomasAccountGeneralInvoice(models.Model):
 #     _inherit = "account.invoice"
