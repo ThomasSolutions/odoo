@@ -251,7 +251,7 @@
                                         </field>
                                     </group>
                                 </page>
-                                <page string="Revenue" groups="account.group_account_manager">
+                                <page string="Revenue" groups="fleet_group_admin">
                                     <group>
                                         <field name="historical_revenue"/>
                                         <field name="revenue_to_date"/>
