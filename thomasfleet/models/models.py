@@ -166,6 +166,9 @@ class ThomasFleetVehicle(models.Model):
     unit_quality = fields.Selection([('new','New'), ('good','Good'),('satisfactory','Satisfactory'),('poor','Poor')],
                                     'Unit Quality',track_visibility='onchange')
 
+    historical_revenue = fields.Float("Historical Revenue", track_visbility='onchange', default=0.00)
+    revenue_to_date = fields.Float("Total Revenue", compute="compute_revenue", readonly=True, store=True)
+    line_items = fields.One2many('account.invoice.line','vehicle_id', String="Invoice Line Items")
 
     @api.multi
     @api.depends('unit_no')
@@ -206,6 +209,19 @@ class ThomasFleetVehicle(models.Model):
                 raise models.ValidationError('Protractor Unit # ' + rec.unit_no
                                              + ' is not valid (it must be an integer)')
 
+
+    @api.depends('lease_invoice_ids','historical_revenue')
+    def compute_revenue(self):
+        for rec in self:
+            for line in rec.line_items:
+                rec.revenue_to_date += line.price_total
+            rec.revenue_to_date += rec.historical_revenue
+        #lines = self.env['account.invoice.line']
+        #for rec in self:
+        #    the_lines = lines.search([('vehicle_id', '=', rec.id)])
+        #    for line in the_lines:
+        #        rec.revenue_to_date += line.price_total
+        #    rec.revenue_to_date = rec.revenue_to_date + rec.historical_revenue
 
     # accessories = fields.Many2many()
     @api.depends('stored_protractor_guid')

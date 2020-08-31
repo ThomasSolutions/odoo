@@ -178,6 +178,7 @@ class ThomasAccountInvoiceLine(models.Model):
     reference = fields.Char(string="Reference", compute="_compute_reference", inverse="_set_reference", store=True)
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")#, domain="[('id', 'in', invoice_id.vehicle_ids.ids)]")
     invoice_id = fields.Many2one('account.invoice', 'invoice_line_ids')
+    date_invoice = fields.Date(string="Invoice Date", related='invoice_id.date_invoice' ,store=True)
     thomas_invoice_type = fields.Char(string="Thomas Invoice Type", default="lease")
 
                                             #related="invoice_id.thomas_invoice_type")
