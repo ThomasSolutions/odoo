@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-    'version': '0.220',
+    'version': '0.221',
 
 
     # any module necessary for this one to work correctly

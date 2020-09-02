@@ -416,7 +416,7 @@
         </record>
 
         <menuitem action="thomas_vehicle_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_revenue_pivot_menu"
-                  sequence="9"/>
+                  sequence="9" groups="thomasfleet.fleet_group_admin"/>
 
 
           <record id="thomas_product_revenue_pivot_view" model="ir.ui.view">
@@ -439,7 +439,7 @@
         </record>
 
         <menuitem action="thomas_product_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_product_revenue_pivot_menu"
-                  sequence="10"/>
+                  sequence="10" groups="thomasfleet.fleet_group_admin"/>
 
          <record id="thomas_account_revenue_pivot_view" model="ir.ui.view">
             <field name="model">account.invoice.line</field>
@@ -462,7 +462,7 @@
         </record>
 
         <menuitem action="thomas_account_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_account_revenue_pivot_menu"
-                  sequence="11"/>
+                  sequence="11" groups="thomasfleet.fleet_group_admin"/>
 
         <record id="thomas_vehicle_view_search" model="ir.ui.view">
             <field name="name">thomas.vehicle.search</field>
