@@ -1,5 +1,41 @@
 <odoo>
     <data>
+          <record id='lease_invoice_wizard_form' model='ir.ui.view'>
+            <field name='name'>Rental Invoice wizard form view</field>
+            <field name='model'>thomaslease.lease.invoice.wizard</field>
+            <field name='arch' type='xml'>
+                <form string="Generate Rental Invoices">
+                    <sheet>
+                        <group>
+                            <field name="invoice_date"/>
+                            <field name="invoice_due_date"/>
+                           <!-- <field name="invoice_posting_date"/>
+                            <field name="invoice_start_date"/>
+                            <field name="invoice_end_date"/>-->
+                            <field name='lease_ids'>
+                                <tree editable="top">
+                                    <field name="lease_number"/>
+                                    <field name="unit_no"/>
+                                    <field name="customer_id"/>
+                                    <field name="invoice_due_date"/>
+                                    <field name="invoice_from" class="oe_inline"/>
+                                    <field name="invoice_to" class="oe_inline"/>
+                                </tree>
+                            </field>
+                            </group>
+                    </sheet>
+                    <footer>
+                        <button name='record_lease_invoices'
+                                string='OK'
+                                class='btn-primary'
+                                type='object'/>
+                        <button string='Cancel'
+                                class='btn-default'
+                                special='cancel'/>
+                    </footer>
+                </form>
+            </field>
+        </record>
         <record id='lease_return_wizard_form' model='ir.ui.view'>
             <field name='name'>Rental Return wizard form view</field>
             <field name='model'>thomaslease.lease.return.wizard</field>
@@ -369,49 +405,15 @@
         />
 
 
-        <record id='lease_invoice_wizard_form' model='ir.ui.view'>
-            <field name='name'>Rental Invoice wizard form view</field>
-            <field name='model'>thomaslease.lease.invoice.wizard</field>
-            <field name='arch' type='xml'>
-                <form string="Generate Rental Invoices">
-                    <sheet>
-                        <group>
-                            <field name="invoice_date"/>
-                            <field name="invoice_due_date"/>
-                           <!-- <field name="invoice_posting_date"/>
-                            <field name="invoice_start_date"/>
-                            <field name="invoice_end_date"/>-->
-                            <field name='lease_ids'>
-                                <tree editable="top">
-                                    <field name="lease_number"/>
-                                    <field name="unit_no"/>
-                                    <field name="customer_id"/>
-                                    <field name="invoice_due_date"/>
-                                    <field name="invoice_from" class="oe_inline"/>
-                                    <field name="invoice_to" class="oe_inline"/>
-                                </tree>
-                            </field>
-                            </group>
-                    </sheet>
-                    <footer>
-                        <button name='record_lease_invoices'
-                                string='OK'
-                                class='btn-primary'
-                                type='object'/>
-                        <button string='Cancel'
-                                class='btn-default'
-                                special='cancel'/>
-                    </footer>
-                </form>
-            </field>
-        </record>
+
 
 
         <menuitem name="Rental Agreements" id="lease_agreements_main" sequence="2"/>
-        <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
-                  id="thomaslease_return_menu"/>
+
         <menuitem name="Rental Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
                   id="thomaslease_lease_menu"/>
+         <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
+                  id="thomaslease_return_menu"/>
 
 
     </data>

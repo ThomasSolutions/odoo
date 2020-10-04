@@ -99,7 +99,7 @@ class ThomasFleetVehicle(models.Model):
 
     def default_unit_no(self):
         last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unitInt desc')
-        print('Last Unit #' + last_vehicle.unit_no)
+        print('Last Unit #' + str(last_vehicle.unit_no))
         return str(int(last_vehicle.unit_no) + 1)
 
     # thomas_asset = fields.Many2one('thomas.asset', ondelete='cascade')
@@ -108,7 +108,7 @@ class ThomasFleetVehicle(models.Model):
 
     #plate registration?
     unit_no = fields.Char("Unit #", default=default_unit_no, required=True, track_visibility='onchange')
-    protractor_invoices = fields.One2many('thomasfleet.invoice','vehicle_id','Service Invoices')
+    protractor_workorders = fields.One2many('thomasfleet.workorder', 'vehicle_id', 'Work Orders')
     lease_agreements = fields.One2many('thomaslease.lease','vehicle_id', 'Rental Agreements')
     lease_invoice_ids = fields.Many2many('account.invoice',string='Invoices',
                                    relation='unit_lease_account_invoice_rel')
@@ -116,7 +116,7 @@ class ThomasFleetVehicle(models.Model):
     lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Rental Invoices Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N', track_visibility='onchange')
-    license_plate = fields.Char('License Plate', required=False, track_visibility='onchange')
+    license_plate = fields.Char('License Plate',  required=False, track_visibility='onchange')
     brand_id = fields.Many2one(related='model_id.brand_id', string='Make', track_visibility='onchange')
 
     model_id = fields.Many2one('fleet.vehicle.model', 'Model', required=True, help='Model of the vehicle',
@@ -657,7 +657,7 @@ class ThomasFleetVehicle(models.Model):
 
 
     #@api.one
-    def _get_protractor_invoices(self):
+    def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
         da = datetime.now()
         querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
@@ -676,7 +676,7 @@ class ThomasFleetVehicle(models.Model):
         data = response.json()
 
         updatedInvoices = []
-        invoices = self.protractor_invoices
+        invoices = self.protractor_workorders
 
         for a in invoices:
             invoiceFound = False
@@ -717,9 +717,9 @@ class ThomasFleetVehicle(models.Model):
 
 
             invoiceNotFound=True
-            invObj = self.env['thomasfleet.invoice'].create(inv)
+            invObj = self.env['thomasfleet.workoder'].create(inv)
             invDetsArr = invObj.get_invoice_details_rest()
-            inv['invoice_details'] = invDetsArr
+            inv['workorder_details'] = invDetsArr
             for invoice in invoices:
                 if invoice.invoiceNumber == item['InvoiceNumber']:
                     updatedInvoices.append((1, invoice.id, inv))
@@ -731,7 +731,7 @@ class ThomasFleetVehicle(models.Model):
 
 
         print("Updated Invoices" + str(updatedInvoices))
-        self.update({'protractor_invoices': updatedInvoices})
+        self.update({'protractor_workorders': updatedInvoices})
 
 
 
@@ -785,16 +785,16 @@ class ThomasFleetVehicle(models.Model):
         return res
 
     @api.multi
-    def act_get_invoices(self):
-        print("INVOICE ACTION")
+    def act_get_workorders(self):
+        print("WORK ORDERS ACTION")
         print('SELF ID ' + str(self.id))
         for rec in self:
-            if rec.protractor_invoices:  # don't add invoices right now if there are some
-                for inv in rec.protractor_invoices:
+            if rec.protractor_workorders:  # don't add invoices right now if there are some
+                for inv in rec.protractor_workorders:
                     print("NOT DELETING INVOICE:::" + str(inv.invoiceNumber))
                     #inv.unlink()
 
-        self._get_protractor_invoices()
+        self._get_protractor_workorders()
 
 
         #for rec in self:
@@ -802,7 +802,7 @@ class ThomasFleetVehicle(models.Model):
                 #inv.get_invoice_details()
 
         self.ensure_one()
-        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_action')
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_workorder_action')
         res.update(
         context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
         domain=[('vehicle_id', '=', self.id)]
@@ -910,14 +910,14 @@ class ThomasFleetInclusions(models.Model):
     inclusion_cost= fields.Float('Cost')
     inclusion_charge=fields.Float('Monthly Rate')
 
-class ThomasFleetInvoiceClass(models.Model):
-    _name = 'thomasfleet.invoice'
+class ThomasFleetWorkOrder(models.Model):
+    _name = 'thomasfleet.workorder'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
-    invoice_details = fields.One2many('thomasfleet.invoice_details', 'invoice_id',  'Invoice Details')
+    workorder_details = fields.One2many('thomasfleet.workorder_details', 'workorder_id',  'Work Order Details')
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
-    invoiceTime = fields.Char('Invoice Time')
-    invoiceDate = fields.Char('Invoice Date')
+    invoiceTime = fields.Datetime('Invoice Time')
+    invoiceDate = fields.Datetime('Invoice Date')
     technichan = fields.Char('Technichan')
     serviceAdvisor = fields.Char('Service Advisor')
     lastModifiedBy = fields.Char('Last Modified By')
@@ -929,6 +929,21 @@ class ThomasFleetInvoiceClass(models.Model):
     laborTotal=fields.Float('Labor Total')
     netTotal=fields.Float('Net Total')
     invoice_guid = fields.Char('Invoice Guid')
+
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        print("Searching Protractor WorkOrders")
+        wos = []
+        wo = self.env['thomasfleet.workorder'].new()
+
+        wos.append(wo)
+        return wos
+
+
+    @api.model
+    def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
+        print("Search Read")
+        wos = self._get_protractor_workorders()
+        return wos#[{'id':'test','invoiceDate':'test'}]
 
     def get_invoice_details_rest(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/Invoice/" + str(self.invoice_guid)
@@ -945,7 +960,7 @@ class ThomasFleetInvoiceClass(models.Model):
         response = requests.request("GET", url, headers=headers)
         data = response.json()
         # inv_det_model = self.env['thomasfleet.invoice_details']
-        for invDets in self.invoice_details:
+        for invDets in self.workorder_details:
             for invDetLine in invDets:
                 invDetLine.unlink()
             invDets.unlink()
@@ -1003,9 +1018,10 @@ class ThomasFleetInvoiceClass(models.Model):
 
                 sp_lines.append((0, 0, inv_detail_line))
 
-            inv_detail['line_items'] = sp_lines
+            inv_detail['workorder_line_items'] = sp_lines
 
         return [(0, 0, inv_detail)]
+
 
     def get_invoice_details(self):
 
@@ -1023,7 +1039,7 @@ class ThomasFleetInvoiceClass(models.Model):
         response = requests.request("GET", url, headers=headers)
         data = response.json()
         #inv_det_model = self.env['thomasfleet.invoice_details']
-        for invDets in self.invoice_details:
+        for invDets in self.workorder_details:
             for invDetLine in invDets:
                 invDetLine.unlink()
             invDets.unlink()
@@ -1081,8 +1097,8 @@ class ThomasFleetInvoiceClass(models.Model):
 
                 sp_lines.append((0,0,inv_detail_line))
 
-            inv_detail['line_items']= sp_lines
-            self.invoice_details = [(0, 0, inv_detail)]
+            inv_detail['workorder_line_items']= sp_lines
+            self.workorder_details = [(0, 0, inv_detail)]
 
 
             #inv_det_model.create(inv_detail)
@@ -1092,21 +1108,69 @@ class ThomasFleetInvoiceClass(models.Model):
 
             #self.update({'invoice_details': inv_detail})
 
+    def _get_protractor_workorders(self):
+        url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"
+        da = datetime.now()
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        print("WORK ORDER DATA " + response.text)
+        data = response.json()
+
+        workorders = []
+        aid = 0
+        for item in data['ItemCollection']:
+            aid = aid +1
+            inv={'id':aid,'vehicle_id': self.id,
+                 'invoice_guid' : item['ID'],
+                 'workOrderNumber': item['WorkOrderNumber'],
+                 'invoiceNumber': item['InvoiceNumber']}
+            if 'Summary' in item:
+                inv['grandTotal'] = item['Summary']['GrandTotal']
+                inv['netTotal'] = item['Summary']['NetTotal']
+                inv['laborTotal'] = item['Summary']['LaborTotal']
+                inv['partsTotal'] = item['Summary']['PartsTotal']
+                inv['subletTotal'] = item['Summary']['SubletTotal']
+            invDT = str(item['InvoiceTime']).split("T")
+            inv['invoiceDate']= invDT[0]
+            inv['invoiceTime']= invDT[1]
+            if 'Technician' in item:
+                inv['technichan'] = str(item['Technician']['Name'])
+            if 'ServiceAdvisor' in item:
+                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+            if 'Header' in item:
+                per =str(item['Header']['LastModifiedBy'])
+                uName = per.split("\\")
+                #print(uName)
+                inv['lastModifiedBy'] = uName[1]
+            workorders.append(inv)
+
+        return workorders
+
     @api.multi
-    def act_get_invoice_details(self):
+    def act_get_workorder_details(self):
         print("FIRED OF INVOICE DETAILS ACTION")
         for rec in self:
-            if rec.invoice_details:  # don't add invoices right now if there are some
+            if rec.workorder_details:  # don't add invoices right now if there are some
                 for inv_det in rec.invoice_details:
-                    print("UNLINKING  INVOICE:::" + str(inv_det.invoice_id))
+                    print("UNLINKING  INVOICE:::" + str(inv_det.workorder_id))
                     inv_det.unlink()
         self.ensure_one()
-        self.get_invoice_details()
+        self.get_workorder_details()
 
-        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_details_action')
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_workorder_details_action')
         res.update(
-            context=dict(self.env.context, default_invoice_id=self.id, search_default_parent_false=True),
-            domain=[('invoice_id', '=', self.id)]
+            context=dict(self.env.context, default_workorder_id=self.id, search_default_parent_false=True),
+            domain=[('workorder_id', '=', self.id)]
         )
         return res
 
@@ -1115,10 +1179,10 @@ class ThomasFleetInvoiceClass(models.Model):
         print ("Genearting Account Invoices")
 
 
-class ThomasFleetInvoiceDetails(models.Model):
-    _name = 'thomasfleet.invoice_details'
-    invoice_id = fields.Many2one('thomasfleet.invoice', 'Invoice')
-    line_items = fields.One2many('thomasfleet.invoice_details_line', 'invoice_details_id', 'Invoice Details Line')
+class ThomasFleetWorkOrderDetails(models.Model):
+    _name = 'thomasfleet.workorder_details'
+    workorder_id = fields.Many2one('thomasfleet.workorder', 'Work Order')
+    workorder_line_items = fields.One2many('thomasfleet.workorder_details_line', 'workorder_details_id', 'Work Order Details Line')
     invoice_number = fields.Char('Invoice Number')
     work_order_number = fields.Char('Work Order Number')
     title = fields.Char('Title')
@@ -1139,18 +1203,18 @@ class ThomasFleetInvoiceDetails(models.Model):
             #self.ensure_one()
         #self.get_invoice_details()
 
-        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_invoice_details_line_action')
+        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_workorder_details_line_action')
         res.update(
             context=dict(self.env.context, default_invoice_id = self.id, search_default_parent_false=True),
-            domain=[('invoice_details_id', '=', self.id)]
+            domain=[('workorder_details_id', '=', self.id)]
          )
         return res
 
 
 
-class ThomasFleetInvoiceLine(models.Model):
-    _name = 'thomasfleet.invoice_details_line'
-    invoice_details_id = fields.Many2one('thomasfleet.invoice_details', 'Invoice Details')
+class ThomasFleetWorkOrderDetailsLine(models.Model):
+    _name = 'thomasfleet.workorder_details_line'
+    workorder_details_id = fields.Many2one('thomasfleet.workorder_details', 'WorkOrder Details')
     complete = fields.Boolean('Complete')
     rank = fields.Integer('Rank')
     type = fields.Char('Type')

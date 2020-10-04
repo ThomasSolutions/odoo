@@ -2672,11 +2672,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             for l_inv in new_invoices:
                                 _logger.info(
                                     "Start updating lease invoice ids for unit# " + str(lease.vehicle_id.unit_no))
-                                lease.invoice_ids = [(4, l_inv.id)]
-                                _logger.info("end update lease")
-                                _logger.info("Start unit Update with Context")
-                                lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4, l_inv.id)]
-                                _logger.info("End unit Update with Context")
+                                if lease.customer_id == l_inv.partner_id:
+                                    lease.invoice_ids = [(4, l_inv.id)]
+                                    _logger.info("end update lease")
+                                    _logger.info("Start unit Update with Context")
+                                    lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4, l_inv.id)]
+                                    _logger.info("End unit Update with Context")
                             # if lease.invoice_ids:
                             #    lease_invoices.extend(lease.invoice_ids.ids)
 

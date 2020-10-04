@@ -900,9 +900,9 @@
             </field>
         </record>
 
-        <record id='thomas_invoice_view_form' model='ir.ui.view'>
-            <field name="name">Invoice Details</field>
-            <field name="model">thomasfleet.invoice</field>
+        <record id='thomas_workorder_view_form' model='ir.ui.view'>
+            <field name="name">Work Order</field>
+            <field name="model">thomasfleet.workorder</field>
             <field name="arch" type="xml">
                 <form string="Invoice">
                     <sheet>
@@ -915,12 +915,12 @@
                             <field name="grandTotal"/>
                             <field name="laborTotal"/>
                             <field name="netTotal"/>
-                            <field name="invoice_details" string="Details" nolabel="1" widget="one2many_list"
+                            <field name="workorder_details" string="Details" nolabel="1" widget="one2many_list"
                                    mode="tree">
                                 <tree>
                                     <field name="title"/>
                                     <field name="description"/>
-                                    <field name="line_items" string="Line Items" nolabel="1" widget="one2many_list">
+                                    <field name="workorder_line_items" string="Line Items" nolabel="1" widget="one2many_list">
                                         <tree>
                                             <field name="complete"/>
                                             <field name="rank"/>
@@ -951,9 +951,9 @@
             </field>
         </record>
 
-        <record id='thomas_invoice_view_tree' model='ir.ui.view'>
-            <field name="name">thomasfleet.invoice.tree</field>
-            <field name="model">thomasfleet.invoice</field>
+        <record id='thomas_workorder_view_tree' model='ir.ui.view'>
+            <field name="name">Work Orders</field>
+            <field name="model">thomasfleet.workorder</field>
             <field name="arch" type="xml">
                 <tree string="Invoice" create="false" edit="false" delete="false">
                     <!--<button name="act_get_invoice_details"
@@ -1054,17 +1054,17 @@
               </field>
           </record>-->
 
-        <record id='thomas_invoice_details_view_form' model='ir.ui.view'>
-            <field name="name">thomasfleet.invoice_details.form</field>
-            <field name="model">thomasfleet.invoice_details</field>
+        <record id='thomas_workorder_details_view_form' model='ir.ui.view'>
+            <field name="name">Work Order Details</field>
+            <field name="model">thomasfleet.workorder_details</field>
             <field name="arch" type="xml">
-                <form string="Invoice Details">
+                <form string="Work Order Details">
                     <sheet>
                         <group>
                             <field name="title"/>
                             <field name="description"/>
-                            <field name="line_items" nolabel="1" widget="one2many_list" mode="tree">
-                                <tree string="Invoice Line Item Details" create="false" edit="false" delete="false">
+                            <field name="workorder_line_items" nolabel="1" widget="one2many_list" mode="tree">
+                                <tree string="Work Order Line Item Details" create="false" edit="false" delete="false">
                                     <field name="complete"/>
                                     <field name="rank"/>
                                     <field name="type"/>
@@ -1093,34 +1093,34 @@
         </record>
 
 
-        <record id='thomas_invoice_action' model='ir.actions.act_window'>
-            <field name="name">Invoices</field>
-            <field name="res_model">thomasfleet.invoice</field>
+        <record id='thomas_workorder_action' model='ir.actions.act_window'>
+            <field name="name">Work Orders</field>
+            <field name="res_model">thomasfleet.workorder</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
 
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
                 <p>
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
             </field>
         </record>
 
-        <record id='thomas_invoice_details_action' model='ir.actions.act_window'>
+        <record id='thomas_workorder_details_action' model='ir.actions.act_window'>
             <field name="name">Details</field>
-            <field name="res_model">thomasfleet.invoice_details</field>
+            <field name="res_model">thomasfleet.workorder_details</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">current</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
                 <p>
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
             </field>
         </record>
@@ -1310,7 +1310,7 @@
 
         <menuitem name="Work Orders" id="invoices_main" sequence="2"/>
 
-        <menuitem name="Work Orders" action="thomas_invoice_action" parent="invoices_main"
+        <menuitem name="Work Orders" action="thomas_workorder_action" parent="invoices_main"
                   id="thomasfleet_invoices_menu"/>
 
         <!-- <menuitem action="generate_fleet_invoices_action" parent="thomasfleet_invoices_menu" id="thomas_generate_lease_invoices_menu" sequence="1"/>-->
