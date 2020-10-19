@@ -2706,14 +2706,15 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
             if invoice_from <= last_invoice_dt <= invoice_to:
                 for inv in lease.invoice_ids:
-                    if inv.invoice_to and inv.invoice_from:
-                        i_inv_to = datetime.strptime(inv.invoice_to, '%Y-%m-%d')
-                        i_inv_from = datetime.strptime(inv.invoice_from, '%Y-%m-%d')
-                        if i_inv_to == invoice_to and i_inv_from == invoice_from:
-                            in_range = True
-                    else:
-                        raise models.ValidationError('Invoice: ' + str(inv.name) + ' for Rental Agreement ' + str(
-                            lease.lease_number) + ' is missing Invoice From and To dates')
+                    if inv.type == 'out_invoice':
+                        if inv.invoice_to and inv.invoice_from:
+                            i_inv_to = datetime.strptime(inv.invoice_to, '%Y-%m-%d')
+                            i_inv_from = datetime.strptime(inv.invoice_from, '%Y-%m-%d')
+                            if i_inv_to == invoice_to and i_inv_from == invoice_from:
+                                in_range = True
+                        else:
+                            raise models.ValidationError('Invoice: ' + str(inv.name) + ' for Rental Agreement ' + str(
+                                lease.lease_number) + ' is missing Invoice From and To dates')
             # if last_invoice_dt <= invoice_to and last_invoice_dt >= invoice_from:
             #    in_range = True
 

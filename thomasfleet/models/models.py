@@ -922,6 +922,7 @@ class ThomasFleetWorkOrder(models.Model):
     serviceAdvisor = fields.Char('Service Advisor')
     lastModifiedBy = fields.Char('Last Modified By')
     workOrderNumber = fields.Char('Work Order Number')
+    workflowStage = fields.Char("Workflow Stage")
     invoiceNumber = fields.Char('Invoice Number')
     partsTotal = fields.Float('Parts Total')
     subletTotal= fields.Float('Sublet Total')
@@ -1111,7 +1112,7 @@ class ThomasFleetWorkOrder(models.Model):
     def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": "", "readInProgress":"True"}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
@@ -1133,6 +1134,7 @@ class ThomasFleetWorkOrder(models.Model):
             inv={'id':aid,'vehicle_id': self.id,
                  'invoice_guid' : item['ID'],
                  'workOrderNumber': item['WorkOrderNumber'],
+                 'workflowStage' : item['WorkflowStage'],
                  'invoiceNumber': item['InvoiceNumber']}
             if 'Summary' in item:
                 inv['grandTotal'] = item['Summary']['GrandTotal']

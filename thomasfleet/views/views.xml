@@ -965,6 +965,7 @@
                     <field name="serviceAdvisor"/>
                     <field name="lastModifiedBy"/>
                     <field name="workOrderNumber"/>
+                    <field name="workflowStage"/>
                     <field name="invoiceNumber"/>
                     <!--   <field name="invoice_guid"/>-->
                     <field name="partsTotal" sum="Parts Total"/>
