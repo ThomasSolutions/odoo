@@ -918,7 +918,9 @@ class ThomasFleetWorkOrder(models.Model):
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
     invoiceTime = fields.Datetime('Invoice Time')
     invoiceDate = fields.Datetime('Invoice Date')
-    technichan = fields.Char('Technichan')
+    workOrderTime = fields.Datetime('WorkOrder Time')
+    workOrderDate = fields.Date('WorkOrder Date')
+    technichan = fields.Char('Technician')
     serviceAdvisor = fields.Char('Service Advisor')
     lastModifiedBy = fields.Char('Last Modified By')
     workOrderNumber = fields.Char('Work Order Number')
@@ -1127,9 +1129,11 @@ class ThomasFleetWorkOrder(models.Model):
         print("WORK ORDER DATA " + response.text)
         data = response.json()
 
-        workorders = []
+        workorders = self._res
         aid = 0
         for item in data['ItemCollection']:
+            #if item['ID'] not in workorders.items():
+            #    print("Not Found")
             aid = aid +1
             inv={'id':aid,'vehicle_id': self.id,
                  'invoice_guid' : item['ID'],
@@ -1142,6 +1146,9 @@ class ThomasFleetWorkOrder(models.Model):
                 inv['laborTotal'] = item['Summary']['LaborTotal']
                 inv['partsTotal'] = item['Summary']['PartsTotal']
                 inv['subletTotal'] = item['Summary']['SubletTotal']
+            woDT = str(item['Header']['CreationTime']).split("T")
+            inv['workOrderDate'] = woDT[0]
+            inv['workOrderTime'] = woDT[1]
             invDT = str(item['InvoiceTime']).split("T")
             inv['invoiceDate']= invDT[0]
             inv['invoiceTime']= invDT[1]

@@ -460,9 +460,30 @@
             <field name="view_mode">pivot</field>
             <field name="view_id" ref="thomas_account_revenue_pivot_view"/>
         </record>
-
         <menuitem action="thomas_account_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_account_revenue_pivot_menu"
                   sequence="11" groups="thomasfleet.fleet_group_admin"/>
+        <record id="thomas_customer_revenue_pivot_view" model="ir.ui.view">
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="partner_id" type="row"/>
+                    <field name="reference" type="row"/>
+                    <field name="date_invoice" interval="month" type="col" />
+                    <field name="price_total" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_customer_revenue_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Customer Revenue Report</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_customer_revenue_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_customer_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_customer_revenue_pivot_menu"
+                  sequence="12" groups="thomasfleet.fleet_group_admin"/>
 
         <record id="thomas_vehicle_view_search" model="ir.ui.view">
             <field name="name">thomas.vehicle.search</field>
@@ -960,6 +981,7 @@
                                 type="object"
                                 class="oe_stat_button" string="View Details">
                     </button>-->
+                     <field name="workOrderDate"/>
                     <field name="invoiceDate"/>
                     <field name="technichan"/>
                     <field name="serviceAdvisor"/>
