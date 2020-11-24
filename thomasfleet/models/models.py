@@ -656,8 +656,8 @@ class ThomasFleetVehicle(models.Model):
 
 
 
-    #@api.one
-    def _get_protractor_workorders(self):
+
+    def _get_protractor_workorders_tbd(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
         da = datetime.now()
         querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
@@ -788,26 +788,23 @@ class ThomasFleetVehicle(models.Model):
     def act_get_workorders(self):
         print("WORK ORDERS ACTION")
         print('SELF ID ' + str(self.id))
+        '''
         for rec in self:
             if rec.protractor_workorders:  # don't add invoices right now if there are some
                 for inv in rec.protractor_workorders:
                     print("NOT DELETING INVOICE:::" + str(inv.invoiceNumber))
                     #inv.unlink()
-
-        self._get_protractor_workorders()
-
-
-        #for rec in self:
-            #for inv in rec.protractor_invoices:
-                #inv.get_invoice_details()
+        '''
 
         self.ensure_one()
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_workorder_action')
         res.update(
         context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
-        domain=[('vehicle_id', '=', self.id)]
+        domain=[('vehicle_id', '=', self.id),('unit_guid', '=', self.protractor_guid)]
         )
+
         return res
+
 
 class ThomasFleetOdometer(models.Model):
     _inherit= 'fleet.vehicle.odometer'
@@ -945,7 +942,11 @@ class ThomasFleetWorkOrder(models.Model):
     @api.model
     def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
         print("Search Read")
-        wos = self._get_protractor_workorders()
+        if len(domain) == 2:
+            guid = domain[1][2]
+            wos = self._get_protractor_workorders_for_unit(guid)
+        else:
+            wos = self._get_protractor_workorders()
         return wos#[{'id':'test','invoiceDate':'test'}]
 
     def get_invoice_details_rest(self):
@@ -1110,6 +1111,63 @@ class ThomasFleetWorkOrder(models.Model):
 
 
             #self.update({'invoice_details': inv_detail})
+
+        # @api.one
+
+    def _get_protractor_workorders_for_unit(self,unit_guid):
+        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + str(
+            unit_guid) + "/Invoice"
+        da = datetime.now()
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        print("INVOICE DATA " + response.text)
+        data = response.json()
+
+        workorders = []
+        aid = 0
+        for item in data['ItemCollection']:
+            # if item['ID'] not in workorders.items():
+            #    print("Not Found")
+            aid = aid + 1
+            inv = {'id': aid, 'vehicle_id': self.id,
+                   'invoice_guid': item['ID'],
+                   'workOrderNumber': item['WorkOrderNumber'],
+                   'workflowStage': item['WorkflowStage'],
+                   'invoiceNumber': item['InvoiceNumber']}
+            if 'Summary' in item:
+                inv['grandTotal'] = item['Summary']['GrandTotal']
+                inv['netTotal'] = item['Summary']['NetTotal']
+                inv['laborTotal'] = item['Summary']['LaborTotal']
+                inv['partsTotal'] = item['Summary']['PartsTotal']
+                inv['subletTotal'] = item['Summary']['SubletTotal']
+            woDT = str(item['Header']['CreationTime']).split("T")
+            inv['workOrderDate'] = woDT[0]
+            inv['workOrderTime'] = woDT[1]
+            invDT = str(item['InvoiceTime']).split("T")
+            inv['invoiceDate'] = invDT[0]
+            inv['invoiceTime'] = invDT[1]
+            if 'Technician' in item:
+                inv['technichan'] = str(item['Technician']['Name'])
+            if 'ServiceAdvisor' in item:
+                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+            if 'Header' in item:
+                per = str(item['Header']['LastModifiedBy'])
+                uName = per.split("\\")
+                # print(uName)
+                inv['lastModifiedBy'] = uName[1]
+            workorders.append(inv)
+
+        return workorders
 
     def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"

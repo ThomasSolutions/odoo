@@ -56,7 +56,7 @@
                                         groups="fleet.fleet_group_manager">
                                     <field name="lease_invoices_count" widget="statinfo" string="Rental Invoices"/>
                                 </button>
-                                <button name="act_get_invoices"
+                                <button name="act_get_workorders"
                                         string="Work Orders"
                                         type="object"
                                         class="oe_stat_button"
@@ -982,7 +982,7 @@
                                 class="oe_stat_button" string="View Details">
                     </button>-->
                      <field name="workOrderDate"/>
-                    <field name="invoiceDate"/>
+                    <!--<field name="invoiceDate"/>-->
                     <field name="technichan"/>
                     <field name="serviceAdvisor"/>
                     <field name="lastModifiedBy"/>
