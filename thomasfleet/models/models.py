@@ -168,6 +168,9 @@ class ThomasFleetVehicle(models.Model):
 
     historical_revenue = fields.Float("Historical Revenue", track_visbility='onchange', default=0.00)
     revenue_to_date = fields.Float("Total Revenue", compute="compute_revenue", readonly=True, store=True)
+    maintenance_cost_to_date = fields.Float("Total Maintenance Cost", compute="compute_maintenance_cost")
+    licensing_cost_to_date = fields.Float("Licensing Cost")
+    insurance_cost_to_date = fields.Float("Insurance Cost")
     line_items = fields.One2many('account.invoice.line','vehicle_id', String="Invoice Line Items")
 
     @api.multi
@@ -208,6 +211,15 @@ class ThomasFleetVehicle(models.Model):
                 rec.unitInt = 0
                 raise models.ValidationError('Protractor Unit # ' + rec.unit_no
                                              + ' is not valid (it must be an integer)')
+
+    def compute_maintenance_cost(self):
+        wo_rec = self.env['thomasfleet.workorder']
+        for rec in self:
+            work_orders = wo_rec.search([('vehicle_id', '=', rec.id),('unit_guid', '=', rec.protractor_guid)])
+            for wo in work_orders:
+                rec.maintenance_cost_to_date += wo['netTotal']
+
+
 
 
     @api.depends('lease_invoice_ids','historical_revenue')
@@ -931,12 +943,13 @@ class ThomasFleetWorkOrder(models.Model):
     invoice_guid = fields.Char('Invoice Guid')
 
     def search(self, args, offset=0, limit=None, order=None, count=False):
-        print("Searching Protractor WorkOrders")
-        wos = []
-        wo = self.env['thomasfleet.workorder'].new()
-
-        wos.append(wo)
-        return wos
+        print("Search Read")
+        if len(args) == 2:
+            guid = args[1][2]
+            wos = self._get_protractor_workorders_for_unit(guid)
+        else:
+            wos = self._get_protractor_workorders()
+        return wos  # [{'id':'test','invoiceDate':'test'}]
 
 
     @api.model

@@ -730,8 +730,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             else:
                 # print("Setting Dates " + a_lease.lease_number)
                 vals = self.get_invoice_dates(a_lease, False)
-                a_lease.write(vals)
-                # a_lease.update(vals)
+                a_lease.with_context(tracking_disable=True).write(vals)
+
+                #a_lease.update(vals)
             # self.lease_records.append(a_lease)
         return leases_ids
 
@@ -2653,7 +2654,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             if unit_invoices:
                                 initial_unit_invoices.extend(unit_invoices)
                             for vehicle in lease.vehicle_id:
-                                vehicle.with_context(skip_update=True).lease_invoice_ids = [
+                                vehicle.with_context(skip_update=True,tracking_disable=True).lease_invoice_ids = [
                                     (6, 0, initial_unit_invoices)]
                             initial_lease_ids.remove(lease.id)
                             # if lease.invoice_ids:
@@ -2676,7 +2677,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     lease.invoice_ids = [(4, l_inv.id)]
                                     _logger.info("end update lease")
                                     _logger.info("Start unit Update with Context")
-                                    lease.vehicle_id.with_context(skip_update=True).lease_invoice_ids = [(4, l_inv.id)]
+                                    lease.vehicle_id.with_context(skip_update=True,tracking_disable=True).lease_invoice_ids = [(4, l_inv.id)]
                                     _logger.info("End unit Update with Context")
                             # if lease.invoice_ids:
                             #    lease_invoices.extend(lease.invoice_ids.ids)
@@ -2750,7 +2751,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         norm_invoices = self.record_normal_invoice2(a_lease)
                         lease_success.append(a_lease)
 
-                    a_lease.write({'last_invoice_date': wizard.invoice_date})
+                    a_lease.with_context(tracking_disable=True).write({'last_invoice_date': wizard.invoice_date})
                     if a_lease.state == 'invoice_pending':
                         a_lease.state = 'closed'
                         str_lease_closed += '<p> Lease: ' + a_lease.id.lease_number + 'state changed from Invoice Pending to Closed</p>'
@@ -2850,17 +2851,24 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
             aggregate_customers = list(dict.fromkeys(aggregate_customers))
             agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
+            #todo look into this..norm invoice seems off..
             agg_invoices.extend(norm_invoices)
 
         strSuccess = ""
 
         str_i_date = datetime.strptime(self.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-
+        count_leases = 1
+        count_invoices =1
         for l in lease_success:
             strPost = ""
             strSuccess += '<p>' + l.lease_number + '<\p>'
+            _logger.info("Posting message for Invoice creation " + str(count_leases))
+            count_leases = count_leases + 1
             for a in agg_invoices:
+                _logger.info("Processing message for Invoice creation " + str(count_invoices))
+                count_invoices = count_invoices + 1
                 if l in a.lease_ids:
+
                     a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
                     a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
                     a_i_date = datetime.strptime(a.date_invoice, '%Y-%m-%d').strftime('%m/%d/%Y')
@@ -2868,9 +2876,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
                     strPost = '<p>Invoice id: ' + str(
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
+
                     l.message_post(
                         body='<p><b>Invoice(s) have been successfully created for: ' + a_i_date + '</b></p>' + strPost,
                         subject="Invoice Creation", subtype="mt_note")
+                    _logger.info("Posted message for Invoice creation " + str(count_invoices))
 
             strSuccess += "<hr/>"
 

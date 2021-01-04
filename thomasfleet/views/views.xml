@@ -207,6 +207,9 @@
                                         <group>
                                             <field name="historical_revenue"/>
                                             <field name="revenue_to_date"/>
+                                            <field name="maintenance_cost_to_date"/>
+                                            <field name="insurance_cost_to_date"/>
+                                            <field name="licensing_cost_to_date"/>
                                             <field name="thomas_purchase_price"/>
                                             <field name="betterment_cost"/>
                                             <field name="purchase_date"/>
