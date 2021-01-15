@@ -172,7 +172,7 @@
                                     </group>
                                     <group>
                                         <field name="inclusions" widget="many2many_tags"/>
-                                        <field name="accessories">
+                                        <field name="accessories" context="{'unit':True}" >
                                             <tree>
                                                 <field name="unit_no"/>
                                                 <field name="name"/>

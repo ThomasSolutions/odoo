@@ -1322,6 +1322,13 @@ class ThomasFleetAccessoryType(models.Model):
     _name='thomasfleet.accessory_type'
     name = fields.Char("Accessory Type")
 
+    # def search(self, args, offset=0, limit=None, order=None, count=False):
+    #     return  super(ThomasFleetAccessoryType,self).search(args,offset,limit,order,count)
+    #
+    # def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
+    #
+    #     return super(ThomasFleetAccessoryType, self).search_read( domain, fields, offset, limit, order)
+
 class ThomasFleetAccessory(models.Model):
     _name = 'thomasfleet.accessory'
 
@@ -1334,13 +1341,18 @@ class ThomasFleetAccessory(models.Model):
     purchase_date = fields.Date('Purchase Date')
     type = fields.Many2one('thomasfleet.accessory_type', 'Accessory Type')
 
+
+
     @api.multi
     @api.depends('type')
     def name_get(self):
             res = []
             for record in self:
                 if record.type.id == 12:
-                    name = record.name + " " + record.unit_no
+                    if record.name and record.unit_no:
+                        name = record.name + " " + record.unit_no
+                    else:
+                        name = " 407 Transponder"
                     res.append((record.id, name))
                 else:
                     res.append((record.id,record.name))
