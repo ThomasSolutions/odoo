@@ -949,7 +949,11 @@ class ThomasFleetWorkOrder(models.Model):
             wos = self._get_protractor_workorders_for_unit(guid)
         else:
             wos = self._get_protractor_workorders()
-        return wos  # [{'id':'test','invoiceDate':'test'}]
+            _res = wos
+        if offset > 0:
+           return wos[offset:(offset + limit)]
+        else:
+           return wos  # [{'id':'test','invoiceDate':'test'}]
 
 
     @api.model
@@ -960,7 +964,12 @@ class ThomasFleetWorkOrder(models.Model):
             wos = self._get_protractor_workorders_for_unit(guid)
         else:
             wos = self._get_protractor_workorders()
-        return wos#[{'id':'test','invoiceDate':'test'}]
+            _res = wos
+        if offset > 0:
+            return wos[offset:(offset+limit)]
+        else:
+            return wos  # [{'id':'test','invoiceDate':'test'}]
+
 
     def get_invoice_details_rest(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/Invoice/" + str(self.invoice_guid)
@@ -1200,7 +1209,7 @@ class ThomasFleetWorkOrder(models.Model):
         print("WORK ORDER DATA " + response.text)
         data = response.json()
 
-        workorders = self._res
+        workorders = [] #self._res
         aid = 0
         for item in data['ItemCollection']:
             #if item['ID'] not in workorders.items():
