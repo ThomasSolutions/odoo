@@ -57,12 +57,12 @@
                                     <field name="lease_invoices_count" widget="statinfo" string="Rental Invoices"/>
                                 </button>
                                 <button name="act_get_workorders"
-                                        string="Work Orders"
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-wrench"
                                         help="Show all the Protractor Service Invoices for this vehicle"
                                         groups="fleet.fleet_group_manager">
+                                     <field name="workorder_invoices_count" widget="statinfo" string="Work Orders"/>
                                 </button>
                                 <button name="act_show_vehicle_photos"
                                         type="object"
@@ -207,6 +207,7 @@
                                         <group>
                                             <field name="historical_revenue"/>
                                             <field name="revenue_to_date"/>
+                                            <field name="profitability_ratio"/>
                                             <field name="maintenance_cost_to_date"/>
                                             <field name="insurance_cost_to_date"/>
                                             <field name="licensing_cost_to_date"/>
@@ -397,6 +398,30 @@
                 </xpath>
             </field>
         </record>
+
+         <record id="thomas_vehicle_profit_pivot_view" model="ir.ui.view">
+            <field name="model">fleet.vehicle</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="unit_no" type="row" />
+                    <field name="maintenance_cost_to_date" type="measure"/>
+                    <field name="revenue_to_date" type="measure"/>
+                    <field name="profitability_ratio" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+
+        <record id='thomas_vehicle_profit_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Profitability Report</field>
+            <field name="res_model">fleet.vehicle</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_vehicle_profit_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_vehicle_profit_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_profit_pivot_menu"
+                  sequence="8" groups="thomasfleet.fleet_group_admin"/>
 
         <record id="thomas_vehicle_revenue_pivot_view" model="ir.ui.view">
             <field name="model">account.invoice.line</field>
@@ -924,6 +949,21 @@
             </field>
         </record>
 
+        <record id='thomas_workorder_action' model='ir.actions.act_window'>
+            <field name="name">Work Orders</field>
+            <field name="res_model">thomasfleet.workorder</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>
+
         <record id='thomas_workorder_view_form' model='ir.ui.view'>
             <field name="name">Work Order</field>
             <field name="model">thomasfleet.workorder</field>
@@ -932,7 +972,9 @@
                     <sheet>
                         <group>
                             <field name="vehicle_id"/>
+                            <field name="workOrderDate" widget="date"/>
                             <field name="workOrderNumber"/>
+                            <field name="invoiceDate" widget="date"/>
                             <field name="invoiceNumber"/>
                             <field name="partsTotal"/>
                             <field name="subletTotal"/>
@@ -984,15 +1026,15 @@
                                 type="object"
                                 class="oe_stat_button" string="View Details">
                     </button>-->
-                     <field name="workOrderDate"/>
-                    <!--<field name="invoiceDate"/>-->
+                    <field name="workOrderDate" widget="date"/>
+                    <field name="invoiceDate" widget="date"/>
                     <field name="technichan"/>
                     <field name="serviceAdvisor"/>
                     <field name="lastModifiedBy"/>
                     <field name="workOrderNumber"/>
                     <field name="workflowStage"/>
                     <field name="invoiceNumber"/>
-                    <!--   <field name="invoice_guid"/>-->
+                    <field name="invoice_guid"/>
                     <field name="partsTotal" sum="Parts Total"/>
                     <field name="laborTotal" sum="Labor Total"/>
                     <field name="subletTotal" sum="Sublet Total"/>
@@ -1119,21 +1161,7 @@
         </record>
 
 
-        <record id='thomas_workorder_action' model='ir.actions.act_window'>
-            <field name="name">Work Orders</field>
-            <field name="res_model">thomasfleet.workorder</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
 
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                    No Work Orders Found
-                </p>
-                <p>
-                    No Work Orders Found
-                </p>
-            </field>
-        </record>
 
         <record id='thomas_workorder_details_action' model='ir.actions.act_window'>
             <field name="name">Details</field>

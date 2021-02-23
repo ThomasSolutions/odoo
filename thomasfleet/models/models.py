@@ -3,8 +3,9 @@
 from odoo import models, fields, api, tools, exceptions
 import logging, pprint,requests,json,uuid,jsonpath
 from datetime import date, datetime
+from dateutil import parser
 
-
+_unit_inv = []
 
 def dump_obj(obj):
     fields_dict = {}
@@ -102,6 +103,11 @@ class ThomasFleetVehicle(models.Model):
         print('Last Unit #' + str(last_vehicle.unit_no))
         return str(int(last_vehicle.unit_no) + 1)
 
+    @api.multi
+    @api.onchange('maintenance_cost_to_date')
+    def set_cost_report(self):
+        self.cost_report = self.maintenance_cost_to_date
+
     # thomas_asset = fields.Many2one('thomas.asset', ondelete='cascade')
     # fleet_vehicle = fields.Many2one('fleet.vehicle', ondelete='cascade')
     # name = fields.Char(compute='_compute_vehicle_name', store=True)
@@ -114,6 +120,7 @@ class ThomasFleetVehicle(models.Model):
                                    relation='unit_lease_account_invoice_rel')
     lease_agreements_count = fields.Integer(compute='_compute_thomas_counts',string='Rental Agreements Count')
     lease_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='Rental Invoices Count')
+    workorder_invoices_count = fields.Integer(compute='_compute_thomas_counts',string='WorkOrders Count')
     unit_slug = fields.Char(compute='_compute_slug', readonly=True)
     vin_id = fields.Char('V.I.N', track_visibility='onchange')
     license_plate = fields.Char('License Plate',  required=False, track_visibility='onchange')
@@ -168,10 +175,16 @@ class ThomasFleetVehicle(models.Model):
 
     historical_revenue = fields.Float("Historical Revenue", track_visbility='onchange', default=0.00)
     revenue_to_date = fields.Float("Total Revenue", compute="compute_revenue", readonly=True, store=True)
-    maintenance_cost_to_date = fields.Float("Total Maintenance Cost", compute="compute_maintenance_cost")
+    maintenance_cost_to_date = fields.Float("Total Maintenance Cost", compute="_compute_maintenance_cost",
+                                             readonly=True, store=True)
     licensing_cost_to_date = fields.Float("Licensing Cost")
     insurance_cost_to_date = fields.Float("Insurance Cost")
     line_items = fields.One2many('account.invoice.line','vehicle_id', String="Invoice Line Items")
+
+    profitability_ratio = fields.Float("Profitability Ratio", compute="_compute_profitability_ratio", readonly=True,
+                                       store=True)
+
+
 
     @api.multi
     @api.depends('unit_no')
@@ -210,24 +223,31 @@ class ThomasFleetVehicle(models.Model):
             except ValueError:
                 rec.unitInt = 0
                 raise models.ValidationError('Protractor Unit # ' + rec.unit_no
+
                                              + ' is not valid (it must be an integer)')
 
-    def compute_maintenance_cost(self):
+    @api.depends('workorder_invoices_count','protractor_workorders')
+    def _compute_maintenance_cost(self):
         wo_rec = self.env['thomasfleet.workorder']
+        cu_date = datetime(2020,1,1)
         for rec in self:
-            work_orders = wo_rec.search([('vehicle_id', '=', rec.id),('unit_guid', '=', rec.protractor_guid)])
+            work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
             for wo in work_orders:
-                rec.maintenance_cost_to_date += wo['netTotal']
+                woDateS = parser.parse(wo.invoiceDate)
+                woDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
+                if woDate >= cu_date:
+                    rec.maintenance_cost_to_date += wo['netTotal']
 
 
 
 
-    @api.depends('lease_invoice_ids','historical_revenue')
+    @api.depends('lease_invoices_count','lease_invoice_ids','historical_revenue')
     def compute_revenue(self):
         for rec in self:
             for line in rec.line_items:
                 rec.revenue_to_date += line.price_total
             rec.revenue_to_date += rec.historical_revenue
+
         #lines = self.env['account.invoice.line']
         #for rec in self:
         #    the_lines = lines.search([('vehicle_id', '=', rec.id)])
@@ -236,6 +256,14 @@ class ThomasFleetVehicle(models.Model):
         #    rec.revenue_to_date = rec.revenue_to_date + rec.historical_revenue
 
     # accessories = fields.Many2many()
+    @api.depends('revenue_to_date', 'maintenance_cost_to_date')
+    def _compute_profitability_ratio(self):
+        for rec in self:
+            if rec.maintenance_cost_to_date > 0 and rec.revenue_to_date > 0:
+                rec.profitability_ratio = rec.revenue_to_date/rec.maintenance_cost_to_date
+            else:
+                rec.profitability_ratio = 0.0
+
     @api.depends('stored_protractor_guid')
     def protractor_guid_compute(self):
         #if self:
@@ -297,9 +325,12 @@ class ThomasFleetVehicle(models.Model):
     def _compute_thomas_counts(self):
         the_agreements = self.env['thomaslease.lease']
         the_invoices = self.env['account.invoice']
+        the_workorders = self.with_context(checkDB=True).env['thomasfleet.workorder']
         for record in self:
             record.lease_agreements_count = the_agreements.search_count([('vehicle_id', '=', record.id)])
             record.lease_invoices_count = the_invoices.search_count([('id', 'in', tuple(record.lease_invoice_ids.ids))])
+            record.workorder_invoices_count = the_workorders.search_count([('vehicle_id', '=', record.id),
+                                                                           ('guid', '=', record.protractor_guid)])
 
 
     def ok_pressed(self):
@@ -800,19 +831,28 @@ class ThomasFleetVehicle(models.Model):
     def act_get_workorders(self):
         print("WORK ORDERS ACTION")
         print('SELF ID ' + str(self.id))
-        '''
-        for rec in self:
-            if rec.protractor_workorders:  # don't add invoices right now if there are some
-                for inv in rec.protractor_workorders:
-                    print("NOT DELETING INVOICE:::" + str(inv.invoiceNumber))
-                    #inv.unlink()
-        '''
 
+        wo_rec = self.env['thomasfleet.workorder']
+        for rec in self:
+            work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
+            for work_order in work_orders:
+                print(" DELETING INVOICE:::" + str(work_order.id))
+                work_order.unlink()
+
+        #for rec in self:
+        #    if rec.protractor_workorders:  # don't add invoices right now if there are some
+        #        for inv in rec.protractor_workorders:
+        #            print(" DELETING INVOICE:::" + str(inv.invoiceNumber))
+        #            inv.unlink()
+
+        wo = self.env['thomasfleet.workorder']
+        wos = wo._create_protractor_workorders_for_unit(self.id,self.protractor_guid)
         self.ensure_one()
         res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'thomas_workorder_action')
         res.update(
-        context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True),
-        domain=[('vehicle_id', '=', self.id),('unit_guid', '=', self.protractor_guid)]
+        context=dict(self.env.context, default_vehicle_id=self.id, search_default_parent_false=True,
+                     ),
+        domain=[('vehicle_id', '=', self.id)]
         )
 
         return res
@@ -919,7 +959,14 @@ class ThomasFleetInclusions(models.Model):
     inclusion_cost= fields.Float('Cost')
     inclusion_charge=fields.Float('Monthly Rate')
 
-class ThomasFleetWorkOrder(models.Model):
+class ThomasFleetWorkOrderIndex(models.Model):
+    _name = 'thomasfleet.workorder_index'
+
+    invoice_number = fields.Integer("Invoice Number")
+    protractor_guid = fields.Char("Protractor GUID")
+
+
+class ThomasFleetWorkOrder(models.AbstractModel):
     _name = 'thomasfleet.workorder'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
@@ -928,7 +975,7 @@ class ThomasFleetWorkOrder(models.Model):
     invoiceTime = fields.Datetime('Invoice Time')
     invoiceDate = fields.Datetime('Invoice Date')
     workOrderTime = fields.Datetime('WorkOrder Time')
-    workOrderDate = fields.Date('WorkOrder Date')
+    workOrderDate = fields.Datetime('WorkOrder Date')
     technichan = fields.Char('Technician')
     serviceAdvisor = fields.Char('Service Advisor')
     lastModifiedBy = fields.Char('Last Modified By')
@@ -942,34 +989,114 @@ class ThomasFleetWorkOrder(models.Model):
     netTotal=fields.Float('Net Total')
     invoice_guid = fields.Char('Invoice Guid')
 
+
+
+    '''
+    def read(self, fields = None, load = '_classic_read' ):
+        print("Read")
+        #wo_index_rec = self.env['thomasfleet.workorder_index']
+        #theID = arg[0]
+        #index = wo_index_rec.search([('invoice_number', '=', theID)], limit=1)
+       # print("The Invoice GUID " + str(index.protractor_guid))
+        # mod = super(ThomasFleetWorkOrder, self).read(fields, load)
+        self.protractor_guid = "abc"
+        return [self]
+
+    def browse(self, arg=None, prefetch=None):
+        print("Browse")
+        wo_index_rec = self.env['thomasfleet.workorder_index']
+        theID = arg[0]
+        index = wo_index_rec.search([('invoice_number', '=', theID)],limit=1)
+        print("The Invoice GUID " + str(index.protractor_guid))
+        #mod = super(ThomasFleetWorkOrder, self).read(fields, load)
+        return 
+        
+          return {'id': self.id, 'invoice_guid': str(index.protractor_guid), 'invoiceTime': '',
+                 'invoiceDate': '', 'workOrderTime': '', 'workOrderDate': '', 'technichan': 'Me',
+                 'serviceAdvisor': 'You', 'lastModifiedBy': '',
+                 'workOrderNumber': 'FB', 'workflowStage': 'FUB', 'invoiceNumber': 'ABCD', 'partsTotal': 1.00,
+                 'subletTotal': 1.00, 'grandTotal': 1.00,
+                 'laborTotal': 1.00, 'netTotal': 2.00}
+   
+     return [{'id': theID, 'invoice_guid': str(index.protractor_guid),'invoiceTime':'',
+    'invoiceDate':'', 'workOrderTime':'','workOrderDate':'','technichan':'Me','serviceAdvisor':'You','lastModifiedBy':'',
+    'workOrderNumber':'FB','workflowStage':'FUB','invoiceNumber':'ABCD','partsTotal':1.00, 'subletTotal':1.00, 'grandTotal':1.00,
+    'laborTotal':1.00,'netTotal':2.00}]
+
+    def search_count(self, args):
+        print("Search Count")
+        if len(args) == 1:
+            return super(ThomasFleetWorkOrder, self.with_context(checkDB=True)).search_count(args)
+        else:
+            if len(args) == 2:
+                guid = args[1][2]
+                wos = self._get_protractor_workorders_for_unit(guid)
+            else:
+                wos = self._get_protractor_workorders()
+            return len(wos)
+'''
+    '''
+    @api.model
     def search(self, args, offset=0, limit=None, order=None, count=False):
-        print("Search Read")
-        if len(args) == 2:
+        print("Search")
+        if self._context.get('loadFromProtractor'):
             guid = args[1][2]
             wos = self._get_protractor_workorders_for_unit(guid)
         else:
-            wos = self._get_protractor_workorders()
-            _res = wos
-        if offset > 0:
-           return wos[offset:(offset + limit)]
+            wos = super(ThomasFleetWorkOrder, self).search(args,offset,limit,order,count)
+        return wos
+ 
+        if len(args) == 3:
+            return super(ThomasFleetWorkOrder, self.with_context(checkDB=True)).search(args,offset,limit,order,count)
         else:
-           return wos  # [{'id':'test','invoiceDate':'test'}]
+            if len(args) == 2:
+                guid = args[1][2]
+                wos = self._get_protractor_workorders_for_unit(guid)
+            else:
+                wos = self._get_protractor_workorders()
+            if offset > 0:
+               return wos[offset:(offset + limit)]
+            else:
+               return wos  # [{'id':'test','invoiceDate':'test'}]
+        '''
 
-
+    '''
     @api.model
     def search_read(self, domain=None, fields=None, offset=0, limit=None, order=None):
         print("Search Read")
-        if len(domain) == 2:
+        if self._context.get('loadFromProtractor'):
             guid = domain[1][2]
             wos = self._get_protractor_workorders_for_unit(guid)
         else:
-            wos = self._get_protractor_workorders()
-            _res = wos
-        if offset > 0:
-            return wos[offset:(offset+limit)]
+            wos = super(ThomasFleetWorkOrder, self).searc_read(domain, fields, offset, limit, order)
+        return wos
+   
+        if len(domain) == 3:
+            return super(ThomasFleetWorkOrder, self.with_context(checkDB=True)).search_read(domain,fields,offset,limit,order)
         else:
-            return wos  # [{'id':'test','invoiceDate':'test'}]
+            if len(domain) == 2:
+                guid = domain[1][2]
+                wos = self._get_protractor_workorders_for_unit(guid)
+            else:
+                wos = self._get_protractor_workorders()
+            if offset > 0:
+                return wos[offset:(offset+limit)]
+            else:
+                return wos  # [{'id':'test','invoiceDate':'test'}]
+    '''
 
+    def search_count(self, args):
+        print("Search Count")
+        if len(args) == 1:
+            return super(ThomasFleetWorkOrder, self).search_count(args)
+        else:
+            if len(args) == 2:
+                vehicle_id = args[0][2]
+                guid = args[1][2]
+                wos = self._get_protractor_workorders_for_unit(vehicle_id,guid)
+            else:
+                wos = self._get_protractor_workorders()
+            return len(wos)
 
     def get_invoice_details_rest(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/Invoice/" + str(self.invoice_guid)
@@ -1136,7 +1263,11 @@ class ThomasFleetWorkOrder(models.Model):
 
         # @api.one
 
-    def _get_protractor_workorders_for_unit(self,unit_guid):
+
+    def thomas_workorder_form_action(self):
+        print("THOMAS FORM ACTION")
+
+    def _create_protractor_workorders_for_unit(self,vehicle_id,unit_guid):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + str(
             unit_guid) + "/Invoice"
         da = datetime.now()
@@ -1152,7 +1283,7 @@ class ThomasFleetWorkOrder(models.Model):
         }
 
         response = requests.request("GET", url, headers=headers, params=querystring)
-        print("INVOICE DATA " + response.text)
+        # print("INVOICE DATA " + response.text)
         data = response.json()
 
         workorders = []
@@ -1161,23 +1292,29 @@ class ThomasFleetWorkOrder(models.Model):
             # if item['ID'] not in workorders.items():
             #    print("Not Found")
             aid = aid + 1
-            inv = {'id': aid, 'vehicle_id': self.id,
+            inv = {'vehicle_id': vehicle_id,
                    'invoice_guid': item['ID'],
-                   'workOrderNumber': item['WorkOrderNumber'],
+                   'workOrderNumber': str(item['WorkOrderNumber']),
                    'workflowStage': item['WorkflowStage'],
-                   'invoiceNumber': item['InvoiceNumber']}
+                   'invoiceNumber': str(item['InvoiceNumber'])}
             if 'Summary' in item:
                 inv['grandTotal'] = item['Summary']['GrandTotal']
                 inv['netTotal'] = item['Summary']['NetTotal']
                 inv['laborTotal'] = item['Summary']['LaborTotal']
                 inv['partsTotal'] = item['Summary']['PartsTotal']
                 inv['subletTotal'] = item['Summary']['SubletTotal']
-            woDT = str(item['Header']['CreationTime']).split("T")
-            inv['workOrderDate'] = woDT[0]
-            inv['workOrderTime'] = woDT[1]
-            invDT = str(item['InvoiceTime']).split("T")
-            inv['invoiceDate'] = invDT[0]
-            inv['invoiceTime'] = invDT[1]
+            woStr = str(item['Header']['CreationTime'])
+            wod = parser.parse(woStr)
+            # woDT = str(item['Header']['CreationTime']).split("T")
+            # woDT = datetime(item['Header']['CreationTime'])s
+            wdate = datetime.strptime(wod.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            inv['workOrderDate'] = wdate.date()
+            inv['workOrderTime'] = wdate.time()
+            invStr = str(item['InvoiceTime'])
+            invDT = parser.parse(invStr)  # str(item['InvoiceTime']).split("T")
+            iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            inv['invoiceDate'] = iDate.date()
+            inv['invoiceTime'] = iDate.time()
             if 'Technician' in item:
                 inv['technichan'] = str(item['Technician']['Name'])
             if 'ServiceAdvisor' in item:
@@ -1187,6 +1324,71 @@ class ThomasFleetWorkOrder(models.Model):
                 uName = per.split("\\")
                 # print(uName)
                 inv['lastModifiedBy'] = uName[1]
+
+            dbINV = self.create(inv)
+            workorders.append(inv)
+
+        return workorders
+
+    def _get_protractor_workorders_for_unit(self,vehicle_id,unit_guid):
+        url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + str(
+            unit_guid) + "/Invoice"
+        da = datetime.now()
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+
+        headers = {
+            'connectionId': "8c3d682f873644deb31284b9f764e38f",
+            'apiKey': "fb3c8305df2a4bd796add61e646f461c",
+            'authentication': "S2LZy0munq81s/uiCSGfCvGJZEo=",
+            'Accept': "application/json",
+            'cache-control': "no-cache",
+            'Postman-Token': "7c083a2f-d5ce-4c1a-aa35-8da253b61bee"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        #print("INVOICE DATA " + response.text)
+        data = response.json()
+
+        workorders = []
+        aid = 0
+        for item in data['ItemCollection']:
+            # if item['ID'] not in workorders.items():
+            #    print("Not Found")
+            aid = aid + 1
+            inv = {'vehicle_id': vehicle_id,
+                   'invoice_guid': item['ID'],
+                   'workOrderNumber': str(item['WorkOrderNumber']),
+                   'workflowStage': item['WorkflowStage'],
+                   'invoiceNumber': str(item['InvoiceNumber'])}
+            if 'Summary' in item:
+                inv['grandTotal'] = item['Summary']['GrandTotal']
+                inv['netTotal'] = item['Summary']['NetTotal']
+                inv['laborTotal'] = item['Summary']['LaborTotal']
+                inv['partsTotal'] = item['Summary']['PartsTotal']
+                inv['subletTotal'] = item['Summary']['SubletTotal']
+            woStr=str(item['Header']['CreationTime'])
+            wod = parser.parse(woStr)
+            #woDT = str(item['Header']['CreationTime']).split("T")
+            #woDT = datetime(item['Header']['CreationTime'])s
+            wdate = datetime.strptime(wod.strftime('%Y-%m-%d'),'%Y-%m-%d')
+            inv['workOrderDate'] = wdate.date()
+            inv['workOrderTime'] = wdate.time()
+            invStr = str(item['InvoiceTime'])
+            invDT = parser.parse(invStr)#str(item['InvoiceTime']).split("T")
+            iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'),'%Y-%m-%d')
+            inv['invoiceDate'] = iDate.date()
+            inv['invoiceTime'] = iDate.time()
+            if 'Technician' in item:
+                inv['technichan'] = str(item['Technician']['Name'])
+            if 'ServiceAdvisor' in item:
+                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+            if 'Header' in item:
+                per = str(item['Header']['LastModifiedBy'])
+                uName = per.split("\\")
+                # print(uName)
+                inv['lastModifiedBy'] = uName[1]
+
+            #dbINV = self.create(inv)
             workorders.append(inv)
 
         return workorders
@@ -1194,7 +1396,7 @@ class ThomasFleetWorkOrder(models.Model):
     def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": "", "readInProgress":"True"}
+        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}#, "readInProgress":"True"}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
@@ -1215,7 +1417,7 @@ class ThomasFleetWorkOrder(models.Model):
             #if item['ID'] not in workorders.items():
             #    print("Not Found")
             aid = aid +1
-            inv={'id':aid,'vehicle_id': self.id,
+            inv={'id':item['InvoiceNumber'],'vehicle_id': self.id,
                  'invoice_guid' : item['ID'],
                  'workOrderNumber': item['WorkOrderNumber'],
                  'workflowStage' : item['WorkflowStage'],
@@ -1265,7 +1467,7 @@ class ThomasFleetWorkOrder(models.Model):
 
     @api.multi
     def generate_account_invoices(self):
-        print ("Genearting Account Invoices")
+        print ("Generating Account Invoices")
 
 
 class ThomasFleetWorkOrderDetails(models.Model):
