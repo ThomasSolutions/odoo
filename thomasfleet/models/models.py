@@ -1308,13 +1308,13 @@ class ThomasFleetWorkOrder(models.AbstractModel):
             # woDT = str(item['Header']['CreationTime']).split("T")
             # woDT = datetime(item['Header']['CreationTime'])s
             wdate = datetime.strptime(wod.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            inv['workOrderDate'] = wdate.date()
-            inv['workOrderTime'] = wdate.time()
+            inv['workOrderDate'] = wod.date()
+            #inv['workOrderTime'] = wod.time()
             invStr = str(item['InvoiceTime'])
             invDT = parser.parse(invStr)  # str(item['InvoiceTime']).split("T")
             iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            inv['invoiceDate'] = iDate.date()
-            inv['invoiceTime'] = iDate.time()
+            inv['invoiceDate'] = invDT.date()
+            #inv['invoiceTime'] = iDate.time()
             if 'Technician' in item:
                 inv['technichan'] = str(item['Technician']['Name'])
             if 'ServiceAdvisor' in item:
