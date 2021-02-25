@@ -827,6 +827,7 @@ class ThomasFleetVehicle(models.Model):
 
         return res
 
+    @api.one
     def _get_protractor_workers(self):
         print("WORK ORDERS GET")
         print('UNIT # ' + str(self.unit_no))
@@ -835,6 +836,9 @@ class ThomasFleetVehicle(models.Model):
 
         wo_rec._create_protractor_workorders_for_unit(self.id, self.protractor_guid)
 
+        return
+
+    @api.one
     def _unlink_protractor_workers(self):
         wo_rec = self.env['thomasfleet.workorder']
         for rec in self:
@@ -842,6 +846,7 @@ class ThomasFleetVehicle(models.Model):
             for work_order in work_orders:
                 print(" DELETING WORKORDER for UNIT "+ str(self.unit_no) +":::" + str(work_order.id))
                 work_order.unlink()
+        return
 
     @api.multi
     def act_get_workorders(self):
@@ -1300,49 +1305,49 @@ class ThomasFleetWorkOrder(models.AbstractModel):
 
         response = requests.request("GET", url, headers=headers, params=querystring)
         # print("INVOICE DATA " + response.text)
-        data = response.json()
-
         workorders = []
-        aid = 0
-        for item in data['ItemCollection']:
-            # if item['ID'] not in workorders.items():
-            #    print("Not Found")
-            aid = aid + 1
-            inv = {'vehicle_id': vehicle_id,
-                   'invoice_guid': item['ID'],
-                   'workOrderNumber': str(item['WorkOrderNumber']),
-                   'workflowStage': item['WorkflowStage'],
-                   'invoiceNumber': str(item['InvoiceNumber'])}
-            if 'Summary' in item:
-                inv['grandTotal'] = item['Summary']['GrandTotal']
-                inv['netTotal'] = item['Summary']['NetTotal']
-                inv['laborTotal'] = item['Summary']['LaborTotal']
-                inv['partsTotal'] = item['Summary']['PartsTotal']
-                inv['subletTotal'] = item['Summary']['SubletTotal']
-            woStr = str(item['Header']['CreationTime'])
-            wod = parser.parse(woStr)
-            # woDT = str(item['Header']['CreationTime']).split("T")
-            # woDT = datetime(item['Header']['CreationTime'])s
-            wdate = datetime.strptime(wod.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            inv['workOrderDate'] = wod.date()
-            #inv['workOrderTime'] = wod.time()
-            invStr = str(item['InvoiceTime'])
-            invDT = parser.parse(invStr)  # str(item['InvoiceTime']).split("T")
-            iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            inv['invoiceDate'] = invDT.date()
-            #inv['invoiceTime'] = iDate.time()
-            if 'Technician' in item:
-                inv['technichan'] = str(item['Technician']['Name'])
-            if 'ServiceAdvisor' in item:
-                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
-            if 'Header' in item:
-                per = str(item['Header']['LastModifiedBy'])
-                uName = per.split("\\")
-                # print(uName)
-                inv['lastModifiedBy'] = uName[1]
+        if response.status_code == 200:
+            data = response.json()
+            aid = 0
+            for item in data['ItemCollection']:
+                # if item['ID'] not in workorders.items():
+                #    print("Not Found")
+                aid = aid + 1
+                inv = {'vehicle_id': vehicle_id,
+                       'invoice_guid': item['ID'],
+                       'workOrderNumber': str(item['WorkOrderNumber']),
+                       'workflowStage': item['WorkflowStage'],
+                       'invoiceNumber': str(item['InvoiceNumber'])}
+                if 'Summary' in item:
+                    inv['grandTotal'] = item['Summary']['GrandTotal']
+                    inv['netTotal'] = item['Summary']['NetTotal']
+                    inv['laborTotal'] = item['Summary']['LaborTotal']
+                    inv['partsTotal'] = item['Summary']['PartsTotal']
+                    inv['subletTotal'] = item['Summary']['SubletTotal']
+                woStr = str(item['Header']['CreationTime'])
+                wod = parser.parse(woStr)
+                # woDT = str(item['Header']['CreationTime']).split("T")
+                # woDT = datetime(item['Header']['CreationTime'])s
+                wdate = datetime.strptime(wod.strftime('%Y-%m-%d'), '%Y-%m-%d')
+                inv['workOrderDate'] = wod.date()
+                #inv['workOrderTime'] = wod.time()
+                invStr = str(item['InvoiceTime'])
+                invDT = parser.parse(invStr)  # str(item['InvoiceTime']).split("T")
+                iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'), '%Y-%m-%d')
+                inv['invoiceDate'] = invDT.date()
+                #inv['invoiceTime'] = iDate.time()
+                if 'Technician' in item:
+                    inv['technichan'] = str(item['Technician']['Name'])
+                if 'ServiceAdvisor' in item:
+                    inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+                if 'Header' in item:
+                    per = str(item['Header']['LastModifiedBy'])
+                    uName = per.split("\\")
+                    # print(uName)
+                    inv['lastModifiedBy'] = uName[1]
 
-            dbINV = self.create(inv)
-            workorders.append(inv)
+                dbINV = self.create(inv)
+                workorders.append(inv)
 
         return workorders
 
@@ -1362,50 +1367,50 @@ class ThomasFleetWorkOrder(models.AbstractModel):
         }
 
         response = requests.request("GET", url, headers=headers, params=querystring)
-        #print("INVOICE DATA " + response.text)
-        data = response.json()
-
         workorders = []
-        aid = 0
-        for item in data['ItemCollection']:
-            # if item['ID'] not in workorders.items():
-            #    print("Not Found")
-            aid = aid + 1
-            inv = {'vehicle_id': vehicle_id,
-                   'invoice_guid': item['ID'],
-                   'workOrderNumber': str(item['WorkOrderNumber']),
-                   'workflowStage': item['WorkflowStage'],
-                   'invoiceNumber': str(item['InvoiceNumber'])}
-            if 'Summary' in item:
-                inv['grandTotal'] = item['Summary']['GrandTotal']
-                inv['netTotal'] = item['Summary']['NetTotal']
-                inv['laborTotal'] = item['Summary']['LaborTotal']
-                inv['partsTotal'] = item['Summary']['PartsTotal']
-                inv['subletTotal'] = item['Summary']['SubletTotal']
-            woStr=str(item['Header']['CreationTime'])
-            wod = parser.parse(woStr)
-            #woDT = str(item['Header']['CreationTime']).split("T")
-            #woDT = datetime(item['Header']['CreationTime'])s
-            wdate = datetime.strptime(wod.strftime('%Y-%m-%d'),'%Y-%m-%d')
-            inv['workOrderDate'] = wdate.date()
-            inv['workOrderTime'] = wdate.time()
-            invStr = str(item['InvoiceTime'])
-            invDT = parser.parse(invStr)#str(item['InvoiceTime']).split("T")
-            iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'),'%Y-%m-%d')
-            inv['invoiceDate'] = iDate.date()
-            inv['invoiceTime'] = iDate.time()
-            if 'Technician' in item:
-                inv['technichan'] = str(item['Technician']['Name'])
-            if 'ServiceAdvisor' in item:
-                inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
-            if 'Header' in item:
-                per = str(item['Header']['LastModifiedBy'])
-                uName = per.split("\\")
-                # print(uName)
-                inv['lastModifiedBy'] = uName[1]
+        #print("INVOICE DATA " + response.text)
+        if response.status_code == 200:
+            data = response.json()
+            aid = 0
+            for item in data['ItemCollection']:
+                # if item['ID'] not in workorders.items():
+                #    print("Not Found")
+                aid = aid + 1
+                inv = {'vehicle_id': vehicle_id,
+                       'invoice_guid': item['ID'],
+                       'workOrderNumber': str(item['WorkOrderNumber']),
+                       'workflowStage': item['WorkflowStage'],
+                       'invoiceNumber': str(item['InvoiceNumber'])}
+                if 'Summary' in item:
+                    inv['grandTotal'] = item['Summary']['GrandTotal']
+                    inv['netTotal'] = item['Summary']['NetTotal']
+                    inv['laborTotal'] = item['Summary']['LaborTotal']
+                    inv['partsTotal'] = item['Summary']['PartsTotal']
+                    inv['subletTotal'] = item['Summary']['SubletTotal']
+                woStr=str(item['Header']['CreationTime'])
+                wod = parser.parse(woStr)
+                #woDT = str(item['Header']['CreationTime']).split("T")
+                #woDT = datetime(item['Header']['CreationTime'])s
+                wdate = datetime.strptime(wod.strftime('%Y-%m-%d'),'%Y-%m-%d')
+                inv['workOrderDate'] = wdate.date()
+                inv['workOrderTime'] = wdate.time()
+                invStr = str(item['InvoiceTime'])
+                invDT = parser.parse(invStr)#str(item['InvoiceTime']).split("T")
+                iDate = datetime.strptime(invDT.strftime('%Y-%m-%d'),'%Y-%m-%d')
+                inv['invoiceDate'] = iDate.date()
+                inv['invoiceTime'] = iDate.time()
+                if 'Technician' in item:
+                    inv['technichan'] = str(item['Technician']['Name'])
+                if 'ServiceAdvisor' in item:
+                    inv['serviceAdvisor'] = str(item['ServiceAdvisor']['Name'])
+                if 'Header' in item:
+                    per = str(item['Header']['LastModifiedBy'])
+                    uName = per.split("\\")
+                    # print(uName)
+                    inv['lastModifiedBy'] = uName[1]
 
-            #dbINV = self.create(inv)
-            workorders.append(inv)
+                #dbINV = self.create(inv)
+                workorders.append(inv)
 
         return workorders
 
