@@ -827,6 +827,24 @@ class ThomasFleetVehicle(models.Model):
 
         return res
 
+    @api.muli
+    def _get_protractor_workers(self):
+        print("WORK ORDERS GET")
+        print('UNIT # ' + str(self.unit_no))
+
+        wo_rec = self.env['thomasfleet.workorder']
+
+        wo_rec._create_protractor_workorders_for_unit(self.id, self.protractor_guid)
+
+    @api.multi
+    def _unlink_protractor_workers(self):
+        wo_rec = self.env['thomasfleet.workorder']
+        for rec in self:
+            work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
+            for work_order in work_orders:
+                print(" DELETING WORKORDER for UNIT "+ str(self.unit_no) +":::" + str(work_order.id))
+                work_order.unlink()
+
     @api.multi
     def act_get_workorders(self):
         print("WORK ORDERS ACTION")
