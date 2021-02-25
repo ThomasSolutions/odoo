@@ -827,7 +827,7 @@ class ThomasFleetVehicle(models.Model):
 
         return res
 
-    @api.muli
+    @api.multi
     def _get_protractor_workers(self):
         print("WORK ORDERS GET")
         print('UNIT # ' + str(self.unit_no))
