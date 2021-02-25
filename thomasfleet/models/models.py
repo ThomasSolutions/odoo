@@ -1347,7 +1347,8 @@ class ThomasFleetWorkOrder(models.AbstractModel):
                     inv['lastModifiedBy'] = uName[1]
 
                 dbINV = self.create(inv)
-                workorders.append(inv)
+                print("WorkOrder Created -> ID " + str(dbINV.id))
+                workorders.append(dbINV)
 
         return workorders
 
