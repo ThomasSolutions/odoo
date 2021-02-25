@@ -827,7 +827,6 @@ class ThomasFleetVehicle(models.Model):
 
         return res
 
-    @api.multi
     def _get_protractor_workers(self):
         print("WORK ORDERS GET")
         print('UNIT # ' + str(self.unit_no))
@@ -836,7 +835,6 @@ class ThomasFleetVehicle(models.Model):
 
         wo_rec._create_protractor_workorders_for_unit(self.id, self.protractor_guid)
 
-    @api.multi
     def _unlink_protractor_workers(self):
         wo_rec = self.env['thomasfleet.workorder']
         for rec in self:
