@@ -175,14 +175,24 @@ class ThomasFleetVehicle(models.Model):
 
     historical_revenue = fields.Float("Historical Revenue", track_visbility='onchange', default=0.00)
     revenue_to_date = fields.Float("Total Revenue", compute="compute_revenue", readonly=True, store=True)
-    maintenance_cost_to_date = fields.Float("Total Maintenance Cost", compute="_compute_maintenance_cost",
+    total_maintenance_cost_to_date = fields.Float("Lifetime Maintenance Cost", compute="_compute_maintenance_cost",
+                                             readonly=True, store=True)
+    maintenance_cost_to_date = fields.Float("Reporting Maintenance Cost (from 2020)", compute="_compute_maintenance_cost",
                                              readonly=True, store=True)
     licensing_cost_to_date = fields.Float("Licensing Cost")
     insurance_cost_to_date = fields.Float("Insurance Cost")
     line_items = fields.One2many('account.invoice.line','vehicle_id', String="Invoice Line Items")
 
-    profitability_ratio = fields.Float("Profitability Ratio", compute="_compute_profitability_ratio", readonly=True,
+    profitability_ratio = fields.Float("Revenue/Cost Ratio", compute="_compute_profitability_ratio", readonly=True,
                                        store=True)
+    reporting_profit = fields.Float("Reporting Profit", compute="_compute_profitability_ratio", readonly=True,
+                                    store=True)
+
+    lifetime_profit = fields.Float("Total Profit", compute="_compute_profitability_ratio", readonly=True,
+                                   store=True)
+
+    all_cost = fields.Float("Total Costs", compute="_compute_maintenance_cost",
+                                             readonly=True, store=True)
 
 
 
@@ -237,8 +247,9 @@ class ThomasFleetVehicle(models.Model):
                 woDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
                 if woDate >= cu_date:
                     rec.maintenance_cost_to_date += wo['netTotal']
-
-
+                else:
+                    rec.total_maintenance_cost_to_date += wo['netTotal']
+            rec.all_cost += (rec.total_maintenance_cost_to_date + rec.licensing_cost_to_date + rec.insurance_cost_to_date)
 
 
     @api.depends('lease_invoices_count','lease_invoice_ids','historical_revenue')
@@ -256,9 +267,11 @@ class ThomasFleetVehicle(models.Model):
         #    rec.revenue_to_date = rec.revenue_to_date + rec.historical_revenue
 
     # accessories = fields.Many2many()
-    @api.depends('revenue_to_date', 'maintenance_cost_to_date')
+    @api.depends('revenue_to_date', 'maintenance_cost_to_date','total_maintenance_cost_to_date','all_cost' )
     def _compute_profitability_ratio(self):
         for rec in self:
+            rec.lifetime_profit = rec.revenue_to_date - rec.all_cost
+            rec.reporting_profit = rec.revenue_to_date - rec.maintenance_cost_to_date
             if rec.maintenance_cost_to_date > 0 and rec.revenue_to_date > 0:
                 rec.profitability_ratio = rec.revenue_to_date/rec.maintenance_cost_to_date
             else:
