@@ -408,10 +408,10 @@
                 <pivot>
                     <field name="unit_no" type="row" />
                     <field name="maintenance_cost_to_date" type="measure"/>
-                    <field name="all_cost"/>
+                    <field name="all_cost" type="measure"/>
                     <field name="revenue_to_date" type="measure"/>
-                    <field name="reporting_profit"/>
-                    <field name="lifetime_profit"/>
+                    <field name="reporting_profit" type="measure"/>
+                    <field name="lifetime_profit" type="measure"/>
                     <field name="profitability_ratio" type="measure"/>
                 </pivot>
             </field>
