@@ -429,6 +429,30 @@
         <menuitem action="thomas_vehicle_profit_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_profit_pivot_menu"
                   sequence="8" groups="thomasfleet.fleet_group_admin"/>
 
+        <record id="thomas_vehicle_expense_pivot_view" model="ir.ui.view">
+            <field name="model">thomasfleet.workorder</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="vehicle_id" type="row" />
+                    <field name="invoiceDate" interval="month" type="col" />
+                    <field name="netTotal" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_vehicle_expense_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Expense Report</field>
+            <field name="res_model">thomasfleet.workorder</field>
+            <!--<field name="domain">[('invoiceDate','>','2020/1/1')]</field>-->
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_vehicle_expense_pivot_view"/>
+            <field name="context">{"lease" : True}</field>
+        </record>
+
+        <menuitem action="thomas_vehicle_expense_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_expense_pivot_menu"
+                  sequence="8" groups="thomasfleet.fleet_group_admin"/>
+
         <record id="thomas_vehicle_revenue_pivot_view" model="ir.ui.view">
             <field name="model">account.invoice.line</field>
             <field name="arch" type="xml">
@@ -440,12 +464,12 @@
             </field>
         </record>
 
-
         <record id='thomas_vehicle_revenue_pivot_action' model='ir.actions.act_window'>
             <field name="name">Vehicles Revenue Report</field>
             <field name="res_model">account.invoice.line</field>
             <field name="view_type">form</field>
             <field name="view_mode">pivot</field>
+
             <field name="view_id" ref="thomas_vehicle_revenue_pivot_view"/>
         </record>
 

@@ -1004,6 +1004,7 @@ class ThomasFleetWorkOrder(models.AbstractModel):
     _name = 'thomasfleet.workorder'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
+    unit_no =  fields.Char(related='vehicle_id.unit_no', string="Unit #", store=True)
     workorder_details = fields.One2many('thomasfleet.workorder_details', 'workorder_id',  'Work Order Details')
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
     invoiceTime = fields.Datetime('Invoice Time')
