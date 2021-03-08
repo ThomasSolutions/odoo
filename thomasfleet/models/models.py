@@ -1004,7 +1004,7 @@ class ThomasFleetWorkOrder(models.AbstractModel):
     _name = 'thomasfleet.workorder'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
-    unit_no =  fields.Char(related='vehicle_id.unit_no', string="Unit #", store=True)
+    unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
     workorder_details = fields.One2many('thomasfleet.workorder_details', 'workorder_id',  'Work Order Details')
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
     invoiceTime = fields.Datetime('Invoice Time')
@@ -1320,6 +1320,7 @@ class ThomasFleetWorkOrder(models.AbstractModel):
         response = requests.request("GET", url, headers=headers, params=querystring)
         # print("INVOICE DATA " + response.text)
         workorders = []
+        the_unit = self.env['fleet.vehicle'].search([('id','=',vehicle_id)])
         if response.status_code == 200:
             data = response.json()
             aid = 0
@@ -1328,6 +1329,7 @@ class ThomasFleetWorkOrder(models.AbstractModel):
                 #    print("Not Found")
                 aid = aid + 1
                 inv = {'vehicle_id': vehicle_id,
+                       'unit_no' : the_unit.unit_no,
                        'invoice_guid': item['ID'],
                        'workOrderNumber': str(item['WorkOrderNumber']),
                        'workflowStage': item['WorkflowStage'],
