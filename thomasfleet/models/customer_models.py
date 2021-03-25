@@ -22,7 +22,7 @@ class ThomasContact(models.Model):
     ap_contact = fields.Boolean(string="Accounts Payable Contact",track_visibility='onchange')
     po_contact = fields.Boolean(string="Purchasing Contact",track_visibility='onchange')
     ops_contact = fields.Boolean(string="Operations Contact",track_visibility='onchange')
-
+    work_orders = fields.One2many('thomasfleet.workorder', 'customer_id', 'Work Orders')
     aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True,track_visibility='onchange')
     preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
                                                   string='Invoice Delivery',default='email',track_visibility='onchange')

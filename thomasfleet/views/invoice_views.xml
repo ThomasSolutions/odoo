@@ -32,8 +32,9 @@
                     <!--<xpath expr="//field[@name='partner_shipping_id']" position="attributes">
                        <attribute name="attrs">{'invisible': [('partner_shipping_id','==',False)]}</attribute>
                     </xpath>-->
-                     <xpath expr="//button[@name='action_invoice_draft']" position="before">
-                   <!-- <button name="action_invoice_cancel" type="object" states="draft,open,paid" string="Cancel Invoice" groups="account.group_account_invoice"/>-->
+                     <xpath expr="//button[@name='action_invoice_sent']" position="before">
+                      <!-- <button name="action_invoice_send_to_ar" type="object" string="Send to Thomas AR" attrs="{'invisible':['|',('sent','=',True), ('state', 'not in', ('open','paid'))]}" class="oe_highlight o_invoice_send" groups="base.group_user"/>-->
+
                 </xpath>
                     <xpath expr="//field[@name='partner_id']" position="after">
                        <field name="partner_shipping_id" context="{'default_type':'delivery'}" options='{"always_reload": True}' attr="{'invisible': [('partner_shipping_id','==',False)]}"/>

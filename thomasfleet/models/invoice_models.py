@@ -10,6 +10,7 @@ class ThomasAccountingInvoice(models.Model):
 
     #department = fields.Char(string='Department')
     qc_check = fields.Boolean(string='Data Accuracy Validation')
+    sent_to_ar = fields.Boolean(string="Sent to AR" , default=False)
     thomas_invoice_type = fields.Selection( [('lease','Lease'),('maintenance', 'Maintenance'),('general', 'General')],
                                             string="Thomas Invoice Type", default='lease')
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
@@ -79,6 +80,13 @@ class ThomasAccountingInvoice(models.Model):
         return self.partner_shipping_id.id or super(ThomasAccountingInvoice, self).get_delivery_partner_id()
 
     @api.multi
+    def _get_ar_contact(self):
+        self.ensure_one()
+        res = []
+        ar = self.env['res.partner'].search([('email', 'like', 'ar@thomassolutions.ca')])
+        res.append(ar.id)
+        return res
+    @api.multi
     def _get_mail_contacts(self):
 
         self.ensure_one()
@@ -128,6 +136,15 @@ class ThomasAccountingInvoice(models.Model):
                     subject="Invoice Deleted", subtype="mt_note")
 
         return super(ThomasAccountingInvoice, self).unlink()
+
+    @api.multi
+    def action_invoice_send_to_ar(self):
+        self.ensure_one()
+        res = super(ThomasAccountingInvoice, self).action_invoice_sent()
+        ctx = res['context']
+        ar = self._get_ar_contact()
+        res.update(context=dict(ctx, default_partner_ids=ar))
+        return res
 
 
     @api.multi

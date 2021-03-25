@@ -1002,6 +1002,8 @@
                     <sheet>
                         <group>
                             <field name="vehicle_id"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
                             <field name="workOrderDate" widget="date"/>
                             <field name="workOrderNumber"/>
                             <field name="invoiceDate" widget="date"/>
@@ -1073,6 +1075,75 @@
                 </tree>
             </field>
         </record>
+
+        <record id='thomas_journal_item_action' model='ir.actions.act_window'>
+            <field name="name">Work Orders</field>
+            <field name="res_model">thomasfleet.journal_item</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,pivot</field>
+            <field name="context">{"lease" : True}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>
+
+        <record id='thomas_journal_item_view_form' model='ir.ui.view'>
+            <field name="name">Work Order</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <form string="Invoice">
+                    <sheet>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id='thomas_journal_item_view_tree' model='ir.ui.view'>
+            <field name="name">Work Orders</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <tree string="Items" create="false" edit="false" delete="false">
+                    <!--<button name="act_get_invoice_details"
+                                type="object"
+                                class="oe_stat_button" string="View Details">
+                    </button>-->
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                </tree>
+            </field>
+        </record>
+        <record id="thomas_journal_item_pivot_view" model="ir.ui.view">
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="vehicle_id" type="row" />
+                    <field name="expense" type="measure"/>
+                    <field name="revenue" type="measure"/>
+                    <field name="transaction_date" interval="month" type="col" />
+                </pivot>
+            </field>
+        </record>
+         <menuitem action="thomas_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_menu"
+                  sequence="13" groups="thomasfleet.fleet_group_admin"/>
         <!--    <act_window name="Generate Lease Invoices"
                        res_model="thomasfleet.lease.invoice.wizard"
                        src_model="thomasfleet.invoice"

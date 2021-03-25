@@ -888,6 +888,8 @@ class ThomasFleetVehicle(models.Model):
                      ),
         domain=[('vehicle_id', '=', self.id)]
         )
+        #jitems = self.env['thomasfleet.journal_item']
+        #jitems.createJournalItemsForUnit(self.id)
 
         return res
 
@@ -999,11 +1001,142 @@ class ThomasFleetWorkOrderIndex(models.Model):
     invoice_number = fields.Integer("Invoice Number")
     protractor_guid = fields.Char("Protractor GUID")
 
+class ThomasFleetJournalItem(models.Model):
+    _name = 'thomasfleet.journal_item'
 
-class ThomasFleetWorkOrder(models.AbstractModel):
+    '''
+    def init(self):
+
+        print("INITIALIZING")
+
+        wo_orders = self.env['thomasfleet.workorder'].search([])
+        for wo_s in wo_orders:
+            print("Deleting Work Orders")
+            wo_s.unlink()
+
+        units = self.env['fleet.vehicle'].search([('fleet_status', '!=', 'DISPOSED')])
+        wo = self.env['thomasfleet.workorder']
+        for unit in units:
+            if unit.vin_id:
+                print("Updating Unit: " + str(unit.unit_no) + " : " + str(unit.vin_id))
+                wo._create_protractor_workorders_for_unit(unit.id, unit.protractor_guid)
+                print("Created WorkOrders")
+            else:
+                print("NOT UPDATING Unit: " + str(unit.unit_no) + " : " + str(unit.protractor_guid))
+
+
+
+        jitems = self.env['thomasfleet.journal_item'].search([])
+        for jit in jitems:
+            jit.unlink()
+            print("Deleting")
+        iCount = 0
+
+
+
+        inv_lines = self.env['account.invoice.line'].search([])
+        journal_item = self.env['thomasfleet.journal_item']
+
+        while iCount < 200:
+           journal_item.create( {'transaction_date' : inv_lines[iCount].date_invoice,
+             'type': 'revenue',
+             'revenue':inv_lines[iCount].price_subtotal,
+             'invoice_line_id': inv_lines[iCount].id,
+             'vehicle_id': inv_lines[iCount].vehicle_id.id,
+             'product_id' : inv_lines[iCount].lease_line_id.product_id.id,
+             'customer_id': inv_lines[iCount].invoice_id.partner_id.id
+            })
+           iCount = iCount+1
+
+        iCount = 0
+        wo_orders = self.env['thomasfleet.workorder'].search([])
+
+        while iCount < 200:
+           journal_item.create({'transaction_date':wo_orders[iCount].invoiceDate,
+             'type': 'expense',
+             'expense': wo_orders[iCount].netTotal,
+             'work_order_id':wo_orders[iCount].id,
+             'vehicle_id': wo_orders[iCount].vehicle_id.id,
+             'product_id': wo_orders[iCount].product_id.id,
+             'customer_id': wo_orders[iCount].customer_id.id
+            })
+           iCount = iCount+1
+    '''
+
+
+    def createJournalItemsForUnit(self,unit_id):
+
+        inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id)])
+        journal_item = self.env['thomasfleet.journal_item']
+
+        for inv in inv_lines:
+            journal_item.with_context(skip_update=True).create( {'transaction_date' : inv.date_invoice,
+             'type': 'revenue',
+             'revenue':inv.price_subtotal,
+             'invoice_line_id': inv.id,
+             'vehicle_id': inv.vehicle_id.id,
+             'product_id' : inv.lease_line_id.product_id.id,
+             'customer_id': inv.invoice_id.partner_id.id
+            })
+
+        wo_orders = self.env['thomasfleet.workorder'].search([('vehicle_id', '=', unit_id)])
+
+        for wo in wo_orders:
+            journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
+             'type': 'expense',
+             'expense': wo.netTotal,
+             'work_order_id':wo.id,
+             'vehicle_id': wo.vehicle_id.id,
+             'product_id': wo.product_id.id,
+             'customer_id': wo.customer_id.id
+            })
+
+
+
+    @api.depends('invoice_line_id','work_order_id', 'type')
+    def default_vehicle_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.vehicle_id
+            else:
+                return self.work_order_id.vehicle_id
+
+    @api.depends('invoice_line_id', 'work_order_id', 'type')
+    def default_customer_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.invoice_id.partner_id
+            else:
+                return self.work_order_id.customer_id
+
+    @api.depends('invoice_line_id', 'work_order_id', 'type')
+    def default_product_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.lease_line_id.product_id
+            else:
+                return self.work_order_id.customer_id
+
+    transaction_date = fields.Datetime("Transaction Date")
+    expense = fields.Float("Expense")
+    revenue = fields.Float("Revenue")
+    type = fields.Selection([('revenue', 'Revenue'), ('expense', 'Expense')])
+    work_order_id = fields.Many2one('thomasfleet.work_order', string='Work Order', help='Work Order For a Vehicle')
+    invoice_line_id = fields.Many2one('account.invoice.line', string='Invoice Line Item', help='Rental Invoice for the Unit')
+    customer_id = fields.Many2one('res.partner', deafult=default_customer_id,  string='Customer',
+                                  help='Work Order For a Vehicle', readonly=True)
+    vehicle_id = fields.Many2one('fleet.vehicle',default=default_vehicle_id,  string='Unit',
+                                 help='Work Order For a Vehicle', readonly=True)
+    product_id = fields.Many2one('product.product',default=default_product_id, string='Product',
+                                 help='Product', readonly=True)
+
+
+class ThomasFleetWorkOrder(models.Model):
     _name = 'thomasfleet.workorder'
     _res = []
     vehicle_id = fields.Many2one('fleet.vehicle', 'Vehicle')
+    customer_id = fields.Many2one('res.partner', 'Customer')
+    product_id = fields.Many2one('product.product', 'Product')
     unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
     workorder_details = fields.One2many('thomasfleet.workorder_details', 'workorder_id',  'Work Order Details')
     protractor_guid = fields.Char('Protractor GUID',related='vehicle_id.protractor_guid')
@@ -1361,8 +1494,22 @@ class ThomasFleetWorkOrder(models.AbstractModel):
                     uName = per.split("\\")
                     # print(uName)
                     inv['lastModifiedBy'] = uName[1]
+                if 'Contact' in item:
+                    con_guid = item['Contact']['ID']
+                    if con_guid:
+                        customer_id = self.env['res.partner'].search([('protractor_guid', '=', con_guid)])
+                        if customer_id:
+                            print("Found Customer ID: " + str(customer_id) + " for: "+con_guid)
+                            inv['customer_id'] = customer_id.id
+                        else:
+                            inv['customer_id'] = False
 
-                dbINV = self.create(inv)
+                product_id = self.env['product.product'].search([('name', 'like','Maintenance - General')])
+                if product_id:
+                    inv['product_id'] = product_id.id
+                else:
+                    inv['product_id'] = False
+                dbINV = self.with_context(skip_update=True).create(inv)
                 print("WorkOrder Created -> ID " + str(dbINV.id))
                 workorders.append(dbINV)
 
@@ -1425,7 +1572,15 @@ class ThomasFleetWorkOrder(models.AbstractModel):
                     uName = per.split("\\")
                     # print(uName)
                     inv['lastModifiedBy'] = uName[1]
-
+                if 'Contact' in item:
+                    con_guid = item['Contact']['ID']
+                    if con_guid:
+                        customer_id = self.env['res.partner'].search([('protractor_guid', '=', con_guid)])
+                        if customer_id:
+                            print("Found Customer ID: " + str(customer_id) + " for: "+con_guid)
+                            inv['customer_id'] = [(4,customer_id)]
+                        else:
+                            inv['customer_id'] = []
                 #dbINV = self.create(inv)
                 workorders.append(inv)
 
@@ -1481,6 +1636,22 @@ class ThomasFleetWorkOrder(models.AbstractModel):
                 uName = per.split("\\")
                 #print(uName)
                 inv['lastModifiedBy'] = uName[1]
+            if 'Contact' in item:
+                con_guid = item['Contact']['ID']
+                if con_guid:
+                    customer_id = self.env['res.partner'].search([('protractor_guid', '=', con_guid)])
+                    if customer_id:
+                        print("Found Customer ID: " + str(customer_id) + " for: " + con_guid)
+                        inv['customer_id'] = customer_id.id
+                    else:
+                        inv['customer_id'] = False
+
+            product_id = self.env['product.product'].search([('name', 'like','Maintenance - General')])
+            if product_id:
+                inv['product_id'] = product_id.id
+            else:
+                inv['product_id'] = False
+
             workorders.append(inv)
 
         return workorders
