@@ -83,7 +83,7 @@ class ThomasAccountingInvoice(models.Model):
     def _get_ar_contact(self):
         self.ensure_one()
         res = []
-        ar = self.env['res.partner'].search([('email', 'like', 'ar@thomassolutions.ca')])
+        ar = self.env['res.partner'].search([('name', '=', 'Accounts Receivable')])
         res.append(ar.id)
         return res
     @api.multi

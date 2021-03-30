@@ -1077,7 +1077,7 @@
         </record>
 
         <record id='thomas_journal_item_action' model='ir.actions.act_window'>
-            <field name="name">Work Orders</field>
+            <field name="name">Unit Journal Items</field>
             <field name="res_model">thomasfleet.journal_item</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,pivot</field>
@@ -1093,7 +1093,7 @@
         </record>
 
         <record id='thomas_journal_item_view_form' model='ir.ui.view'>
-            <field name="name">Work Order</field>
+            <field name="name">Unit Journal</field>
             <field name="model">thomasfleet.journal_item</field>
             <field name="arch" type="xml">
                 <form string="Invoice">
@@ -1113,7 +1113,7 @@
         </record>
 
         <record id='thomas_journal_item_view_tree' model='ir.ui.view'>
-            <field name="name">Work Orders</field>
+            <field name="name">Unit Journal</field>
             <field name="model">thomasfleet.journal_item</field>
             <field name="arch" type="xml">
                 <tree string="Items" create="false" edit="false" delete="false">
