@@ -139,12 +139,44 @@ class ThomasAccountingInvoice(models.Model):
 
     @api.multi
     def action_invoice_send_to_ar(self):
+        #self.ensure_one()
+        #res = super(ThomasAccountingInvoice, self).action_invoice_sent()
+        #ctx = res['context']
+        #ar = self._get_ar_contact()
+        #res.update(context=dict(ctx, default_partner_ids=ar))
+
         self.ensure_one()
-        res = super(ThomasAccountingInvoice, self).action_invoice_sent()
-        ctx = res['context']
         ar = self._get_ar_contact()
-        res.update(context=dict(ctx, default_partner_ids=ar))
-        return res
+        template = self.env.ref('account.email_template_edi_invoice', False)
+        compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
+        ctx = dict(
+            default_model='account.invoice',
+            default_res_id=self.id,
+            default_use_template=bool(template),
+            default_template_id=template and template.id or False,
+            default_composition_mode='comment',
+            mark_invoice_as_sent=True,
+            custom_layout="account.mail_template_data_notification_email_account_invoice",
+            force_email=False,
+            default_partner_ids=ar
+        )
+        return {
+            'name': _('Compose Email'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form.id, 'form')],
+            'view_id': compose_form.id,
+            'target': 'new',
+            'context': ctx,
+        }
+
+
+
+
+
+
 
 
     @api.multi
