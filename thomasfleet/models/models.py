@@ -1062,7 +1062,8 @@ class ThomasFleetJournalItem(models.Model):
             })
            iCount = iCount+1
     '''
-
+    def thomas_reload_journal_item_action(self):
+        print("Reload")
 
     def createJournalItemsForUnit(self,unit_id):
 

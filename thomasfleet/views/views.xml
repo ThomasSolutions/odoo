@@ -1091,6 +1091,14 @@
                 </p>
             </field>
         </record>
+        <record id="thomas_reload_journal_item_action" model="ir.actions.server">
+            <field name="name">Reload Journal Items</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_thomasfleet_journal_item" />
+            <field name="state">code</field>
+            <field name="code">action = model.thomas_reload_journal_item_action()</field>
+        </record>
+
 
         <record id='thomas_journal_item_view_form' model='ir.ui.view'>
             <field name="name">Unit Journal</field>
@@ -1117,10 +1125,7 @@
             <field name="model">thomasfleet.journal_item</field>
             <field name="arch" type="xml">
                 <tree string="Items" create="false" edit="false" delete="false">
-                    <!--<button name="act_get_invoice_details"
-                                type="object"
-                                class="oe_stat_button" string="View Details">
-                    </button>-->
+
                             <field name="vehicle_id"/>
                             <field name="transaction_date"/>
                             <field name="type"/>
@@ -1143,6 +1148,8 @@
             </field>
         </record>
          <menuitem action="thomas_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_menu"
+                  sequence="13" groups="thomasfleet.fleet_group_admin"/>
+        <menuitem action="thomas_reload_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_reload_journal_item_menu"
                   sequence="13" groups="thomasfleet.fleet_group_admin"/>
         <!--    <act_window name="Generate Lease Invoices"
                        res_model="thomasfleet.lease.invoice.wizard"
