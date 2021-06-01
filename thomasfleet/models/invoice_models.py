@@ -14,7 +14,7 @@ class ThomasAccountingInvoice(models.Model):
     thomas_invoice_type = fields.Selection( [('lease','Lease'),('maintenance', 'Maintenance'),('general', 'General')],
                                             string="Thomas Invoice Type", default='lease')
     thomas_invoice_class = fields.Selection([('rental','Rental'),('repair', 'Repair'),('407', '407'), ('fines', 'Fines')],
-                                            string="Thomas Invoice Type", default='rental')
+                                            string="Invoice Type", default='rental')
 
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
 

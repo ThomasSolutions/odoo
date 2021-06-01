@@ -41,7 +41,6 @@
                    </xpath>
                      <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="po_number" />
-                    <field name="thomas_invoice_type"/>
                     <field name="thomas_invoice_class"/>
                     <field name="invoice_to"/>
                     <field name="invoice_from"/>
@@ -74,7 +73,7 @@
                         <field name="gp_po_number"/>
                         <field name="thomas_invoice_class"/>
                         <field name="initial_invoice"/>
-             </xpath>
+                    </xpath>
                  </data>
            </field>
         </record>
