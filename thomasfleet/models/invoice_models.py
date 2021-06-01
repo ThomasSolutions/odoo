@@ -13,6 +13,9 @@ class ThomasAccountingInvoice(models.Model):
     sent_to_ar = fields.Boolean(string="Sent to AR" , default=False)
     thomas_invoice_type = fields.Selection( [('lease','Lease'),('maintenance', 'Maintenance'),('general', 'General')],
                                             string="Thomas Invoice Type", default='lease')
+    thomas_invoice_class = fields.Selection([('rental','Rental'),('repair', 'Repair'),('407', '407'), ('fines', 'Fines')],
+                                            string="Thomas Invoice Type", default='rental')
+
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
 
     unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
