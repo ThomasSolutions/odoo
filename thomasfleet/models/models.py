@@ -868,7 +868,7 @@ class ThomasFleetVehicle(models.Model):
             j_items = ji_rec.search([('vehicle_id', '=', rec.id)])
             for j_item in j_items:
                 print(" DELETING Journal Items for UNIT " + str(self.unit_no) + ":::" + str(j_item.id))
-                j_item.unlink()
+                j_item.with_context(skip_update=True).unlink()
         return
 
     @api.multi
@@ -1079,28 +1079,34 @@ class ThomasFleetJournalItem(models.Model):
 
         inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id)])
         journal_item = self.env['thomasfleet.journal_item']
-
+        cu_date = datetime(2021, 1, 1)
         for inv in inv_lines:
-            journal_item.with_context(skip_update=True).create( {'transaction_date' : inv.date_invoice,
-             'type': 'revenue',
-             'revenue':inv.price_subtotal,
-             'invoice_line_id': inv.id,
-             'vehicle_id': inv.vehicle_id.id,
-             'product_id' : inv.lease_line_id.product_id.id,
-             'customer_id': inv.invoice_id.partner_id.id
-            })
+            woDateS = parser.parse(inv.date_invoice)
+            invDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            if invDate >= cu_date:
+                journal_item.with_context(skip_update=True).create( {'transaction_date':inv.date_invoice,
+                 'type':'revenue',
+                 'revenue':inv.price_subtotal,
+                 'invoice_line_id': inv.id,
+                 'vehicle_id': inv.vehicle_id.id,
+                 'product_id' : inv.lease_line_id.product_id.id,
+                 'customer_id': inv.invoice_id.partner_id.id
+                })
 
         wo_orders = self.env['thomasfleet.workorder'].search([('vehicle_id', '=', unit_id)])
-
         for wo in wo_orders:
-            journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
-             'type': 'expense',
-             'expense': wo.netTotal,
-             'work_order_id':wo.id,
-             'vehicle_id': wo.vehicle_id.id,
-             'product_id': wo.product_id.id,
-             'customer_id': wo.customer_id.id
-            })
+            woDateS1 = parser.parse(wo.invoiceDate)
+            woDate = datetime.strptime(woDateS1.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            if woDate >= cu_date:
+                journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
+                 'type': 'expense',
+                 'expense': wo.netTotal,
+                 'work_order_id':wo.id,
+                 'vehicle_id': wo.vehicle_id.id,
+                 'product_id': wo.product_id.id,
+                 'customer_id': wo.customer_id.id
+                })
+
 
 
 
