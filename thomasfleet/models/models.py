@@ -861,6 +861,16 @@ class ThomasFleetVehicle(models.Model):
                 work_order.unlink()
         return
 
+    @api.one
+    def _unlink_journal_items(self):
+        ji_rec = self.env['thomasfleet.journal_item']
+        for rec in self:
+            j_items = ji_rec.search([('vehicle_id', '=', rec.id)])
+            for j_item in j_items:
+                print(" DELETING Journal Items for UNIT " + str(self.unit_no) + ":::" + str(j_item.id))
+                j_item.unlink()
+        return
+
     @api.multi
     def act_get_workorders(self):
         print("WORK ORDERS ACTION")
