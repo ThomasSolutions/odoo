@@ -858,7 +858,7 @@ class ThomasFleetVehicle(models.Model):
             work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
             for work_order in work_orders:
                 print(" DELETING WORKORDER for UNIT "+ str(self.unit_no) +":::" + str(work_order.id))
-                work_order.unlink()
+                work_order.with_context(skip_update=True).unlink()
         return
 
     @api.one
