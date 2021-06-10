@@ -841,7 +841,7 @@ class ThomasFleetVehicle(models.Model):
         return res
 
     @api.one
-    def _get_protractor_workers(self):
+    def _get_protractor_workrorders(self):
         print("WORK ORDERS GET")
         print('UNIT # ' + str(self.unit_no))
 
@@ -852,7 +852,7 @@ class ThomasFleetVehicle(models.Model):
         return
 
     @api.one
-    def _unlink_protractor_workers(self):
+    def _unlink_protractor_workerorders(self):
         wo_rec = self.env['thomasfleet.workorder']
         for rec in self:
             work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
@@ -1452,11 +1452,22 @@ class ThomasFleetWorkOrder(models.Model):
     def thomas_workorder_form_action(self):
         print("THOMAS FORM ACTION")
 
+    def _create_protractor_workorders_for_all_units(self):
+        units = self.env['fleet.vehicle'].search([('fleet_status', '!=', 'DISPOSED')])
+        self.log.info("Number of Units for Updating: " + str(len(units)))
+        for unit in units:
+            if unit.vin_id:
+                self.log.info("Updating Unit: " + str(unit.unit_no) + " : " + str(unit.vin_id))
+                self._create_protractor_workorders_for_unit(unit.id, unit.protractor_guid)
+                self.log.info("Created WorkOrders")
+            else:
+                print("NOT UPDATING Unit: " + str(unit.unit_no) + " : " + str(unit.protractor_guid))
+
     def _create_protractor_workorders_for_unit(self,vehicle_id,unit_guid):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + str(
             unit_guid) + "/Invoice"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+        querystring = {" ": "", "startDate": "2021-01-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
@@ -1536,7 +1547,7 @@ class ThomasFleetWorkOrder(models.Model):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/" + str(
             unit_guid) + "/Invoice"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+        querystring = {" ": "", "startDate": "2021-01-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
