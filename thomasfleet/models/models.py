@@ -1077,7 +1077,8 @@ class ThomasFleetJournalItem(models.Model):
 
     def createJournalItemsForUnit(self,unit_id):
 
-        inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id)])
+        inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id),
+                                                             ('invoice_id.state', 'not in',['draft', 'cancel'])])
         journal_item = self.env['thomasfleet.journal_item']
         cu_date = datetime(2021, 1, 1)
         for inv in inv_lines:
