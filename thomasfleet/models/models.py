@@ -1172,6 +1172,7 @@ class ThomasFleetWorkOrder(models.Model):
     subletTotal= fields.Float('Sublet Total')
     grandTotal=fields.Float('Grand Total')
     laborTotal=fields.Float('Labor Total')
+    otherChargeTotal = fields.Float('Other Charge Total')
     netTotal=fields.Float('Net Total')
     invoice_guid = fields.Char('Invoice Guid')
 
@@ -1502,6 +1503,7 @@ class ThomasFleetWorkOrder(models.Model):
                     inv['laborTotal'] = item['Summary']['LaborTotal']
                     inv['partsTotal'] = item['Summary']['PartsTotal']
                     inv['subletTotal'] = item['Summary']['SubletTotal']
+                    inv['otherChargeTotal']= item['Summary']['OtherChargeTotal']
                 woStr = str(item['Header']['CreationTime'])
                 wod = parser.parse(woStr)
                 # woDT = str(item['Header']['CreationTime']).split("T")
@@ -1580,6 +1582,7 @@ class ThomasFleetWorkOrder(models.Model):
                     inv['laborTotal'] = item['Summary']['LaborTotal']
                     inv['partsTotal'] = item['Summary']['PartsTotal']
                     inv['subletTotal'] = item['Summary']['SubletTotal']
+                    inv['otherChargeTotal'] = item['Summary']['OtherChargeTotal']
                 woStr=str(item['Header']['CreationTime'])
                 wod = parser.parse(woStr)
                 #woDT = str(item['Header']['CreationTime']).split("T")
@@ -1650,6 +1653,8 @@ class ThomasFleetWorkOrder(models.Model):
                 inv['laborTotal'] = item['Summary']['LaborTotal']
                 inv['partsTotal'] = item['Summary']['PartsTotal']
                 inv['subletTotal'] = item['Summary']['SubletTotal']
+                inv['otherChargeTotal'] = item['Summary']['OtherChargeTotal']
+
             woDT = str(item['Header']['CreationTime']).split("T")
             inv['workOrderDate'] = woDT[0]
             inv['workOrderTime'] = woDT[1]

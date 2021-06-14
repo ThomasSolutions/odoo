@@ -1070,6 +1070,7 @@
                     <field name="partsTotal" sum="Parts Total"/>
                     <field name="laborTotal" sum="Labor Total"/>
                     <field name="subletTotal" sum="Sublet Total"/>
+                    <field name="otherChargeTotal" sum="Other Costs Total"/>
                     <field name="netTotal" sum="Net Total"/>
                     <field name="grandTotal" sum="Total Service Cost"/>
                 </tree>
