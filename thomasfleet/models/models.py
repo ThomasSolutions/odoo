@@ -1622,7 +1622,7 @@ class ThomasFleetWorkOrder(models.Model):
     def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2021-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}#, "readInProgress":"True"}
+        querystring = {" ": "", "startDate": "2021-01-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}#, "readInProgress":"True"}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
