@@ -239,7 +239,7 @@ class ThomasFleetVehicle(models.Model):
     @api.depends('workorder_invoices_count','protractor_workorders')
     def _compute_maintenance_cost(self):
         wo_rec = self.env['thomasfleet.workorder']
-        cu_date = datetime(2020,1,1)
+        cu_date = datetime(2021,1,1)
         for rec in self:
             work_orders = wo_rec.search([('vehicle_id', '=', rec.id)])
             for wo in work_orders:
@@ -1078,14 +1078,15 @@ class ThomasFleetJournalItem(models.Model):
     def createJournalItemsForUnit(self,unit_id):
 
         inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id),
-                                                             ('invoice_id.state', 'not in',['draft', 'cancel'])])
+                                                             ('invoice_id.state', 'not in',['draft', 'cancel']),
+                                                             ('invoice_id.thomas_invoice_class', '=', 'rental')])
         journal_item = self.env['thomasfleet.journal_item']
         cu_date = datetime(2021, 1, 1)
         for inv in inv_lines:
             woDateS = parser.parse(inv.date_invoice)
             invDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
             if invDate >= cu_date:
-                journal_item.with_context(skip_update=True).create( {'transaction_date':inv.date_invoice,
+                journal_item.with_context(skip_update=True).create({'transaction_date':inv.date_invoice,
                  'type':'revenue',
                  'revenue':inv.price_subtotal,
                  'invoice_line_id': inv.id,
@@ -1621,7 +1622,7 @@ class ThomasFleetWorkOrder(models.Model):
     def _get_protractor_workorders(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/WorkOrder/"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}#, "readInProgress":"True"}
+        querystring = {" ": "", "startDate": "2021-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}#, "readInProgress":"True"}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
