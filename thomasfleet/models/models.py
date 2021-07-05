@@ -716,7 +716,7 @@ class ThomasFleetVehicle(models.Model):
     def _get_protractor_workorders_tbd(self):
         url = "https://integration.protractor.com/IntegrationServices/1.0/ServiceItem/"+str(self.stored_protractor_guid)+"/Invoice"
         da = datetime.now()
-        querystring = {" ": "", "startDate": "2014-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
+        querystring = {" ": "", "startDate": "2021-11-01", "endDate": da.strftime("%Y-%m-%d"), "%20": ""}
 
         headers = {
             'connectionId': "8c3d682f873644deb31284b9f764e38f",
@@ -1102,7 +1102,7 @@ class ThomasFleetJournalItem(models.Model):
             if woDate >= cu_date:
                 journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
                  'type': 'expense',
-                 'expense': wo.netTotal,
+                 'expense': wo.rnmTotal,
                  'work_order_id':wo.id,
                  'vehicle_id': wo.vehicle_id.id,
                  'product_id': wo.product_id.id,
@@ -1175,6 +1175,7 @@ class ThomasFleetWorkOrder(models.Model):
     laborTotal=fields.Float('Labor Total')
     otherChargeTotal = fields.Float('Other Charge Total')
     netTotal=fields.Float('Net Total')
+    rnmTotal = fields.Float('RnM Total', compute="_compute_rnm_total")
     invoice_guid = fields.Char('Invoice Guid')
 
 
@@ -1272,6 +1273,9 @@ class ThomasFleetWorkOrder(models.Model):
             else:
                 return wos  # [{'id':'test','invoiceDate':'test'}]
     '''
+    def _compute_rnm_total(self):
+        for rec in self:
+            rec.rnmTotal = rec.netTotal + rec.otherChargeTotal
 
     def search_count(self, args):
         print("Search Count")

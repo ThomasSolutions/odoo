@@ -1072,6 +1072,7 @@
                     <field name="subletTotal" sum="Sublet Total"/>
                     <field name="otherChargeTotal" sum="Other Costs Total"/>
                     <field name="netTotal" sum="Net Total"/>
+                    <field name="rnmTotal" sum="Repair and Maintenance Total"/>
                     <field name="grandTotal" sum="Total Service Cost"/>
                 </tree>
             </field>
