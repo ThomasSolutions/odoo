@@ -1093,16 +1093,82 @@
                 </p>
             </field>
         </record>
-        <record id="thomas_reload_journal_item_action" model="ir.actions.server">
-            <field name="name">Reload Journal Items</field>
-            <field name="type">ir.actions.server</field>
-            <field name="model_id" ref="model_thomasfleet_journal_item" />
-            <field name="state">code</field>
-            <field name="code">action = model.thomas_reload_journal_item_action()</field>
+
+          <record id='journal_item_wizard_form' model='ir.ui.view'>
+            <field name='name'>Journal Item Wizard</field>
+            <field name='model'>thomasfleet.journal_item.wizard</field>
+            <field name='arch' type='xml'>
+                <form string="Refresh Journal Items">
+                    <sheet>
+                        <group>
+                           <h2>Reload Journal Items</h2>
+                            <!--<field name="lease_return_date"/>
+                            <field name="invoice_pending"/>
+                            <field name="repairs_pending"/>
+                            <field name='lease_ids'>
+                                <tree>
+                                    <field name="unit_no"/>
+                                    <field name="customer_id"/>
+                                </tree>
+                            </field>-->
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name='refresh_all_items'
+                                string='Refresh All'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='delete_all_journal_items'
+                                string='Delete All Journal Items'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='delete_all_workorders'
+                                string='Delete All Work Orders'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='reload_work_orders'
+                                string='Reload Work Orders'
+                                class='btn-primary'
+                                type='object'/>
+                          <button name='create_all_journal_items'
+                                string='Create Jounral Items'
+                                class='btn-primary'
+                                type='object'/>
+                        <button string='Cancel'
+                                class='btn-default'
+                                special='cancel'/>
+                    </footer>
+                </form>
+            </field>
         </record>
+        <record id="open_journal_item_wizard_action" model="ir.actions.act_window">
+            <field name="name">Journal Item Wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">thomasfleet.journal_item.wizard</field>
+            <field name="view_id" ref="journal_item_wizard_form"></field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+      <!--   <record id='thomas_journal_item_admin_action' model='ir.actions.act_window'>
+            <field name="name">Unit Journal Items Admin</field>
+            <field name="res_model">thomasfleet.journal_item</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="context">{"lease" : True}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>-->
 
 
-        <record id='thomas_journal_item_view_form' model='ir.ui.view'>
+
+       <!-- <record id='thomas_journal_item_view_form' model='ir.ui.view'>
             <field name="name">Unit Journal</field>
             <field name="model">thomasfleet.journal_item</field>
             <field name="arch" type="xml">
@@ -1120,8 +1186,32 @@
                     </sheet>
                 </form>
             </field>
-        </record>
+        </record>-->
 
+        <record id='thomas_journal_items_view_form' model='ir.ui.view'>
+            <field name="name">Journal Items Admin</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <form string="Journal Items">
+                    <header>
+                        <button name="reload" class="btn-primary" string="Reload" type="object"/>
+                    </header>
+                    <sheet>
+                        <group>
+                           <tree>
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                           </tree>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
         <record id='thomas_journal_item_view_tree' model='ir.ui.view'>
             <field name="name">Unit Journal</field>
             <field name="model">thomasfleet.journal_item</field>
@@ -1151,7 +1241,7 @@
         </record>
          <menuitem action="thomas_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_menu"
                   sequence="13" groups="thomasfleet.fleet_group_admin"/>
-        <menuitem action="thomas_reload_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_reload_journal_item_menu"
+        <menuitem action="open_journal_item_wizard_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_admin_menu"
                   sequence="13" groups="thomasfleet.fleet_group_admin"/>
         <!--    <act_window name="Generate Lease Invoices"
                        res_model="thomasfleet.lease.invoice.wizard"

@@ -867,7 +867,7 @@ class ThomasFleetVehicle(models.Model):
         for rec in self:
             j_items = ji_rec.search([('vehicle_id', '=', rec.id)])
             for j_item in j_items:
-                print(" DELETING Journal Items for UNIT " + str(self.unit_no) + ":::" + str(j_item.id))
+                logging.debug(" DELETING Journal Items for UNIT " + str(self.unit_no) + ":::" + str(j_item.id))
                 j_item.with_context(skip_update=True).unlink()
         return
 
@@ -1011,6 +1011,56 @@ class ThomasFleetWorkOrderIndex(models.Model):
     invoice_number = fields.Integer("Invoice Number")
     protractor_guid = fields.Char("Protractor GUID")
 
+class ThomasFleetJournalItemWizard(models.TransientModel):
+    _name = 'thomasfleet.journal_item.wizard'
+
+    @api.multi
+    def delete_all_journal_items(self):
+        logging.debug('Deleteing all journal items')
+        units = self.env['fleet.vehicle'].search([])
+        for unit in units:
+            unit._unlink_journal_items()
+
+    @api.multi
+    def delete_all_workorders(self):
+        logging.debug('Deleting all Work Orders')
+        units = self.env['fleet.vehicle'].search([('fleet_status', '!=', 'DISPOSED')])
+        for unit in units:
+            unit._unlink_protractor_workerorders()
+
+    @api.multi
+    def reload_work_orders(self):
+        logging.debug('Reloating Work Orders')
+        units = self.env['fleet.vehicle'].search([('fleet_status', '!=', 'DISPOSED')])
+        wo = self.env['thomasfleet.workorder']
+        for un in units:
+            if un.vin_id:
+                logging.debug("Updating Unit: " + str(un.unit_no) + " : " + str(un.vin_id))
+                wo._create_protractor_workorders_for_unit(un.id, un.protractor_guid)
+            else:
+                logging.debug("NOT UPDATING Unit: " + str(un.unit_no) + " : " + str(un.protractor_guid))
+
+    @api.multi
+    def create_all_journal_items(self):
+        units = self.env['fleet.vehicle'].search([])
+        jitem = self.env['thomasfleet.journal_item']
+        for rec in units:
+            logging.debug("Adding Journal Items for : " + rec.unit_no)
+            jitem.createJournalItemsForUnit(rec.id)
+
+
+
+    @api.multi
+    def refresh_all_items(self):
+        print("Refreshing Items")
+        self.delete_all_journal_items()
+        self.delete_all_workorders()
+        self.reload_work_orders()
+        self.create_all_journal_items()
+
+
+
+
 class ThomasFleetJournalItem(models.Model):
     _name = 'thomasfleet.journal_item'
 
@@ -1072,14 +1122,13 @@ class ThomasFleetJournalItem(models.Model):
             })
            iCount = iCount+1
     '''
-    def thomas_reload_journal_item_action(self):
-        print("Reload")
+
 
     def createJournalItemsForUnit(self,unit_id):
 
         inv_lines = self.env['account.invoice.line'].search([('vehicle_id', '=', unit_id),
                                                              ('invoice_id.state', 'not in',['draft', 'cancel']),
-                                                             ('invoice_id.thomas_invoice_class', '=', 'rental')])
+                                                             ('invoice_id.thomas_invoice_class', 'in', ['rental','repair'])])
         journal_item = self.env['thomasfleet.journal_item']
         cu_date = datetime(2021, 1, 1)
         for inv in inv_lines:
