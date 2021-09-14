@@ -445,27 +445,50 @@
                                 </p>
                             </dd>
                         </dl>
-                        <div class="row">
+                         <dl class="row">
+                            <dt class="col-xs-3">CVOR Information</dt>
+                            <dd class="col-xs-3">
+                                <p>
+                                    <b>CVOR #:</b>
+                                </p>
+                                <p>
+                                    <b>CVOR Expiration Date:</b>
+                                </p>
+                            </dd>
+                        </dl>
+                          <div class="row">
                             <div class="col-xs-12">
-                                <p>D) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
+                                <p>D) Thomas Solutions does NOT give authority to use CVOR without written consent
+                                </p>
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="col-xs-12">
+                                <p>E) Any vehicles with a registered gross weight over 4500Kg, customer must provide a valid CVOR certificate
+                                </p>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-xs-12">
-                                <p>E) Customer responsible for all damage regardless of fault (including tires)</p>
+                                <p>F) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <p>G) Customer responsible for all damage regardless of fault (including tires)</p>
                             </div>
                         </div>
                         <div class="row">
 
                             <div class="col-xs-12">
-                                <p>F) It is the customer's responsibility to bring the  vehicle to the shop for service
+                                <p>H) It is the customer's responsibility to bring the  vehicle to the shop for service
                                 </p>
                             </div>
                         </div>
                         <div class="row">
 
                             <div class="col-xs-12">
-                                <p>G) Please note the "normal allotted" kilometers is
+                                <p>I) Please note the "normal allotted" kilometers is
                                     <t t-esc="doc.monthly_mileage"/> per
                                     <span t-if="doc.rate_type=='Weekly'"> week</span>
                                     <span t-elif="doc.rate_type=='Daily'"> day</span>
@@ -477,14 +500,8 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-8">
-                                <p>H) Delivery Charge: $
+                                <p>J) Delivery Charge: $
                                     <t t-esc="doc.delivery_charge"/>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <p>I) Thomas Solutions does NOT give authority to use CVOR without written consent
                                 </p>
                             </div>
                         </div>
