@@ -391,9 +391,9 @@
                                 <h3>Terms and Conditions</h3>
                             </div>
                         </div>
-                        <div class="row">
+                        <div  class="row">
                             <div class="col-xs-12">
-                                <p>A) <b>Rental Period is from:</b>
+                                <p class="t_fine_print">A) <b>Rental Period is from:</b>
                                     <t t-esc="doc.lease_start_date"/>
                                     to:
                                     <t t-esc="doc.min_lease_end_date"/>
@@ -404,19 +404,19 @@
                             </div>
                         </div>
                          <div class="row">
-                            <div class="col-xs-12">
-                                <p>B) <b>Rate Type:</b>
+                            <div class="col-xs-12 t_fine_print">
+                                <p class="t_fine_print">B) <b>Rate Type:</b>
                                     <t t-esc="doc.rate_calc_description"/></p>
                                 <u>Rental Duration Calculations:</u>
                                     <t t-raw="doc.rate_calc_example_for_report"/>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
                             <div class="col-xs-12">
                                 <p>C) Customer is responsible for Insurance</p>
                             </div>
                         </div>
-                        <dl class="row">
+                        <dl class="row t_fine_print">
                             <dt class="col-xs-3">Insurance Information</dt>
                             <dd class="col-xs-3">
                                 <p t-if="doc.customer_id.insurance_on_file">
@@ -445,7 +445,7 @@
                                 </p>
                             </dd>
                         </dl>
-                         <dl class="row">
+                         <dl class="row t_fine_print">
                             <dt class="col-xs-3">CVOR Information</dt>
                             <dd class="col-xs-3">
                                 <p>
@@ -456,36 +456,36 @@
                                 </p>
                             </dd>
                         </dl>
-                          <div class="row">
+                          <div class="row t_fine_print">
                             <div class="col-xs-12">
                                 <p>D) Thomas Solutions does NOT give authority to use CVOR without written consent
                                 </p>
                             </div>
                         </div>
-                         <div class="row">
+                         <div class="row t_fine_print">
                             <div class="col-xs-12">
                                 <p>E) Any vehicles with a registered gross weight over 4500Kg, customer must provide a valid CVOR certificate
                                 </p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
                             <div class="col-xs-12">
                                 <p>F) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
                             <div class="col-xs-12">
                                 <p>G) Customer responsible for all damage regardless of fault (including tires)</p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
 
                             <div class="col-xs-12">
                                 <p>H) It is the customer's responsibility to bring the  vehicle to the shop for service
                                 </p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
 
                             <div class="col-xs-12">
                                 <p>I) Please note the "normal allotted" kilometers is
@@ -498,7 +498,7 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row t_fine_print">
                             <div class="col-xs-8">
                                 <p>J) Delivery Charge: $
                                     <t t-esc="doc.delivery_charge"/>
@@ -523,7 +523,7 @@
                                 </p>
                             </div>
                         </div>-->
-                        <div class="row">
+                        <div class="row t_fine_print">
                             <div class="col-xs-8">
                                 <p>Other:
                                     <hr/>
