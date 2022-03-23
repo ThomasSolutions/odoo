@@ -405,7 +405,14 @@
                         </div>
                          <div class="row">
                             <div class="col-xs-12 t_fine_print">
-                                <p class="t_fine_print">B) <b>Rate Type:</b>
+                                <p class="t_fine_print">B) This contract will renew every 30 days unless the vehicle is
+                                    returned.  Billing will occur at the beginning of each month after the initial
+                                    rental date.</p>
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="col-xs-12 t_fine_print">
+                                <p class="t_fine_print">C) <b>Rate Type:</b>
                                     <t t-esc="doc.rate_calc_description"/></p>
                                 <u>Rental Duration Calculations:</u>
                                     <t t-raw="doc.rate_calc_example_for_report"/>
@@ -413,7 +420,7 @@
                         </div>
                         <div class="row t_fine_print">
                             <div class="col-xs-12">
-                                <p>C) Customer is responsible for Insurance</p>
+                                <p>D) Customer is responsible for Insurance</p>
                             </div>
                         </div>
                         <dl class="row t_fine_print">
@@ -458,37 +465,37 @@
                         </dl>
                           <div class="row t_fine_print">
                             <div class="col-xs-12">
-                                <p>D) Thomas Solutions does NOT give authority to use CVOR without written consent
+                                <p>E) Thomas Solutions does NOT give authority to use CVOR without written consent
                                 </p>
                             </div>
                         </div>
                          <div class="row t_fine_print">
                             <div class="col-xs-12">
-                                <p>E) Any vehicles with a registered gross weight over 4500Kg, customer must provide a valid CVOR certificate
+                                <p>F) Any vehicles with a registered gross weight over 4500Kg, customer must provide a valid CVOR certificate
                                 </p>
                             </div>
                         </div>
                         <div class="row t_fine_print">
                             <div class="col-xs-12">
-                                <p>F) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
+                                <p>G) Monthly rate <b>does not</b> include towing charges for vehicle in case of breakdown</p>
                             </div>
                         </div>
                         <div class="row t_fine_print">
                             <div class="col-xs-12">
-                                <p>G) Customer responsible for all damage regardless of fault (including tires)</p>
+                                <p>H) Customer responsible for all damage regardless of fault (including tires)</p>
                             </div>
                         </div>
                         <div class="row t_fine_print">
 
                             <div class="col-xs-12">
-                                <p>H) It is the customer's responsibility to bring the  vehicle to the shop for service
+                                <p>I) It is the customer's responsibility to bring the  vehicle to the shop for service
                                 </p>
                             </div>
                         </div>
                         <div class="row t_fine_print">
 
                             <div class="col-xs-12">
-                                <p>I) Please note the "normal allotted" kilometers is
+                                <p>J) Please note the "normal allotted" kilometers is
                                     <t t-esc="doc.monthly_mileage"/> per
                                     <span t-if="doc.rate_type=='Weekly'"> week</span>
                                     <span t-elif="doc.rate_type=='Daily'"> day</span>
@@ -500,7 +507,7 @@
                         </div>
                         <div class="row t_fine_print">
                             <div class="col-xs-8">
-                                <p>J) Delivery Charge: $
+                                <p>K) Delivery Charge: $
                                     <t t-esc="doc.delivery_charge"/>
                                 </p>
                             </div>
