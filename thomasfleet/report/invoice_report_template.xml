@@ -104,13 +104,13 @@
                 <div class="text-center">
                     <ul t-if="doc_model=='account.invoice'"  class="list-inline">
                         <li t-if="company.phone"><i class="fa fa-phone"/> <span t-field="company.phone"/></li>
-                        <li t-if="company.email"><i class="fa fa-envelope"/> <span t-field="company.email"/></li>
+                        <li t-if="company.email"><i class="fa fa-envelope-open" aria-hidden="true"/> <span t-field="company.email"/></li>
                         <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
                         <!--<li t-if="company.vat"><i class="fa fa-building-o"/><t t-esc="company.country_id.vat_label or 'TIN'"/>: <span t-field="company.vat"/></li>-->
                     </ul>
                     <ul t-if="doc_model=='thomaslease.lease'"  class="list-inline">
                         <li><i class="fa fa-phone"/><span> 905-545-8808 ext.7234</span></li>
-                        <li><i class="fa fa-envelope"/><span> rentals@thomassolutions.ca</span></li>
+                        <li><i class="fa fa-envelope-open" aria-hidden="true"/><span> rentals@thomassolutions.ca</span></li>
                         <li t-if="company.website"><i class="fa fa-globe"/> <span t-field="company.website"/></li>
                     </ul>
                 </div>
