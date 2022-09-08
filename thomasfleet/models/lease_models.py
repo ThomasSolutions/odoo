@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, exceptions
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 from datetime import date, datetime, timedelta
 from dateutil import relativedelta
 import calendar
@@ -11,36 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ThomasLease(models.Model):
-    _inherit = 'mail.thread'
-    '''
-
-    def init(self):
-        
-        recs = self.env['thomaslease.lease'].search([])
-        values = {}
-        for rec in recs:
-            partner = self.env['res.partner'].browse(rec.customer_id.id)
-            if partner.discount_rate_calc is None:
-                partner.discount_rate_calc = True
-                print("Setting Default Rate Calc")
-          
-            addr = (partner.address_get(['invoice', 'delivery', 'contact']))
-            print ("Contact "+str(addr.get('contact')))
-            print ("Invoice "+str(addr.get('invoice')))
-            print("Delivery "+ str(addr.get('delivery')))
-            print("Evaluation " + str(addr and addr.get('delivery')))
-            if not (addr.get('invoice') == addr.get('contact')):
-                values['partner_invoice_id'] = addr.get('invoice')
-            else:
-                values['partner_invoice_id'] = False
-            if not (addr.get('delivery') == addr.get('contact')):
-                values['partner_shipping_id'] = addr.get('delivery')
-            else:
-                values['partner_shipping_id'] = False
-            rec.update(values)
-            print(str(rec.lease_number) + " Invoice ID: " + str(rec.partner_invoice_id.id))
-            print(str(rec.lease_number) + " Shipping ID: " +str(rec.partner_shipping_id.id))
-    '''
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     def _getLeaseDefault(self):
         return self.env['thomasfleet.lease_status'].search([('name', '=', 'Draft')], limit=1).id
@@ -87,7 +59,7 @@ class ThomasLease(models.Model):
         for rec in self:
             if rec.rate_type == 'Bi-Weekly' and rec.run_initial_invoicing:
                 rec.run_initial_invoicing = False
-                raise models.ValidationError(
+                raise ValidationError(
                     'You cannot run Initial Invoicing (Back Billing) for Bi-Weekly lease agreements ')
 
     @api.constrains('vehicle_id')
@@ -97,12 +69,12 @@ class ThomasLease(models.Model):
                 return
             for lease_agreement in rec.vehicle_id.lease_agreements:
                 if lease_agreement.state == 'active' and lease_agreement.id != rec.id:
-                    raise models.ValidationError(
+                    raise ValidationError(
                         'Unit: ' + rec.vehicle_id.unit_no +
                         ' is currently associated with an Active lease agreement: ' + lease_agreement.lease_number)
 
                 if lease_agreement.state == 'repairs_pending':
-                    raise models.ValidationError(
+                    raise ValidationError(
                         'Unit: ' + rec.vehicle_id.unit_no +
                         ' is currently associated with an Repairs Pending lease agreement: ' + lease_agreement.lease_number)
 
@@ -136,7 +108,8 @@ class ThomasLease(models.Model):
             if not self.billing_start_date:
                 self.billing_start_date = self.lease_start_date
 
-            lease_start_date = datetime.strptime(self.billing_start_date, '%Y-%m-%d')
+            # lease_start_date = datetime.strptime(self.billing_start_date, '%Y-%m-%d')
+            lease_start_date = datetime.strftime(self.billing_start_date, '%Y-%m-%d')
 
             today = date.today()
             last_day_lease_month = calendar.monthrange(lease_start_date.year, lease_start_date.month)[1]
@@ -166,7 +139,7 @@ class ThomasLease(models.Model):
             else:
                 self.invoice_to = tmp_invoice_to
 
-    @api.multi
+    @api.model
     @api.onchange('customer_id')
     def set_contacts(self):
         ap_cons = []
@@ -184,7 +157,7 @@ class ThomasLease(models.Model):
         self.po_contact_ids = [(6, 0, po_cons)]
         self.ops_contact_ids = [(6, 0, ops_cons)]
 
-    @api.multi
+    @api.model
     @api.onchange('customer_id')
     def get_invoice_address(self):
         addr = self.customer_id.address_get(['invoice'])
@@ -193,7 +166,7 @@ class ThomasLease(models.Model):
         else:
             self.partner_invoice_id = addr.get('contact')
 
-    @api.multi
+    @api.model
     @api.onchange('customer_id')
     def get_shipping_address(self):
         addr = self.customer_id.address_get(['delivery'])
@@ -202,26 +175,12 @@ class ThomasLease(models.Model):
         else:
             self.partner_shipping_id = addr.get('contact')
 
-    '''
-    @api.one
-    @api.depends('customer_id')
-    def default_shipping_address(self):
-        addr = self.customer_id.address_get(['delivery'])
-        return addr['delivery']
 
-    @api.one
-    @api.depends('customer_id')
-    def default_invoice_address(self):
-        addr = self.customer_id.address_get(['invoice'])
-        return addr['invoice']
-    '''
-
-    @api.multi
+    @api.model
     def btn_validate(self):
         for rec in self:
             rec.state = 'active'
 
-    @api.multi
     def lease_print(self):
         """ Print the invoice and mark it as sent, so that we can see more
             easily the next step of the workflow
@@ -230,30 +189,31 @@ class ThomasLease(models.Model):
         return self.env.ref('thomasfleet.lease_agreement').report_action(self)
 
     _name = 'thomaslease.lease'
-    active = fields.Boolean('Active', default=True, track_visibility="onchange")
-    lease_number = fields.Char('Rental ID', track_visibility='onchange')
-    po_number = fields.Char("Purchase Order #", track_visibility='onchange')
-    po_comments = fields.Char("Purchase Order Comments", track_visibility='onchange')
-    contract_number = fields.Char("Contract #", track_visibility='onchange')
-    invoice_ids = fields.Many2many('account.invoice', string='Invoices',
-                                   relation='lease_agreement_account_invoice_rel', track_visibility='onchange')
+    _description = 'Thomas Lease Lease'
+
+
+    active = fields.Boolean('Active', default=True, tracking=True)
+    lease_number = fields.Char('Rental ID', tracking=True)
+    po_number = fields.Char("Purchase Order #", tracking=True)
+    po_comments = fields.Char("Purchase Order Comments", tracking=True)
+    contract_number = fields.Char("Contract #", tracking=True)
+    invoice_ids = fields.Many2many('account.move', string='Invoices',
+                                   relation='lease_agreement_account_invoice_rel', tracking=True)
     # lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
     state = fields.Selection([('draft', 'Draft'), ('active', 'Active'),
                               ('repairs_pending', 'Repairs Pending'),
                               ('invoice_pending', 'Invoice Pending'),
                               ('both', 'Repairs and Invoice Pending'),
-                              ('closed', 'Closed')], string="Status", default='draft', track_visibility='onchange')
+                              ('closed', 'Closed')], string="Status", default='draft', tracking=True)
 
-    lease_start_date = fields.Date("Rent Start Date", track_visibility='onchange')  # , required=True)
-
-    billing_start_date = fields.Date("Billing Start Date", track_visibility='onchange')
-
-    invoice_from = fields.Date(string="Invoice From", track_visibility='onchange')
-    invoice_to = fields.Date(string="Invoice To", track_visibility='onchange')
-    last_invoice_to = fields.Date(string="Last Invoice Date Range", track_visibility='onchange')
-    invoice_posting_date = fields.Date(string="Invoice Posting Date", track_visibility='onchange')
-    invoice_generation_date = fields.Date(string="Invoice Generation Date", track_visibility='onchange')
-    invoice_due_date = fields.Date(string="Invoice Due Date", track_visibility='onchange')
+    lease_start_date = fields.Date("Rent Start Date", tracking=True)  # , required=True)
+    billing_start_date = fields.Date("Billing Start Date", tracking=True)
+    invoice_from = fields.Date(string="Invoice From", tracking=True)
+    invoice_to = fields.Date(string="Invoice To", tracking=True)
+    last_invoice_to = fields.Date(string="Last Invoice Date Range", tracking=True)
+    invoice_posting_date = fields.Date(string="Invoice Posting Date", tracking=True)
+    invoice_generation_date = fields.Date(string="Invoice Generation Date", tracking=True)
+    invoice_due_date = fields.Date(string="Invoice Due Date", tracking=True)
 
     run_initial_invoicing = fields.Boolean(string="Initial Invoice", default=False)
     preferred_payment = fields.Selection([('cheque', 'Cheque'),
@@ -262,114 +222,115 @@ class ThomasLease(models.Model):
                                           ('pad2', 'PAD no Invoice Sent'),
                                           ('pad1', 'PAD with Invoice Sent'),
                                           ('other', 'Other')],
-                                         string='Preferred Payment Method', track_visibility='onchange'
+                                         string='Preferred Payment Method', tracking=True
                                          )
-    discount_rate_calc = fields.Boolean("Rate Adjust by Duration", default=None, track_visibility='onchange')
+    discount_rate_calc = fields.Boolean("Rate Adjust by Duration", default=None, tracking=True)
 
-    other_payment = fields.Char(string='Other Payment', track_visibility='onchange')
+    other_payment = fields.Char(string='Other Payment', tracking=True)
 
-    lease_return_date = fields.Date("Unit Returned on", track_visibility='onchange')
+    lease_return_date = fields.Date("Unit Returned on", tracking=True)
     requires_manual_calculations = fields.Boolean("Exception", default=False,
-                                                  track_visibility='onchange')
-    billing_notes = fields.Char("Billing Notes", track_visibility='onchange')
-    min_lease_end_date = fields.Date("Minimum Lease End Date", track_visibility='onchange')
+                                                  tracking=True)
+    billing_notes = fields.Char("Billing Notes", tracking=True)
+    min_lease_end_date = fields.Date("Minimum Lease End Date", tracking=True)
     fuel_at_lease = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                       ('three_quarter', '3/4'), ('full', 'Full')], default='full'
-                                     , track_visibility='onchange')
+                                     , tracking=True)
     fuel_at_return = fields.Selection([('one_quarter', '1/4'), ('half', '1/2'),
                                        ('three_quarter', '3/4'), ('full', 'Full')],
-                                      track_visibility='onchange')
+                                      tracking=True)
 
     lease_out_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Rent",
                                             domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_out')]",
-                                            track_visibility='onchange')
+                                            tracking=True)
     lease_return_odometer_id = fields.Many2one('fleet.vehicle.odometer', string="Odometer at Return",
                                                domain="[('vehicle_id','=',vehicle_id), ('activity','=','lease_in')]",
-                                               track_visibility='onchange')
+                                               tracking=True)
     mileage_at_lease = fields.Float(string='Rent Start Odometer', related='lease_out_odometer_id.value', readonly=True,
-                                    track_visibility='onchange')
+                                    tracking=True)
 
     mileage_at_return = fields.Float(string='Rent Return Odometer', related='lease_return_odometer_id.value',
-                                     readonly=True, track_visibility='onchange')
+                                     readonly=True, tracking=True)
 
-    delivery_charge = fields.Float(string='Delivery Charge', track_visibility='onchange')
-    pickup_charge = fields.Float(string='Pick up Charge', track_visibility='onchange')
+    delivery_charge = fields.Float(string='Delivery Charge', tracking=True)
+    pickup_charge = fields.Float(string='Pick up Charge', tracking=True)
     driver_id = fields.Many2one('res.partner', string='Driver', domain="[('parent_id','=',customer_id)]",
-                                track_visibility='onchange')
+                                tracking=True)
 
-    monthly_rate = fields.Float("Monthly Rate", change_default=True, track_visibility='onchange')
-    weekly_rate = fields.Float("Weekly Rate", track_visibility='onchange')
-    daily_rate = fields.Float("Daily Rate", track_visibility='onchange')
-    monthly_tax = fields.Float("Tax(HST-13%)", track_visibility='onchange')
-    monthly_total = fields.Float("Monthly Rent Total", track_visibility='onchange')
-    monthly_mileage = fields.Integer("Mileage Allowance", default=3500, track_visibility='onchange')
-    mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14, track_visibility='onchange')
+    monthly_rate = fields.Float("Monthly Rate", change_default=True, tracking=True)
+    weekly_rate = fields.Float("Weekly Rate", tracking=True)
+    daily_rate = fields.Float("Daily Rate", tracking=True)
+    monthly_tax = fields.Float("Tax(HST-13%)", tracking=True)
+    monthly_total = fields.Float("Monthly Rent Total", tracking=True)
+    monthly_mileage = fields.Integer("Mileage Allowance", default=3500, tracking=True)
+    mileage_overage_rate = fields.Float("Additional Mileage Rate", default=0.14, tracking=True)
 
-    customer_id = fields.Many2one("res.partner", "Customer", change_default=True,
-                                  track_visibility='onchange', options="{'always_reload':true}",
+    customer_id = fields.Many2one("res.partner", "Customer ID", change_default=True,
+                                  tracking=True, 
+                                #   options="{'always_reload':true}",
                                   context="{'show_internal_division':True}")  # required=True)
     customer_name = fields.Char("Customer", related="customer_id.compound_name")
     partner_invoice_id = fields.Many2one('res.partner', string='Bill To', domain="[('parent_id','=',customer_id)]",
-                                         track_visibility='onchange')
+                                         tracking=True)
     partner_shipping_id = fields.Many2one('res.partner', string='Ship To', domain="[('parent_id','=',customer_id)]",
-                                          track_visibility='onchange')
+                                          tracking=True)
     vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #", change_default=True,
-                                 track_visibility='onchange')  # required=True)
+                                 tracking=True)  # required=True)
 
-    unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True, track_visibility='onchange')
+    unit_slug = fields.Char("Unit", related="vehicle_id.unit_slug", readonly=True, tracking=True)
     lease_lines = fields.One2many('thomaslease.lease_line', 'lease_id', string='Lease Lines', change_default=True,
-                                  copy=True, auto_join=True, track_visibility='onchange')
+                                  copy=True, auto_join=True, tracking=True)
     # product_ids = fields.Many2many("product.product",relation='lease_agreeement_product_product_rel', string="Products")
 
     insurance_on_file = fields.Boolean(related='customer_id.insurance_on_file', string="Proof of Insurance on File",
-                                       readonly=True, track_visibility='onchange')
+                                       readonly=True, tracking=True)
     insurance_agent = fields.Char(related='customer_id.insurance_agent', string="Agent", readonly=True)
     insurance_underwriter = fields.Char(related='customer_id.insurance_underwriter', string="Underwriter",
-                                        readonly=True, track_visibility='onchange')
+                                        readonly=True, tracking=True)
     insurance_policy = fields.Char(related='customer_id.insurance_policy', string="Policy #", readonly=True,
-                                   track_visibility='onchange')
+                                   tracking=True)
     insurance_expiration = fields.Date(related='customer_id.insurance_expiration', string="Expiration Date",
-                                       readonly=True, track_visibility='onchange')
+                                       readonly=True, tracking=True)
 
     ap_contact_ids = fields.Many2many('res.partner', string='Accounts Payable Contacts',
                                       relation='lease_agreement_res_partner_ap_rel',
-                                      domain="[('parent_id','=',customer_id)]", track_visibility='onchange')
+                                      domain="[('parent_id','=',customer_id)]", tracking=True)
     po_contact_ids = fields.Many2many('res.partner', string='Purchasing Contacts',
                                       relation='lease_agreement_res_partner_po_rel',
-                                      domain="[('parent_id','=',customer_id)]", track_visibility='onchange')
+                                      domain="[('parent_id','=',customer_id)]", tracking=True)
     ops_contact_ids = fields.Many2many('res.partner', string='Operations Contacts',
                                        relation='lease_agreement_res_partner_ops_rel',
-                                       domain="[('parent_id','=',customer_id)]", track_visibility='onchange')
+                                       domain="[('parent_id','=',customer_id)]", tracking=True)
 
-    # unit_no = fields.Many2one("fleet.vehicle.unit_no", "Unit No")
-    unit_no = fields.Char('Unit #', related="vehicle_id.unit_no", readonly=True, track_visibility='onchange')
+    unit_no = fields.Char('Unit #', related="vehicle_id.unit_no", readonly=True, tracking=True)
     rate_type = fields.Char("Rate Type", compute='_get_rate_type', search='_search_rate_type', change_default=True,
-                            track_visibility='onchange')
+                            tracking=True)
     inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True,
-                                  track_visibility='onchange')
+                                  tracking=True)
     accessories = fields.One2many(related="vehicle_id.accessories", string="Accessories", readonly=True,
-                                  track_visibility='onchange')
+                                  tracking=True)
     # inclusions_base_rate = fields.Float(compute="_calcBaseIncRate", string="Inclusion List Rate")
-    inclusions_discount = fields.Float('Inclusion Discount', track_visibility='onchange')
-    lease_notes = fields.Text("Lease Notes", track_visibility='onchange')
-    inspection_notes = fields.Text("Inspection Notes", track_visibility='onchange')
-    additional_billing = fields.Char("Additional Notes", track_visibility='onchange')
-    payment_method = fields.Char("Payment Method", track_visibility='onchange')
-    last_invoice_date = fields.Date("Last Invoice On", track_visibility='onchange')
-    additional_charges = fields.Boolean("Additional Charges", track_visibility='onchange')
-    outgoing_inspector = fields.Many2one('hr.employee', string="Outgoing Inspector", track_visibility='onchange')
-    incoming_inspector = fields.Many2one('hr.employee', string="Incoming Inspector", track_visibility='onchange')
+    inclusions_discount = fields.Float('Inclusion Discount', tracking=True)
+    lease_notes = fields.Text("Lease Notes", tracking=True)
+    inspection_notes = fields.Text("Inspection Notes", tracking=True)
+    additional_billing = fields.Char("Additional Notes", tracking=True)
+    payment_method = fields.Char("Payment Method", tracking=True)
+    last_invoice_date = fields.Date("Last Invoice On", tracking=True)
+    additional_charges = fields.Boolean("Additional Charges", tracking=True)
+    outgoing_inspector = fields.Many2one('hr.employee', string="Outgoing Inspector", tracking=True)
+    incoming_inspector = fields.Many2one('hr.employee', string="Incoming Inspector", tracking=True)
     transponder_id = fields.Many2one('thomasfleet.accessory', string="407 Transponder",
-                                     domain="[('type.name','=','407 Transponder')]", track_visibility='onchange')
+                                     domain="[('type.name','=','407 Transponder')]", tracking=True)
 
     aggregation_id = fields.Char("Aggregate ID")
     rate_calc_description = fields.Char("Rate Note", compute='_compute_rate_calc_description')
     rate_calc_example = fields.Text("Rate Calculations", compute='_compute_rate_calc_example')
-    rate_calc_example_for_report = fields.Html("Rate Calculations", compute='_compute_rate_calc_example_html')
+    rate_calc_example_for_report = fields.Html("Rate Calculations [Example]", compute='_compute_rate_calc_example_html')
 
     @api.depends('lease_lines')
     def _compute_rate_calc_description(self):
         for rec in self:
+            rec.rate_calc_description = rec.rate_calc_description or ''
             for line in rec.lease_lines:
                 if rec.rate_calc_description:
                     rec.rate_calc_description = str(rec.rate_calc_description) + str(
@@ -380,6 +341,7 @@ class ThomasLease(models.Model):
     @api.depends('lease_lines')
     def _compute_rate_calc_example(self):
         for rec in self:
+            rec.rate_calc_example = ''
             for line in rec.lease_lines:
                 example = ''
 
@@ -498,26 +460,9 @@ class ThomasLease(models.Model):
         # self.daily_rate = (self.monthy_rate * .125)
         # self.weekly_rate = (self.monthly_rate * .45)
 
-    '''
-    @api.multi
-    @api.depends('customer_id', 'lease_start_date', 'unit_no')
-    def write(self, values):
-        ThomasLease_write = super(ThomasLease, self).write(values)
 
-        if not ThomasLease.lease_number:
-            Agreements = self.env['thomaslease.lease']
-            aCount = 0
-            if ThomasLease.customer_id:
-                aCount = Agreements.search_count([('customer_id', '=', ThomasLease.customer_id.id)])
-                ThomasLease.lease_number = str(ThomasLease.customer_id.name) + "_" + str(
-                    ThomasLease.unit_no) + "_" + str(
-                    ThomasLease.lease_start_date) + "_" + str(aCount)
 
-        # ThomasFleetVehicle_write.get_protractor_id()
-        return ThomasLease_write
-    '''
-
-    @api.multi
+    @api.model
     @api.depends('lease_number')
     def name_get(self):
         res = []
@@ -526,39 +471,12 @@ class ThomasLease(models.Model):
             res.append((record.id, name))
         return res
 
-    '''
-    @api.model
-    def create(self, data):
-        record = super(ThomasLease, self).create(data)
-        Agreements = self.env['thomaslease.lease']
-        aCount = 0
-        if record.customer_id:
-            aCount = Agreements.search_count([('customer_id', '=', record.customer_id.id)])
-
-        record.lease_number = str(record.customer_id.name) + "_" + str(record.unit_no) + "_" + str(
-            record.lease_start_date) + "_" + str(aCount)
-
-        return record
-    '''
 
 
 class ThomasFleetLeaseLine(models.Model):
     _name = 'thomaslease.lease_line'
-    '''
-    def init(self):
-        recs = self.env['thomaslease.lease_line'].search([])
+    _description = 'Thomas Fleet Lease Line'
 
-        for rec in recs:
-            if rec.price:
-                if not rec.weekly_rate:
-                    rec.weekly_rate = rec.calc_weekly_rate()
-                if not rec.daily_rate:
-                    rec.daily_rate = rec.calc_daily_rate()
-                if not rec.monthly_rate:
-                    rec.monthly_rate = rec.calc_monthly_rate()
-            if not rec.description:
-                rec.description = rec.product_id.description_sale
-    '''
 
     @api.depends('product_id')
     def default_description(self):
@@ -682,6 +600,7 @@ class ThomasFleetLeaseLine(models.Model):
 
 class ThomasFleetReturnWizard(models.TransientModel):
     _name = 'thomaslease.lease.return.wizard'
+    _description = 'Thomas Fleet Return Wizard'
 
     def _default_lease_ids(self):
         # for the_id in self.env.context.get('active_ids'):
@@ -696,7 +615,7 @@ class ThomasFleetReturnWizard(models.TransientModel):
     repairs_pending = fields.Boolean("Repairs Pending")
     lease_return_date = fields.Date("Return Date", default=_default_return_date)
 
-    @api.multi
+    @api.model
     def record_return(self):
         for lease in self.lease_ids:
             if self.invoice_pending & self.repairs_pending:
@@ -712,6 +631,8 @@ class ThomasFleetReturnWizard(models.TransientModel):
 
 class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     _name = 'thomaslease.lease.invoice.wizard'
+    _description = 'Thomas Fleet Lease Invoice Wizard'
+
     lease_records = []
 
     def _default_lease_ids(self):
@@ -723,10 +644,12 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             # a_lease = self.env['thomaslease.lease'].browse(lease)
             # print("Validating Lease: "+ a_lease.lease_number)
             if not a_lease.lease_lines:
-                raise models.ValidationError(
+                if not a_lease.unit_no:
+                    raise UserError(_("Please provide Unit No!"))
+                raise ValidationError(
                     'Lease for Unit #' + a_lease.unit_no + ' needs a line item product before it can be invoiced')
             if a_lease.state == 'closed':
-                raise models.ValidationError('Lease for Unit #' + a_lease.unit_no + ' is Closed and cannot be invoiced')
+                raise ValidationError('Lease for Unit #' + a_lease.unit_no + ' is Closed and cannot be invoiced')
             else:
                 # print("Setting Dates " + a_lease.lease_number)
                 vals = self.get_invoice_dates(a_lease, False)
@@ -746,10 +669,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             a_lease = self.env['thomaslease.lease'].browse(lease)
             print("Validating Lease: " + a_lease.lease_number)
             if not a_lease.lease_lines:
-                raise models.ValidationError(
+                raise ValidationError(
                     'Lease for Unit #' + a_lease.unit_no + ' needs a line item product before it can be invoiced')
             if a_lease.state == 'closed':
-                raise models.ValidationError('Lease for Unit #' + a_lease.unit_no + ' is Closed and cannot be invoiced')
+                raise ValidationError('Lease for Unit #' + a_lease.unit_no + ' is Closed and cannot be invoiced')
             else:
                 print("Setting Invoice Date " + a_lease.lease_number)
                 self.set_invoice_dates(a_lease, False)
@@ -796,13 +719,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         # if start date - handled by initial invoicing
         # if return date
         if lease.run_initial_invoicing:
-            '''
-            if "Dofasco" in lease.customer_id.name:
-                init_to = i_from - relativedelta.relativedelta(days=1)
-                i_to = init_to
-                init_from = l_sdt
-                i_from = init_from
-            else:'''
             if l_rdt:
                 if i_to.month == l_rdt.month and i_to.year == l_rdt.year:
                     if l_rdt.day < i_to.day:
@@ -879,13 +795,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         # if start date - handled by initial invoicing
         # if return date
         if lease.run_initial_invoicing:
-            '''
-            if "Dofasco" in lease.customer_id.name:
-                init_to = i_from - relativedelta.relativedelta(days=1)
-                i_to = init_to
-                init_from = l_sdt
-                i_from = init_from
-            else:'''
             if l_rdt:
                 if i_to.month == l_rdt.month and i_to.year == l_rdt.year:
                     if l_rdt.day < i_to.day:
@@ -906,16 +815,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     i_from = datetime(i_to.year, i_to.month, 1)
                     if l_sdt > i_from:
                         i_from = lease.billing_start_date
-        '''
-        lease.update({
-            'billing_start_date': billing_strt_date,
-            'invoice_from': i_from,
-            'invoice_to': i_to,
-            'invoice_due_date': inv_due_date,
-            'invoice_generation_date': dt,
-            'invoice_posting_date':dt
-        })
-        '''
+        
         lease['billing_start_date'] = billing_strt_date
         lease['invoice_from'] = i_from
         lease['invoice_to'] = i_to
@@ -1589,21 +1489,6 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return end_date
 
-    '''
-    def create_invoice_description(self, lease, line_amount, line):
-
-        start_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d').date()
-        end_date = datetime.strptime(lease.id.invoice_to, '%Y-%m-%d').date()
-
-        num_days = (end_date - start_date).days
-        pro_rated = ''
-        if line_amount < line.price:
-            description = 'Lease for Unit # ' + the_lease.id.vehicle_id.unit_no + ' for ' + month + ' ' + str(
-                start_date.day) + ' to ' + str(
-                end_date.day) + ' ' + year
-        else:
-            description = month + ' ' + year + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
-    '''
 
     def create_dofasco_monthly_invoice_line_description(self, lease):
         month_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%b')
@@ -1650,9 +1535,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return description
 
-    @api.multi
+    @api.model
     def record_normal_invoice2(self, the_lease):
-        accounting_invoice = self.env['account.invoice']
+        accounting_invoice = self.env['account.move']
 
         line_ids = []
         next_month_line_ids = []
@@ -1684,7 +1569,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         for line in the_lease.id.lease_lines:
             product = line.product_id
-            invoice_line = self.env['account.invoice.line']
+            invoice_line = self.env['account.move.line']
             res = self.calculate_line_amount(
                 product, line, line.price, the_lease.id.invoice_from, the_lease.id.invoice_to, the_lease.id)
             line_amount = res['amount']
@@ -1788,8 +1673,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             'partner_id': the_lease.id.customer_id.id,
             'vehicle_id': the_lease.id.vehicle_id.id,
             'comment': comment,
-            'date_invoice': inv_date,  # self.invoice_date,#the_lease.id.invoice_generation_date,
-            'date_due': the_lease.id.invoice_due_date,
+            'invoice_date': inv_date,  # self.invoice_date,#the_lease.id.invoice_generation_date,
+            'invoice_date_due': the_lease.id.invoice_due_date,
             'invoice_from': the_lease.id.invoice_from,
             'invoice_to': the_lease.id.invoice_to,
             'invoice_posting_date': the_lease.id.invoice_posting_date,
@@ -1909,8 +1794,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 'partner_id': the_lease.id.customer_id.id,
                 'vehicle_id': the_lease.id.vehicle_id.id,
                 'comment': comment,
-                'date_invoice': self.invoice_date,  # the_lease.id.invoice_generation_date,
-                'date_due': the_lease.id.invoice_due_date,
+                'invoice_date': self.invoice_date,  # the_lease.id.invoice_generation_date,
+                'invoice_date_due': the_lease.id.invoice_due_date,
                 'invoice_from': prev_month_from,
                 'invoice_to': prev_month_to,
                 'invoice_posting_date': the_lease.id.invoice_generation_date,
@@ -1937,11 +1822,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         the_lease.id.last_invoice_to = self.determine_last_invoice_to(the_lease.id)
         return new_invoices
 
-    @api.multi
+    @api.model
     def record_aggregate_invoice_tbd(self, customers, the_wizard):
         new_invoices = []
         for customer in customers:
-            accounting_invoice = self.env['account.invoice']
+            accounting_invoice = self.env['account.move']
             po_numbers = []
             ap_groups = []
             aggregation_ids = []
@@ -1967,7 +1852,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             aggregation_ids.append(ag_id)
 
                         else:
-                            raise models.ValidationError(
+                            raise ValidationError(
                                 'Lease agreement issue: Customer is marked for Aggregate '
                                 'invoicing but lease agreement does not contain a PO or AP Contact '
                                 'Agreement: ' + lease.lease_number + "Customer: " + lease.customer_id.name
@@ -2012,7 +1897,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                         for line in lease.lease_lines:
                             product = line.product_id
-                            invoice_line = self.env['account.invoice.line']
+                            invoice_line = self.env['account.move.line']
                             l_resp = self.calculate_line_amount(
                                 product, line, line.price, lease.invoice_from, lease.invoice_to, lease)
                             line_amount = l_resp['amount']
@@ -2209,8 +2094,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'partner_id': lease.customer_id.id,
                                 'vehicle_id': lease.vehicle_id.id,
                                 'comment': comment,
-                                'date_invoice': inv_date,  # lease.invoice_generation_date,
-                                'date_due': lease.invoice_due_date,
+                                'invoice_date': inv_date,  # lease.invoice_generation_date,
+                                'invoice_date_due': lease.invoice_due_date,
                                 'invoice_from': prev_month_from,
                                 'invoice_to': prev_month_to,
                                 'invoice_posting_date': lease.invoice_generation_date,
@@ -2240,8 +2125,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'partner_id': lease.customer_id.id,
                     'vehicle_id': lease.vehicle_id.id,
                     'comment': comment,
-                    'date_invoice': the_wizard.invoice_date,  # lease.invoice_generation_date,
-                    'date_due': lease.invoice_due_date,
+                    'invoice_date': the_wizard.invoice_date,  # lease.invoice_generation_date,
+                    'invoice_date_due': lease.invoice_due_date,
                     'invoice_from': lease.invoice_from,
                     'invoice_to': lease.invoice_to,
                     'invoice_posting_date': lease.invoice_posting_date,
@@ -2312,11 +2197,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return new_invoices
 
-    @api.multi
+    @api.model
     def record_aggregate_invoice(self, customers, the_wizard):
         new_invoices = []
         for customer in customers:
-            accounting_invoice = self.env['account.invoice']
+            accounting_invoice = self.env['account.move']
             po_numbers = []
             ap_groups = []
             aggregation_ids = []
@@ -2342,7 +2227,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             aggregation_ids.append(ag_id)
 
                         else:
-                            raise models.ValidationError(
+                            raise ValidationError(
                                 'Lease agreement issue: Customer is marked for Aggregate '
                                 'invoicing but lease agreement does not contain a PO or AP Contact '
                                 'Agreement: ' + lease.lease_number + "Customer: " + lease.customer_id.name
@@ -2387,7 +2272,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                         for line in lease.lease_lines:
                             product = line.product_id
-                            invoice_line = self.env['account.invoice.line']
+                            invoice_line = self.env['account.move.line']
                             l_resp = self.calculate_line_amount(
                                 product, line, line.price, lease.invoice_from, lease.invoice_to, lease)
                             line_amount = l_resp['amount']
@@ -2584,8 +2469,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 'partner_id': lease.customer_id.id,
                                 'vehicle_id': lease.vehicle_id.id,
                                 'comment': comment,
-                                'date_invoice': inv_date,  # lease.invoice_generation_date,
-                                'date_due': lease.invoice_due_date,
+                                'invoice_date': inv_date,  # lease.invoice_generation_date,
+                                'invoice_date_due': lease.invoice_due_date,
                                 'invoice_from': prev_month_from,
                                 'invoice_to': prev_month_to,
                                 'invoice_posting_date': lease.invoice_generation_date,
@@ -2615,8 +2500,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     'partner_id': lease.customer_id.id,
                     'vehicle_id': lease.vehicle_id.id,
                     'comment': comment,
-                    'date_invoice': the_wizard.invoice_date,  # lease.invoice_generation_date,
-                    'date_due': lease.invoice_due_date,
+                    'invoice_date': the_wizard.invoice_date,  # lease.invoice_generation_date,
+                    'invoice_date_due': lease.invoice_due_date,
                     'invoice_from': lease.invoice_from,
                     'invoice_to': lease.invoice_to,
                     'invoice_posting_date': lease.invoice_posting_date,
@@ -2714,7 +2599,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             if i_inv_to == invoice_to and i_inv_from == invoice_from:
                                 in_range = True
                         else:
-                            raise models.ValidationError('Invoice: ' + str(inv.display_name) + ' for Rental Agreement ' + str(
+                            raise ValidationError('Invoice: ' + str(inv.display_name) + ' for Rental Agreement ' + str(
                                 lease.lease_number) + ' is missing Invoice From and To dates')
             # if last_invoice_dt <= invoice_to and last_invoice_dt >= invoice_from:
             #    in_range = True
@@ -2725,7 +2610,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     def ok_pressed(self):
         print("IN OK FUNCTION")
 
-    @api.multi
+    @api.model
     def record_lease_invoices2(self):
         aggregate_customers = []
         lease_with_existing_invoice = []
@@ -2757,7 +2642,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         str_lease_closed += '<p> Lease: ' + a_lease.id.lease_number + 'state changed from Invoice Pending to Closed</p>'
                         a_lease.message_post(
                             body='<p><b>Lease state changed from Invoice Pending to Closed</b></p>',
-                            subject="Lease State Changed", subtype="mt_note")
+                            subject="Lease State Changed")#, subtype="mt_note")
 
             aggregate_customers = list(dict.fromkeys(aggregate_customers))
             agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
@@ -2774,14 +2659,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 if l in a.lease_ids:
                     a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
                     a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_i_date = datetime.strptime(a.date_invoice, '%Y-%m-%d').strftime('%m/%d/%Y')
+                    a_i_date = datetime.strptime(a.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
                     strSuccess += '<p>Invoice id: ' + str(
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
                     strPost = '<p>Invoice id: ' + str(
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
                     l.message_post(
                         body='<p><b>Invoice(s) have been successfully created for: ' + a_i_date + '</b></p>' + strPost,
-                        subject="Invoice Creation", subtype="mt_note")
+                        subject="Invoice Creation")#, subtype="mt_note")
 
             strSuccess += "<hr/>"
 
@@ -2808,14 +2693,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         # rec = theMess.
         # rec2 = rec.with_context(ok_handler=self.ok_pressed)
-        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'message_action')
+        res = self.env['ir.actions.act_window']._for_xml_id('thomasfleet.message_action')
         res.update(
             context=dict(self.env.context, ok_handler='ok_pressed', caller_model=self._name, caller_id=self.id),
             res_id=rec.id
         )
         return res
 
-    @api.multi
+    @api.model
     def record_lease_invoices(self):
         aggregate_customers = []
         lease_with_existing_invoice = []
@@ -2847,7 +2732,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                         str_lease_closed += '<p> Lease: ' + a_lease.id.lease_number + 'state changed from Invoice Pending to Closed</p>'
                         a_lease.id.message_post(
                             body='<p><b>Lease state changed from Invoice Pending to Closed</b></p>',
-                            subject="Lease State Changed", subtype="mt_note")
+                            subject="Lease State Changed")#, subtype="mt_note")
 
             aggregate_customers = list(dict.fromkeys(aggregate_customers))
             agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
@@ -2871,7 +2756,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                     a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
                     a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_i_date = datetime.strptime(a.date_invoice, '%Y-%m-%d').strftime('%m/%d/%Y')
+                    a_i_date = datetime.strptime(a.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
                     strSuccess += '<p>Invoice id: ' + str(
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
                     strPost = '<p>Invoice id: ' + str(
@@ -2879,7 +2764,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                     l.message_post(
                         body='<p><b>Invoice(s) have been successfully created for: ' + a_i_date + '</b></p>' + strPost,
-                        subject="Invoice Creation", subtype="mt_note")
+                        subject="Invoice Creation")#, subtype="mt_note")
                     _logger.info("Posted message for Invoice creation " + str(count_invoices))
 
             strSuccess += "<hr/>"
@@ -2907,26 +2792,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         # rec = theMess.
         # rec2 = rec.with_context(ok_handler=self.ok_pressed)
-        res = self.env['ir.actions.act_window'].for_xml_id('thomasfleet', 'message_action')
+        res = self.env['ir.actions.act_window']._for_xml_id('thomasfleet.message_action')
         res.update(
             context=dict(self.env.context, ok_handler='ok_pressed', caller_model=self._name, caller_id=self.id),
             res_id=rec.id
         )
         return res
 
-        # return {
-        #
-        #     'name': 'Lease Invoice Creation',
-        #
-        #     'type': 'ir.actions.act_window',
-        #
-        #     'res_model': 'thomaslease.message',
-        #
-        #     'res_id': rec.id,
-        #
-        #     'view_mode': 'form',
-        #
-        #     'view_type': 'form',
-        #
-        #     'target': 'new'
-        # }
+

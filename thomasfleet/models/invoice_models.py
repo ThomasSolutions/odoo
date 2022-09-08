@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
-import requests, json, uuid, jsonpath
+import requests, json, uuid
 from urllib import parse
 
 class ThomasAccountingInvoice(models.Model):
+    _inherit = 'account.move'
 
-    _inherit = 'account.invoice'
-
-    #department = fields.Char(string='Department')
     qc_check = fields.Boolean(string='Data Accuracy Validation')
     sent_to_ar = fields.Boolean(string="Sent to AR" , default=False)
     thomas_invoice_type = fields.Selection( [('lease','Lease'),('maintenance', 'Maintenance'),('general', 'General')],
@@ -16,9 +14,9 @@ class ThomasAccountingInvoice(models.Model):
     thomas_invoice_class = fields.Selection([('rental','Rental'),('repair', 'Repair'),('407', '407'), ('fines', 'Fines')],
                                             string="Invoice Type", default='rental')
 
-    vehicle_id = fields.Many2one("fleet.vehicle", string="Unit #")
+    vehicle_id = fields.Many2one("fleet.vehicle", string="Vehicle Unit #")
 
-    unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
+    # unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
     lease_ids = fields.Many2many('thomaslease.lease',string='Lease Agreements',
                                   relation='lease_agreement_account_invoice_rel')
     vehicle_ids = fields.Many2many('fleet.vehicle',string='Units',
@@ -40,9 +38,10 @@ class ThomasAccountingInvoice(models.Model):
         help="Delivery address for current invoice.")
     customer_name = fields.Char("Customer", related="partner_id.compound_name")
     initial_invoice = fields.Boolean("Initial Invoice", default=False)
-    invoice_line_ids = fields.One2many('account.invoice.line', 'invoice_id', string='Invoice Lines',
-                                       oldname='invoice_line',
-                                       readonly=True, states={'draft': [('readonly', False)]}, copy=True)
+    invoice_line_ids = fields.One2many('account.move.line', 'invoice_id', string='Invoice Lines',
+        readonly=True, states={'draft': [('readonly', False)]}, copy=True)
+    
+    reconciled_payments_count = fields.Integer()  
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_delivery_address(self):
@@ -57,6 +56,7 @@ class ThomasAccountingInvoice(models.Model):
 
     def _compute_gp_po(self):
         for rec in self:
+            rec.gp_po_number = False
             if rec.po_number:
                 s = ''.join([i if ord(i) < 128 else '' for i in str.upper(rec.po_number)[0:20]])
                 rec.gp_po_number = s
@@ -77,45 +77,45 @@ class ThomasAccountingInvoice(models.Model):
 
 
 
-    @api.multi
+    @api.model
     def get_delivery_partner_id(self):
         self.ensure_one()
         return self.partner_shipping_id.id or super(ThomasAccountingInvoice, self).get_delivery_partner_id()
 
-    @api.multi
+    @api.model
     def _get_ar_contact(self):
         self.ensure_one()
         res = []
         ar = self.env['res.partner'].search([('name', '=', 'Accounts Receivable')])
         res.append(ar.id)
         return res
-    @api.multi
-    def _get_mail_contacts(self):
 
+    @api.model
+    def _get_mail_contacts(self):
         self.ensure_one()
         contact_ids=[]
         for lease in self.lease_ids:
             contact_ids.extend(lease.ap_contact_ids.ids)
         return contact_ids
 
-    @api.multi
+    @api.model
     def action_invoice_cancel(self):
         self.ensure_one()
         self.move_name=False
         #leases = self.env['thomaslease.lease'].search([('id', 'in', self.lease_ids.ids)], limit=1)
         res =super(ThomasAccountingInvoice, self).action_invoice_cancel()
         for lease in self.lease_ids:
-            invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='date_invoice desc')
+            invoice = self.env['account.move'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel')], limit=1,order='invoice_date desc')
             lease.last_invoice_date = False
-            lease.last_invoice_date = invoice.date_invoice
+            lease.last_invoice_date = invoice.invoice_date
             lease.message_post(
                 body='<p><b>Invoice Canceled</b></p><p>Invoice dated: ' + str(self.invoice_posting_date) +
                      ' for: $' + str(self.amount_total_signed) + ' for this lease was canceled</p>',
-                subject="Invoice Canceled", subtype="mt_note")
+                subject="Invoice Canceled")#, subtype="mt_note")
 
         return res
 
-    @api.multi
+    @api.model
     def unlink(self):
         for invoice in self:
             if invoice.state not in ('draft', 'cancel', 'paid'):
@@ -126,34 +126,27 @@ class ThomasAccountingInvoice(models.Model):
                     'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
 
             for lease in invoice.lease_ids:
-                the_invoice = self.env['account.invoice'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel'), ('id', '!=', invoice.id)], limit=1,order='date_invoice desc')
+                the_invoice = self.env['account.move'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel'), ('id', '!=', invoice.id)], limit=1,order='invoice_date desc')
 
                 if the_invoice:
-                    lease.last_invoice_date = invoice.date_invoice
+                    lease.last_invoice_date = invoice.invoice_date
                 else:
                     lease.last_invoice_date = False
 
                 lease.message_post(
                     body='<p><b>Invoice Deleted:</b></p><p>Invoice dated: ' + str(invoice.invoice_posting_date) +
                          ' for: $' + str(invoice.amount_total_signed) + ' for this lease was deleted</p>',
-                    subject="Invoice Deleted", subtype="mt_note")
+                    subject="Invoice Deleted")#, subtype="mt_note")
 
         return super(ThomasAccountingInvoice, self).unlink()
 
-    @api.multi
     def action_invoice_send_to_ar(self):
-        #self.ensure_one()
-        #res = super(ThomasAccountingInvoice, self).action_invoice_sent()
-        #ctx = res['context']
-        #ar = self._get_ar_contact()
-        #res.update(context=dict(ctx, default_partner_ids=ar))
-
         self.ensure_one()
         ar = self._get_ar_contact()
         template = self.env.ref('account.email_template_edi_invoice', False)
         compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
         ctx = dict(
-            default_model='account.invoice',
+            default_model='account.move',
             default_res_id=self.id,
             default_use_template=bool(template),
             default_template_id=template and template.id or False,
@@ -185,7 +178,7 @@ class ThomasAccountingInvoice(models.Model):
 
 
 
-    @api.multi
+    @api.model
     def action_invoice_sent(self):
         """ Open a window to compose an email, with the edi invoice template
             message loaded by default
@@ -200,7 +193,7 @@ class ThomasAccountingInvoice(models.Model):
         template = self.env.ref('account.email_template_edi_invoice', False)
         compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
         ctx = dict(
-            default_model='account.invoice',
+            default_model='account.move',
             default_res_id=self.id,
             default_use_template=bool(template),
             default_template_id=template and template.id or False,
@@ -225,15 +218,16 @@ class ThomasAccountingInvoice(models.Model):
      '''
 
 class ThomasAccountInvoiceLine(models.Model):
-    _inherit = "account.invoice.line"
+    _inherit = "account.move.line"
     _order = 'vehicle_id'
+
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
-    unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
+    # unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
     #thomas_invoice_type = fields.Char(string="Invoice Type", related="invoice_id.")
-    reference = fields.Char(string="Reference", compute="_compute_reference", inverse="_set_reference", store=True)
+    reference = fields.Char(string="Vehicle Reference", compute="_compute_reference", inverse="_set_reference", store=True)
     vehicle_id = fields.Many2one('fleet.vehicle', string="Unit #")#, domain="[('id', 'in', invoice_id.vehicle_ids.ids)]")
-    invoice_id = fields.Many2one('account.invoice', 'invoice_line_ids')
-    date_invoice = fields.Date(string="Invoice Date", related='invoice_id.date_invoice' ,store=True)
+    invoice_id = fields.Many2one('account.move', 'invoice_line_ids')
+    invoice_date = fields.Date(string="Invoice Date", related='invoice_id.invoice_date' ,store=True)
     thomas_invoice_type = fields.Char(string="Thomas Invoice Type", default="lease")
 
                                             #related="invoice_id.thomas_invoice_type")
@@ -251,23 +245,6 @@ class ThomasAccountInvoiceLine(models.Model):
             else:
                 rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "MISC"
 
-# class ThomasAccountGeneralInvoice(models.Model):
-#     _inherit = "account.invoice"
-#
-# class ThomasAccountGeneralInvoiceLine(models.Model):
-#     _inherit = "account.invoice.line"
-#     misc_id = fields.Char(string="Unit #")
-
-    # def init(self):
-    #     recs = self.env['account.invoice.line'].search([])
-    #     for rec in recs:
-    #         for lease in rec.invoice_id.lease_ids:
-    #             for lease_line in lease.lease_lines:
-    #                 if lease_line.vehicle_id and lease_line.vehicle_id.unit_no:
-    #                     if lease_line.vehicle_id.unit_no in rec.name:
-    #                         if not rec.lease_line_id:
-    #                             #rec.lease_line_id = lease_line.id
-    #                             print ("Getting Unit NO"+ rec.unit_no)
 
 
 
