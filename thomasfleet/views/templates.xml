@@ -15,7 +15,6 @@
             <xpath expr="//link[last()]" position="after">
                 <link href="/thomasfleet/static/src/less/styles.less" rel="stylesheet" type="text/less"/>
                 <link href="/thomasfleet/static/src/less/report.less" rel="stylesheet" type="text/less"/>
-
             </xpath>
         </template> -->
     </data>

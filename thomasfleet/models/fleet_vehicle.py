@@ -5,11 +5,13 @@ import logging, pprint, requests, json, uuid
 from datetime import date, datetime
 from dateutil import parser
 from urllib import parse
-from odoo.osv import expression
+
+
+from odoo.exceptions import UserError, ValidationError
+
 
 import logging
 _logger = logging.getLogger(__name__)
-
 
 #Some fields don't have the exact same name
 MODEL_FIELDS_TO_VEHICLE = {
@@ -18,6 +20,7 @@ MODEL_FIELDS_TO_VEHICLE = {
     'default_co2': 'co2', 'co2_standard': 'co2_standard', 'default_fuel_type': 'fuel_type',
     'power': 'power', 'horsepower': 'horsepower', 'horsepower_tax': 'horsepower_tax',
 }
+
 
 class ThomasFleetTest(models.Model):
     _inherit = 'fleet.vehicle'
@@ -137,7 +140,7 @@ class ThomasFleetVehicle(models.Model):
     box_size = fields.Char('Box Size', tracking=True)
     seat_material = fields.Many2one('thomasfleet.seatmaterial', 'Seat Material', tracking=True)
     flooring = fields.Many2one('thomasfleet.floormaterial', 'Floor Material', tracking=True)
-    trailer_hitch = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Trailer Hitch', default='yes', tracking=True)
+    trailer_hitch = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Trailer Hitch ', default='yes', tracking=True)
     brake_controller = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Brake Controller', default='yes', tracking=True)
     tires = fields.Char('Tires', tracking=True)
     capless_fuel_filler = fields.Selection([('yes', 'Yes'), ('no', 'No')], 'Capless Fuel Filter', default='no', tracking=True)
@@ -437,7 +440,7 @@ class ThomasFleetVehicle(models.Model):
                  #this can only be set on create
         else:
             if self.env.context.get('manual_update'):
-                raise models.UserError('Vehicle VIN must be set before it can be linked, created or updated Protractor')
+                raise UserError('Vehicle VIN must be set before it can be linked, created or updated Protractor')
 
         self.log.info("RETURNING THE RESPONSE " + str(the_resp))
         return the_resp

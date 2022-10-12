@@ -6,12 +6,13 @@
     'author': "Andrew Bates[Dev], AZM Ariful Haque Real[Upgrade]",
     'website': "https://www.syncoria.com",
     'category': 'Human Resources/Fleet',
-    'version': '15.0.2',
-    'depends': ['base', 'fleet', 'account', 'web', 'account_fleet'],
+    'version': '15.1.1',
+    'depends': ['base', 'fleet', 'account', 'web', 'hr_fleet', 'account_asset_fleet'],
     'data': [
         'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
         'views/message_views.xml',
+        'views/fleet_vehicle.xml',
         'views/views.xml',
         'views/lease_views.xml',
         'views/customer_views.xml',
@@ -37,11 +38,11 @@
         'data/thomasfleet.accessory_type.csv'
     ],
     'assets': {
-        'web.assets_backend': [
-            'thomasfleet/static/src/less/variables.less',
-            'thomasfleet/static/src/less/styles.less',
-            'thomasfleet/static/src/less/report.less'
-        ],
+        # 'web.assets_backend': [
+        #     'thomasfleet/static/src/less/variables.less',
+        #     'thomasfleet/static/src/less/styles.less',
+        #     'thomasfleet/static/src/less/report.less'
+        # ],
         'web.report_assets_common': [
             'thomasfleet/static/src/less/styles.less',
             'thomasfleet/static/src/less/report.less',

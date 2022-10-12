@@ -1,7 +1,5 @@
 <odoo>
     <data>
-        
-     
 
         <record id="thomas_vehicle_expense_pivot_view" model="ir.ui.view">
             <field name="model">thomasfleet.workorder</field>
@@ -166,7 +164,6 @@
                     <field name="position"/>
                     <templates>
                         <t t-name="kanban-box">
-
                             <div class="oe_kanban_global_click">
                                 <div class="oe_kanban_card">
                                     <strong class="o_kanban_record_title">
@@ -213,7 +210,6 @@
                                             <img t-att-src="kanban_image('thomasfleet.asset_photo', 'image_medium', i)" alt="Asset Image"/>
                                         </t>
                                     </div>
-
                                 </div>
                             </div>
                         </t>
@@ -929,6 +925,21 @@
             action="thomas_workorder_action" 
             parent="invoices_main"
             id="thomasfleet_invoices_menu"/>
+
+        
+        <record id="view_res_company_form" model="ir.ui.view">
+            <field name="name">view.res.company.form</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='currency_id']" position="after">
+                    <field name="report_header"/>
+                </xpath>
+                <xpath expr="//field[@name='favicon']" position="after">
+                    <field name="report_footer"/>
+                </xpath>
+            </field>
+        </record>
 
     </data>
 </odoo>

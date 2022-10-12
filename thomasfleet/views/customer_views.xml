@@ -244,42 +244,42 @@
         </record>
 
         <record id="res_partner_kanban_view"  model="ir.ui.view">
-                <field name="model">res.partner</field>
-                <field eval="40" name="priority"/>
-                <field name="inherit_id" ref="base.res_partner_kanban_view"/>
-                <field name="arch" type="xml">
-                    <xpath expr="//strong[hasclass('o_kanban_record_title', 'oe_partner_heading')]" position="replace">
-                        <strong class="o_kanban_record_title oe_partner_heading">
-                            <field name="name" invisible="1" context="{'show_internal_division':True}"/>
-                            <field name="compound_name"  context="{'show_internal_division':True}"/>
-                        </strong>
-                    </xpath>
-                </field>
+            <field name="model">res.partner</field>
+            <field eval="40" name="priority"/>
+            <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//strong[hasclass('o_kanban_record_title', 'oe_partner_heading')]" position="replace">
+                    <strong class="o_kanban_record_title oe_partner_heading">
+                        <field name="name" invisible="1" context="{'show_internal_division':True}"/>
+                        <field name="compound_name"  context="{'show_internal_division':True}"/>
+                    </strong>
+                </xpath>
+            </field>
         </record>
 
         <record id="view_partner_tree"  model="ir.ui.view">
-                <field name="model">res.partner</field>
-                <field name="inherit_id" ref="base.view_partner_tree" />
-                <field eval="8" name="priority"/>
-                <field name="arch" type="xml">
-                    <xpath expr="//tree[1]" position="replace">
-                        <tree string="Contacts" editable="top">
-                            <field name="display_name" invisible="1" string="Name" context="{'show_internal_division':True}"/>
-                            <field name="compound_name" string="Name" context="{'show_internal_division':True}"/>
-                            <field name="name" invisible="1" context="{'show_internal_division':True}"/>
-                            <field name="function" invisible="1"/>
-                            <field name="phone"/>
-                            <field name="email"/>
-                            <field name="protractor_guid" mode=""/>
-                            <button name="find_protractor_guid" type="object" string="Get Protractor ID" class="oe_highlight" />
-                            <field name="user_id" invisible="1"/>
-                            <field name="is_company" invisible="1"/>
-                            <field name="country_id" invisible="1"/>
-                            <field name="parent_id" invisible="1"/>
-                            <field name="active" invisible="1"/>
-                        </tree>
-                    </xpath>
-                </field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree" />
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree[1]" position="replace">
+                    <tree string="Contacts" editable="top">
+                        <field name="display_name" invisible="1" string="Name" context="{'show_internal_division':True}"/>
+                        <field name="compound_name" string="Name" context="{'show_internal_division':True}"/>
+                        <field name="name" invisible="1" context="{'show_internal_division':True}"/>
+                        <field name="function" invisible="1"/>
+                        <field name="phone"/>
+                        <field name="email"/>
+                        <field name="protractor_guid" mode=""/>
+                        <button name="find_protractor_guid" type="object" string="Get Protractor ID" class="oe_highlight" />
+                        <field name="user_id" invisible="1"/>
+                        <field name="is_company" invisible="1"/>
+                        <field name="country_id" invisible="1"/>
+                        <field name="parent_id" invisible="1"/>
+                        <field name="active" invisible="1"/>
+                    </tree>
+                </xpath>
+            </field>
         </record>
 
         <record id="action_partner_form" model="ir.actions.act_window">

@@ -910,7 +910,6 @@ class ThomasFleetMXInvoiceWizard(models.TransientModel):
     lease_ids = fields.Many2many('thomaslease.lease', string="Rent")
     invoice_date = fields.Date(string="Invoice Date")
 
-    @api.model
     def record_lease_invoices(self):
         accounting_invoice = self.env['account.move']
         for wizard in self:

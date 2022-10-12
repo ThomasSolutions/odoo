@@ -109,10 +109,10 @@ class ThomasLease(models.Model):
                 self.billing_start_date = self.lease_start_date
 
             # lease_start_date = datetime.strptime(self.billing_start_date, '%Y-%m-%d')
-            lease_start_date = datetime.strftime(self.billing_start_date, '%Y-%m-%d')
-
+            lease_start_date = self.billing_start_date
             today = date.today()
             last_day_lease_month = calendar.monthrange(lease_start_date.year, lease_start_date.month)[1]
+            
             start_of_current_month = date(today.year, today.month, 1)
             rel_next_month = start_of_current_month + relativedelta.relativedelta(months=+1)
             start_of_next_month = rel_next_month  # date(lease_start_date.year, int(lease_start_date.month + 1), 1)
@@ -176,7 +176,6 @@ class ThomasLease(models.Model):
             self.partner_shipping_id = addr.get('contact')
 
 
-    @api.model
     def btn_validate(self):
         for rec in self:
             rec.state = 'active'
@@ -327,6 +326,13 @@ class ThomasLease(models.Model):
     rate_calc_example = fields.Text("Rate Calculations", compute='_compute_rate_calc_example')
     rate_calc_example_for_report = fields.Html("Rate Calculations [Example]", compute='_compute_rate_calc_example_html')
 
+    def _get_report_lease_agreement(self):
+        return 'Lease Agreement'
+
+    def _get_report_rental_agreement(self):
+        return 'Rental Agreement'
+
+
     @api.depends('lease_lines')
     def _compute_rate_calc_description(self):
         for rec in self:
@@ -382,6 +388,7 @@ class ThomasLease(models.Model):
     @api.depends('lease_lines')
     def _compute_rate_calc_example_html(self):
         for rec in self:
+            rec.rate_calc_example_for_report = ''
             for line in rec.lease_lines:
                 example = ''
 
@@ -420,11 +427,11 @@ class ThomasLease(models.Model):
                     rec.rate_calc_example_for_report = str(example)
 
     # last_invoice_age = fields.Integer("Last Invoice Age", compute='calc_invoice_age')
-
     # inclusion_rate= fields.float(compute="_calIncRate",string='Inclusion Rate')
     # accessories_base_rate = fields.Float(compute="_calcBaseAccRate", string="Accessor List Rate")
     # accessory_discount=fields.float('Accessor Discount')
     # accessory_rate =fields.float(compute="_caclAccRate",string='Accessory Rate')
+
     @api.depends('last_invoice_date')
     def calc_invoice_age(self):
         for rec in self:
@@ -692,16 +699,32 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         l_rdt = False
         if lease.lease_return_date:
-            l_rdt = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            try:
+                l_rdt = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                _logger.info("l_rdt ===>>> {}".format(l_rdt))
+            except Exception as e:
+                l_rdt = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
+                _logger.info("Exception: l_rdt ===>>> {}".format(l_rdt))
 
         if lease.billing_start_date:
-            l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+            try:
+                l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                _logger.info("l_sdt ===>>> {}".format(l_sdt))
+            except Exception as e:
+                l_sdt = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
+                _logger.info("Exception: l_sdt ===>>> {}".format(l_sdt))
         elif lease.lease_start_date:
-            l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+            try:
+                l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+                _logger.info("l_sdt ===>>> {}".format(l_sdt))
+            except Exception as e:
+                l_sdt = datetime.strptime(str(lease.lease_start_date), '%Y-%m-%d')
+                _logger.info("Exception: l_sdt ===>>> {}".format(l_sdt))
+
             # lease.billing_start_date = lease.lease_start_date
             billing_strt_date = lease.lease_start_date
         else:
-            raise models.UserError('Lease Start Date or Billing Date Not set for: ' + lease.lease_number)
+            raise UserError('Lease Start Date or Billing Date Not set for: ' + lease.lease_number)
 
         if "Dofasco" in lease.customer_id.name:
             i_from = datetime(dt.year, dt.month, 1)
@@ -768,16 +791,38 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         l_rdt = False
         if lease.lease_return_date:
-            l_rdt = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            # l_rdt = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            try:
+                l_rdt = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                _logger.info("l_rdt ===>>> {}".format(l_rdt))
+            except Exception as e:
+                l_rdt = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
+                _logger.info("Exception: l_rdt ===>>> {}".format(l_rdt))
+
 
         if lease.billing_start_date:
-            l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+            # l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+            try:
+                l_sdt = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                _logger.info("l_sdt ===>>> {}".format(l_sdt))
+            except Exception as e:
+                l_sdt = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
+                _logger.info("Exception: l_sdt ===>>> {}".format(l_sdt))
+
         elif lease.lease_start_date:
-            l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+            # l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+            try:
+                l_sdt = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+                _logger.info("l_sdt ===>>> {}".format(l_sdt))
+            except Exception as e:
+                l_sdt = datetime.strptime(str(lease.lease_start_date), '%Y-%m-%d')
+                _logger.info("Exception: l_sdt ===>>> {}".format(l_sdt))
+
+
             # lease.billing_start_date = lease.lease_start_date
             billing_strt_date = lease.lease_start_date
         else:
-            raise models.UserError('Lease Start Date or Billing Date Not set for: ' + lease.lease_number)
+            raise UserError('Lease Start Date or Billing Date Not set for: ' + lease.lease_number)
 
         if "Dofasco" in lease.customer_id.name:
             i_from = datetime(dt.year, dt.month, 1)
@@ -858,7 +903,16 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     @api.onchange("invoice_date")
     def set_dates(self):
-        dt = datetime.strptime(self.invoice_date, '%Y-%m-%d')
+        # dt = datetime.strptime(self.invoice_date, '%Y-%m-%d')
+        try:
+            dt = datetime.strptime(self.invoice_date, '%Y-%m-%d')
+            _logger.info("dt ===>>> {}".format(dt))
+        except Exception as e:
+            dt = datetime.strptime(str(self.invoice_date), '%Y-%m-%d')
+            _logger.info("Exception: dt ===>>> {}".format(dt))
+
+
+
         dt2 = dt + relativedelta.relativedelta(days=+30)
         end_of_month = calendar.monthrange(dt.year, dt.month)[1]
         self.invoice_due_date = dt2
@@ -889,14 +943,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     def calc_biweekly_lease(self, biweekly_rate, lease):
         # calculate invoice for 4 weeks from last date.
         if lease.last_invoice_to:
-            last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+            last_to_date = datetime.strptime(str(lease.last_invoice_to), '%Y-%m-%d')
         elif lease.billing_start_date:
-            last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+            last_to_date = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
         else:
-            last_to_date = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+            last_to_date = datetime.strptime(str(lease.lease_start_date), '%Y-%m-%d')
         start_date = last_to_date
         if lease.lease_return_date:
-            end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
         else:
             end_date = start_date + relativedelta.relativedelta(weeks=+4)
 
@@ -917,9 +971,11 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         :param lease:
         :return:
         '''
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
-        lease_start = datetime.strptime(lease.lease_start_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
+        if not lease.lease_start_date:
+            raise UserError(_("Lease Start date cannot be empty"))
+        lease_start = datetime.strptime(str(lease.lease_start_date), '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
         just_days = (end_d - start_d).days + 1
@@ -933,7 +989,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         # unit has been returned...determine if rates are adjusted
         if lease.lease_return_date:
-            lease_end = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            lease_end = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
             days_in_lease = (lease_end - lease_start).days + 1
             if end_d.month == start_d.month and just_days == days_in_end_month:
                 amount = monthly_total
@@ -969,8 +1025,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def calc_rate_monthly_lease_old(self, monthly_total, start_date, end_date):
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
 
         date_delta = relativedelta.relativedelta(end_d, start_d)
         num_days = date_delta.days + 1  # assumes current day for billing
@@ -1033,8 +1089,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def calc_rate_monthly_lease_older(self, monthly_total, start_date, end_date):
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
 
         date_delta = relativedelta.relativedelta(end_d, start_d)
         num_days = date_delta.days + 1  # assumes current day for billing
@@ -1102,8 +1158,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def calc_rate_weekly_lease(self, discount, weekly_rate, start_date, end_date):
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
         just_days = (end_d - start_d).days + 1
@@ -1137,8 +1193,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         return {"amount": amount, "formula": formula, "rate": rate}
 
     def calc_rate_daily_lease(self, discount, daily_rate, start_date, end_date):
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
         just_days = (end_d - start_d).days + 1
@@ -1173,8 +1229,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def calc_rate_weekly_lease_old(self, weekly_rate, start_date, end_date):
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
 
         just_days = (end_d - start_d).days + 1
@@ -1267,8 +1323,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
     def calc_rate_daily_lease_old(self, daily_total, start_date, end_date):
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         num_days = (end_d - start_d).days + 1
 
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
@@ -1310,8 +1366,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         ft_monthly = 2350.00
         '''
 
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         num_days = (end_d - start_d).days + 1  # should be +1
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
         amount = 0
@@ -1400,8 +1456,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         return {'amount': amount, 'formula': '', 'rate': rate}
 
     def calc_stelco_rate(self, rate_type, line_amount, start_date, end_date):
-        start_d = datetime.strptime(start_date, '%Y-%m-%d')
-        end_d = datetime.strptime(end_date, '%Y-%m-%d')
+        start_d = datetime.strptime(str(start_date), '%Y-%m-%d')
+        end_d = datetime.strptime(str(end_date), '%Y-%m-%d')
         date_delta = relativedelta.relativedelta(end_d, start_d)
         num_days = date_delta.days + 1  # assumes current day for billing
         days_in_month = calendar.monthrange(end_d.year, end_d.month)[1]
@@ -1480,10 +1536,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         return resp
 
     def determine_last_invoice_to(self, lease):
-        last_to_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
+        last_to_date = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
         end_date = last_to_date + relativedelta.relativedelta(months=+1)
         if lease.lease_return_date:
-            end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+            end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
         elif lease.rate_type == 'Bi-Weekly':
             end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -1491,8 +1547,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
 
     def create_dofasco_monthly_invoice_line_description(self, lease):
-        month_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%b')
-        year_amd = datetime.strptime(lease.invoice_from, '%Y-%m-%d').strftime('%Y')
+        month_amd = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d').strftime('%b')
+        year_amd = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d').strftime('%Y')
         if lease.vehicle_id.unit_no:
             description = month_amd + ' ' + year_amd + ' - Monthly Lease: for Unit # ' + lease.vehicle_id.unit_no
         else:
@@ -1544,19 +1600,19 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         new_invoices = []
         lease_invoices = the_lease.id.invoice_ids.ids
         unit_invoices = the_lease.id.vehicle_id.lease_invoice_ids.ids
-        month = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').strftime('%b')
-        year = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').strftime('%Y')
-        dt_inv_to = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d')
+        month = datetime.strptime(str(the_lease.id.invoice_from), '%Y-%m-%d').strftime('%b')
+        year = datetime.strptime(str(the_lease.id.invoice_from), '%Y-%m-%d').strftime('%Y')
+        dt_inv_to = datetime.strptime(str(the_lease.id.invoice_to), '%Y-%m-%d')
         end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
         inv_date = self.invoice_date
 
         if the_lease.id.run_initial_invoicing:
-            last_to_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d')
-            last_from_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d')
+            last_to_date = datetime.strptime(str(the_lease.id.invoice_to), '%Y-%m-%d')
+            last_from_date = datetime.strptime(str(the_lease.id.invoice_from), '%Y-%m-%d')
 
             prev_relative_month = last_to_date + relativedelta.relativedelta(months=-1)
 
-            prev_month_from = datetime.strptime(the_lease.id.billing_start_date, '%Y-%m-%d')
+            prev_month_from = datetime.strptime(str(the_lease.id.billing_start_date), '%Y-%m-%d')
             prev_month_days = calendar.monthrange(prev_relative_month.year, prev_relative_month.month)[1]
             prev_month_to = last_from_date + relativedelta.relativedelta(days=-1)
             prev_days_quantity = relativedelta.relativedelta(prev_month_to, prev_month_from).days + 1
@@ -1576,9 +1632,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             start_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').date()
 
             if the_lease.id.lease_return_date:
-                end_date = datetime.strptime(the_lease.id.lease_return_date, '%Y-%m-%d').date()
+                end_date = datetime.strptime(str(the_lease.id.lease_return_date), '%Y-%m-%d').date()
             else:
-                end_date = datetime.strptime(the_lease.id.invoice_to, '%Y-%m-%d').date()
+                end_date = datetime.strptime(str(the_lease.id.invoice_to), '%Y-%m-%d').date()
 
             num_days = relativedelta.relativedelta(end_date, start_date).days + 1
             pro_rated = ''
@@ -1600,16 +1656,16 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
             elif the_lease.id.rate_type == 'Bi-Weekly':
                 if not the_lease.id.last_invoice_to:
-                    last_to_date = datetime.strptime(the_lease.id.billing_start_date, '%Y-%m-%d')
+                    last_to_date = datetime.strptime(str(the_lease.id.billing_start_date), '%Y-%m-%d')
                 else:
-                    last_to_date = datetime.strptime(the_lease.id.last_invoice_to, '%Y-%m-%d')
+                    last_to_date = datetime.strptime(str(the_lease.id.last_invoice_to), '%Y-%m-%d')
                 # changing description model
-                last_to_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d')
+                last_to_date = datetime.strptime(str(the_lease.id.invoice_from), '%Y-%m-%d')
                 # end
                 start_date = last_to_date  # + relativedelta.relativedelta(days=+1)
 
                 if the_lease.id.lease_return_date:
-                    end_date = datetime.strptime(the_lease.id.lease_return_date, '%Y-%m-%d')
+                    end_date = datetime.strptime(str(the_lease.id.lease_return_date), '%Y-%m-%d')
                 # else:
                 #     end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -1719,9 +1775,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                 elif the_lease.id.rate_type == 'Bi-Weekly':  # need to determine what to do here
                     if not the_lease.id.last_invoice_to:
-                        last_to_date = datetime.strptime(the_lease.id.billing_start_date, '%Y-%m-%d')
+                        last_to_date = datetime.strptime(str(the_lease.id.billing_start_date), '%Y-%m-%d')
                     else:
-                        last_to_date = datetime.strptime(the_lease.id.last_invoice_to, '%Y-%m-%d')
+                        last_to_date = datetime.strptime(str(the_lease.id.last_invoice_to), '%Y-%m-%d')
 
                     # changing description model
                     # changing description model
@@ -1731,7 +1787,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     start_date = last_to_date  # + relativedelta.relativedelta(days=+1)
 
                     if the_lease.id.lease_return_date:
-                        end_date = datetime.strptime(the_lease.id.lease_return_date, '%Y-%m-%d')
+                        end_date = datetime.strptime(str(the_lease.id.lease_return_date), '%Y-%m-%d')
 
                     start_date_str = start_date.strftime('%b %d')
                     end_date_str = end_date.strftime('%b %d')
@@ -1831,8 +1887,24 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             ap_groups = []
             aggregation_ids = []
 
-            month = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%b')
-            year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+
+            try:
+                month = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%b')
+                _logger.info("month ===>>> {}".format(month))
+            except Exception as e:
+                month = datetime.strptime(str(the_wizard.invoice_date), '%Y-%m-%d').strftime('%b')
+                _logger.info("Exception: month ===>>> {}".format(month))
+
+            # month = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%b')
+            # year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+            try:
+                year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+                _logger.info("year ===>>> {}".format(year))
+            except Exception as e:
+                year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+                _logger.info("Exception: year ===>>> {}".format(year))
+
+
             inv_date = the_wizard.invoice_date
 
             for lease in self.web_progress_iter(customer.lease_agreements, msg="Processing Aggregate Customers"):
@@ -1878,16 +1950,16 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 for lease in self.web_progress_iter(leases, msg="Generating Aggregate Invoice"):
                     if self.aggregate_lease_selected(lease):
                         print("==========aggregate lease agreement loop===================")
-                        dt_inv_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
+                        dt_inv_to = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
                         end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
 
                         if lease.run_initial_invoicing:
-                            last_to_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
-                            last_from_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+                            last_to_date = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
+                            last_from_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d')
 
                             prev_relative_month = last_to_date + relativedelta.relativedelta(months=-1)
 
-                            prev_month_from = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                            prev_month_from = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                             prev_month_days = calendar.monthrange(prev_relative_month.year, prev_relative_month.month)[
                                 1]
                             prev_month_to = last_from_date + relativedelta.relativedelta(days=-1)
@@ -1901,8 +1973,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             l_resp = self.calculate_line_amount(
                                 product, line, line.price, lease.invoice_from, lease.invoice_to, lease)
                             line_amount = l_resp['amount']
-                            start_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d').date()
-                            end_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d').date()
+                            start_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d').date()
+                            end_date = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d').date()
 
                             num_days = (end_date - start_date).days + 1
                             quantity = 1
@@ -1922,18 +1994,18 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                             elif lease.rate_type == 'Bi-Weekly':
                                 if not lease.last_invoice_to:
-                                    last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                    last_to_date = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                                 else:
-                                    last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+                                    last_to_date = datetime.strptime(str(lease.last_invoice_to), '%Y-%m-%d')
 
                                 # changing description model
-                                last_to_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+                                last_to_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d')
                                 # end
 
                                 start_date = last_to_date  # + relativedelta.relativedelta(days=+1)
 
                                 if lease.lease_return_date:
-                                    end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                    end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
                                 # else:
                                 #    end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -2017,14 +2089,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                                 elif lease.rate_type == 'Bi-Weekly':  # need to determine what to do here
                                     if not lease.last_invoice_to:
-                                        last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                        last_to_date = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                                     else:
-                                        last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+                                        last_to_date = datetime.strptime(str(lease.last_invoice_to), '%Y-%m-%d')
 
                                     start_date = last_to_date + relativedelta.relativedelta(days=+1)
 
                                     if lease.lease_return_date:
-                                        end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                        end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
                                     else:
                                         end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -2206,8 +2278,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             ap_groups = []
             aggregation_ids = []
 
-            month = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%b')
-            year = datetime.strptime(the_wizard.invoice_date, '%Y-%m-%d').strftime('%Y')
+            month = datetime.strptime(str(the_wizard.invoice_date), '%Y-%m-%d').strftime('%b')
+            year = datetime.strptime(str(the_wizard.invoice_date), '%Y-%m-%d').strftime('%Y')
+
             inv_date = the_wizard.invoice_date
 
             for lease in self.web_progress_iter(customer.lease_agreements, msg="Processing Aggregate Customers"):
@@ -2251,18 +2324,36 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                     [('aggregation_id', '=', ags_id), ('customer_id', '=', customer.id)])
 
                 for lease in self.web_progress_iter(leases, msg="Generating Aggregate Invoice"):
+
+                    a_invoice = accounting_invoice.create({
+                        'partner_id': lease.customer_id.id,
+                        'vehicle_id': lease.vehicle_id.id,
+                        'invoice_date': the_wizard.invoice_date,  # lease.invoice_generation_date,
+                        'invoice_date_due': lease.invoice_due_date,
+                        'invoice_from': lease.invoice_from,
+                        'invoice_to': lease.invoice_to,
+                        'invoice_posting_date': lease.invoice_posting_date,
+                        'invoice_generation_date': lease.invoice_generation_date,
+                        'move_type': 'out_invoice',
+                        'state': 'draft',
+                        'po_number': lease.po_number,
+                        # 'partner_invoice_id': lease.partner_invoice_id.id,
+                        'partner_shipping_id': lease.partner_shipping_id.id,
+                        'requires_manual_calculations': lease.requires_manual_calculations,
+                        # 'invoice_line_ids': [(6, 0, line_ids)]
+                    })
                     if self.aggregate_lease_selected(lease):
                         print("==========aggregate lease agreement loop===================")
-                        dt_inv_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
+                        dt_inv_to = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
                         end_of_month = calendar.monthrange(dt_inv_to.year, dt_inv_to.month)[1]
 
                         if lease.run_initial_invoicing:
-                            last_to_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
-                            last_from_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+                            last_to_date = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
+                            last_from_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d')
 
                             prev_relative_month = last_to_date + relativedelta.relativedelta(months=-1)
 
-                            prev_month_from = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                            prev_month_from = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                             prev_month_days = calendar.monthrange(prev_relative_month.year, prev_relative_month.month)[
                                 1]
                             prev_month_to = last_from_date + relativedelta.relativedelta(days=-1)
@@ -2276,8 +2367,8 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             l_resp = self.calculate_line_amount(
                                 product, line, line.price, lease.invoice_from, lease.invoice_to, lease)
                             line_amount = l_resp['amount']
-                            start_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d').date()
-                            end_date = datetime.strptime(lease.invoice_to, '%Y-%m-%d').date()
+                            start_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d').date()
+                            end_date = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d').date()
 
                             num_days = (end_date - start_date).days + 1
                             quantity = 1
@@ -2297,18 +2388,18 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                             elif lease.rate_type == 'Bi-Weekly':
                                 if not lease.last_invoice_to:
-                                    last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                    last_to_date = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                                 else:
-                                    last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+                                    last_to_date = datetime.strptime(str(lease.last_invoice_to), '%Y-%m-%d')
 
                                 # changing description model
-                                last_to_date = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+                                last_to_date = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d')
                                 # end
 
                                 start_date = last_to_date  # + relativedelta.relativedelta(days=+1)
 
                                 if lease.lease_return_date:
-                                    end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                    end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
                                 # else:
                                 #    end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -2343,15 +2434,17 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                 description = line.description
 
                             # create the invoice line
-                            line_id = invoice_line.create({
+                            line_id = invoice_line.with_context(check_move_validity=False).create({
                                 'product_id': product.id,
                                 'lease_line_id': line.id,
                                 'vehicle_id': line.vehicle_id.id,
                                 'price_unit': line_amount,
                                 'quantity': quantity,
                                 'name': description,
-                                'invoice_line_tax_ids': [(6, 0, product.taxes_id.ids)],
-                                'account_id': product.property_account_income_id.id
+                                'tax_ids': [(6, 0, product.taxes_id.ids)],
+                                'account_id': product.property_account_income_id.id,
+                                "move_id": a_invoice.id,
+                                "invoice_id": a_invoice.id
                             })
 
                             # call set taxes to set them...otherwise the relationships aren't set properly
@@ -2369,6 +2462,29 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                             #        unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
 
                         if lease.run_initial_invoicing:
+                            if "Dofasco" in lease.customer_id.name:
+                                inv_date = datetime(last_to_date.year, last_to_date.month, 1)
+
+                            initial_lease_ids.append(lease.id)
+                            a_next_invoice = accounting_invoice.create({
+                                'partner_id': lease.customer_id.id,
+                                'vehicle_id': lease.vehicle_id.id,
+                                'invoice_date': inv_date,  # lease.invoice_generation_date,
+                                'invoice_date_due': lease.invoice_due_date,
+                                'invoice_from': prev_month_from,
+                                'invoice_to': prev_month_to,
+                                'invoice_posting_date': lease.invoice_generation_date,
+                                'invoice_generation_date': lease.invoice_generation_date,
+                                'move_type': 'out_invoice',
+                                'initial_invoice': True,
+                                'state': 'draft',
+                                'po_number': lease.po_number,
+                                # 'partner_invoice_id': lease.partner_invoice_id.id,
+                                'partner_shipping_id': lease.partner_shipping_id.id,
+                                'requires_manual_calculations': lease.requires_manual_calculations,
+                                # 'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                            })
+
                             for next_line in lease.lease_lines:
                                 n_resp = self.calculate_line_amount(product, next_line, next_line.price,
                                                                     prev_month_from.strftime(
@@ -2392,14 +2508,14 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
                                 elif lease.rate_type == 'Bi-Weekly':  # need to determine what to do here
                                     if not lease.last_invoice_to:
-                                        last_to_date = datetime.strptime(lease.billing_start_date, '%Y-%m-%d')
+                                        last_to_date = datetime.strptime(str(lease.billing_start_date), '%Y-%m-%d')
                                     else:
-                                        last_to_date = datetime.strptime(lease.last_invoice_to, '%Y-%m-%d')
+                                        last_to_date = datetime.strptime(str(lease.last_invoice_to), '%Y-%m-%d')
 
                                     start_date = last_to_date + relativedelta.relativedelta(days=+1)
 
                                     if lease.lease_return_date:
-                                        end_date = datetime.strptime(lease.lease_return_date, '%Y-%m-%d')
+                                        end_date = datetime.strptime(str(lease.lease_return_date), '%Y-%m-%d')
                                     else:
                                         end_date = last_to_date + relativedelta.relativedelta(weeks=+4)
 
@@ -2446,8 +2562,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     'price_unit': next_line_amount,
                                     'quantity': quantity,
                                     'name': description,
-                                    'invoice_line_tax_ids': [(6, 0, product.taxes_id.ids)],
-                                    'account_id': product.property_account_income_id.id
+                                    'tax_ids': [(6, 0, product.taxes_id.ids)],
+                                    'account_id': product.property_account_income_id.id,
+                                    "move_id": a_next_invoice.id,
+                                    "invoice_id": a_next_invoice.id,
                                 })
 
                                 # next_month_line_id._set_taxes()
@@ -2458,68 +2576,33 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                                     initial_lease_invoices.extend(lease.invoice_ids.ids)
                                 if lease.vehicle_id.lease_invoice_ids:
                                     initial_unit_invoices.extend(lease.vehicle_id.lease_invoice_ids.ids)
-
-                            if "Dofasco" in lease.customer_id.name:
-                                inv_date = datetime(last_to_date.year, last_to_date.month, 1)
                             comment = ''
                             if len(leases) == 1 and len(lease.lease_lines) == 1:
-                                comment = n_resp['formula']
-                            initial_lease_ids.append(lease.id)
-                            a_next_invoice = accounting_invoice.create({
-                                'partner_id': lease.customer_id.id,
-                                'vehicle_id': lease.vehicle_id.id,
-                                'comment': comment,
-                                'invoice_date': inv_date,  # lease.invoice_generation_date,
-                                'invoice_date_due': lease.invoice_due_date,
-                                'invoice_from': prev_month_from,
-                                'invoice_to': prev_month_to,
-                                'invoice_posting_date': lease.invoice_generation_date,
-                                'invoice_generation_date': lease.invoice_generation_date,
-                                'type': 'out_invoice',
-                                'initial_invoice': True,
-                                'state': 'draft',
-                                'po_number': lease.po_number,
-                                # 'partner_invoice_id': lease.partner_invoice_id.id,
-                                'partner_shipping_id': lease.partner_shipping_id.id,
-                                'requires_manual_calculations': lease.requires_manual_calculations,
+                                comment = l_resp['formula']
+                            a_next_invoice.update({
+                                # "comment":comment,
                                 'invoice_line_ids': [(6, 0, next_month_line_ids)]
                             })
-
                             # lease_invoices.append(a_next_invoice.id)
                             initial_lease_invoices.append(a_next_invoice.id)
                             new_invoices.append(a_next_invoice)
                             # unit_invoices.append(a_next_invoice.id)
                             initial_unit_invoices.append(a_next_invoice.id)
                             lease.aggregation_id = False
-                # lease.run_initial_invoicing = False
-                # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
-                comment = ''
-                if len(leases) == 1 and len(lease.lease_lines) == 1:
-                    comment = l_resp['formula']
-                a_invoice = accounting_invoice.create({
-                    'partner_id': lease.customer_id.id,
-                    'vehicle_id': lease.vehicle_id.id,
-                    'comment': comment,
-                    'invoice_date': the_wizard.invoice_date,  # lease.invoice_generation_date,
-                    'invoice_date_due': lease.invoice_due_date,
-                    'invoice_from': lease.invoice_from,
-                    'invoice_to': lease.invoice_to,
-                    'invoice_posting_date': lease.invoice_posting_date,
-                    'invoice_generation_date': lease.invoice_generation_date,
-                    'type': 'out_invoice',
-                    'state': 'draft',
-                    'po_number': lease.po_number,
-                    # 'partner_invoice_id': lease.partner_invoice_id.id,
-                    'partner_shipping_id': lease.partner_shipping_id.id,
-                    'requires_manual_calculations': lease.requires_manual_calculations,
-                    'invoice_line_ids': [(6, 0, line_ids)]
-                })
+                    # lease.run_initial_invoicing = False
+                    # TODO: move this out of the line for loop since I think it would create multiple invoice per lease line
+                    comment = ''
+                    if len(leases) == 1 and len(lease.lease_lines) == 1:
+                        comment = l_resp['formula']
+                    a_invoice.update({
+                        'invoice_line_ids': [(6, 0, line_ids)]
+                    })
 
-                lease_invoices.append(a_invoice.id)
-                new_invoices.append(a_invoice)
-                if a_invoice.id not in unit_invoices:
-                    unit_invoices.append(a_invoice.id)
-                lease.aggregation_id = False
+                    lease_invoices.append(a_invoice.id)
+                    new_invoices.append(a_invoice)
+                    if a_invoice.id not in unit_invoices:
+                        unit_invoices.append(a_invoice.id)
+                    lease.aggregation_id = False
                 # set the invoice ids for the lease agreement
                 for lease in self.web_progress_iter(leases, msg="Updating Units"):
                     _logger.info("out loop...updating unit # " + str(lease.vehicle_id.unit_no))
@@ -2586,16 +2669,16 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
     def invoice_exists(self, lease):
         in_range = False
         if lease.last_invoice_date:
-            last_invoice_dt = datetime.strptime(lease.last_invoice_date, '%Y-%m-%d')
-            invoice_to = datetime.strptime(lease.invoice_to, '%Y-%m-%d')
-            invoice_from = datetime.strptime(lease.invoice_from, '%Y-%m-%d')
+            last_invoice_dt = datetime.strptime(str(lease.last_invoice_date), '%Y-%m-%d')
+            invoice_to = datetime.strptime(str(lease.invoice_to), '%Y-%m-%d')
+            invoice_from = datetime.strptime(str(lease.invoice_from), '%Y-%m-%d')
 
             if invoice_from <= last_invoice_dt <= invoice_to:
                 for inv in lease.invoice_ids:
-                    if inv.type == 'out_invoice':
+                    if inv.move_type == 'out_invoice':
                         if inv.invoice_to and inv.invoice_from:
-                            i_inv_to = datetime.strptime(inv.invoice_to, '%Y-%m-%d')
-                            i_inv_from = datetime.strptime(inv.invoice_from, '%Y-%m-%d')
+                            i_inv_to = datetime.strptime(str(inv.invoice_to), '%Y-%m-%d')
+                            i_inv_from = datetime.strptime(str(inv.invoice_from), '%Y-%m-%d')
                             if i_inv_to == invoice_to and i_inv_from == invoice_from:
                                 in_range = True
                         else:
@@ -2606,101 +2689,10 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return in_range
 
-    @api.model
     def ok_pressed(self):
         print("IN OK FUNCTION")
 
-    @api.model
-    def record_lease_invoices2(self):
-        aggregate_customers = []
-        lease_with_existing_invoice = []
-        lease_success = []
-        norm_invoices = []
-        agg_invoices = []
-        str_lease_closed = ''
 
-        for wizard in self:
-            # leases = wizard.lease_ids
-            for a_lease in self.lease_records:
-                # determine if an invoice already exists for the lease and don't create again...warn user
-                # a_lease = self.env['thomaslease.lease'].browse(lease)
-                print("Processing Lease:" + a_lease.lease_number)
-                if self.invoice_exists(a_lease):
-                    lease_with_existing_invoice.append(a_lease)
-                else:
-                    if a_lease.customer_id.aggregate_invoicing:
-                        print("Processing Aggregate Customer:" + str(a_lease.customer_id.name))
-                        aggregate_customers.append(a_lease.customer_id)
-                        lease_success.append(a_lease)
-                    else:
-                        norm_invoices = self.record_normal_invoice2(a_lease)
-                        lease_success.append(a_lease)
-
-                    a_lease.with_context(tracking_disable=True).write({'last_invoice_date': wizard.invoice_date})
-                    if a_lease.state == 'invoice_pending':
-                        a_lease.state = 'closed'
-                        str_lease_closed += '<p> Lease: ' + a_lease.id.lease_number + 'state changed from Invoice Pending to Closed</p>'
-                        a_lease.message_post(
-                            body='<p><b>Lease state changed from Invoice Pending to Closed</b></p>',
-                            subject="Lease State Changed")#, subtype="mt_note")
-
-            aggregate_customers = list(dict.fromkeys(aggregate_customers))
-            agg_invoices = self.record_aggregate_invoice(aggregate_customers, wizard)
-            agg_invoices.extend(norm_invoices)
-
-        strSuccess = ""
-
-        str_i_date = datetime.strptime(self.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-
-        for l in lease_success:
-            strPost = ""
-            strSuccess += '<p>' + l.lease_number + '<\p>'
-            for a in agg_invoices:
-                if l in a.lease_ids:
-                    a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_i_date = datetime.strptime(a.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    strSuccess += '<p>Invoice id: ' + str(
-                        a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
-                    strPost = '<p>Invoice id: ' + str(
-                        a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
-                    l.message_post(
-                        body='<p><b>Invoice(s) have been successfully created for: ' + a_i_date + '</b></p>' + strPost,
-                        subject="Invoice Creation")#, subtype="mt_note")
-
-            strSuccess += "<hr/>"
-
-        strExisting = ""
-        for l in lease_with_existing_invoice:
-            str_l_i_date = datetime.strptime(l.last_invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-            str_f_date = datetime.strptime(l.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
-            str_t_date = datetime.strptime(l.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
-            strExisting += '<p>' + l.lease_number + ' Target Invoice Date: ' + str_i_date + ' - Last Invoice Date: ' + str_l_i_date + ' for range from ' + str_f_date + ' to ' + str_t_date + '<\p>'
-
-        if strSuccess == '':
-            strMess = ''
-        else:
-            strMess = '<h2>Invoice(s) have been successfully created: </h2>' + strSuccess
-
-        if not strExisting == '':
-            strMess += '<h2>WARNING - INVOICES NOT CREATED</h2> <h3>Invoices with the same or crossing' \
-                       ' date ranges already exist for the following lease agreements:</h3><br/>' + strExisting
-
-        if not str_lease_closed == '':
-            strMess += '<h2>The following Lease Agreements state have changed</h2><br/>' + str_lease_closed
-
-        rec = self.env['thomaslease.message'].create({'message': strMess})
-
-        # rec = theMess.
-        # rec2 = rec.with_context(ok_handler=self.ok_pressed)
-        res = self.env['ir.actions.act_window']._for_xml_id('thomasfleet.message_action')
-        res.update(
-            context=dict(self.env.context, ok_handler='ok_pressed', caller_model=self._name, caller_id=self.id),
-            res_id=rec.id
-        )
-        return res
-
-    @api.model
     def record_lease_invoices(self):
         aggregate_customers = []
         lease_with_existing_invoice = []
@@ -2741,7 +2733,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         strSuccess = ""
 
-        str_i_date = datetime.strptime(self.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
+        str_i_date = datetime.strptime(str(self.invoice_date), '%Y-%m-%d').strftime('%m/%d/%Y')
         count_leases = 1
         count_invoices =1
         for l in lease_success:
@@ -2754,9 +2746,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 count_invoices = count_invoices + 1
                 if l in a.lease_ids:
 
-                    a_f_date = datetime.strptime(a.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_t_date = datetime.strptime(a.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
-                    a_i_date = datetime.strptime(a.invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
+                    a_f_date = datetime.strptime(str(a.invoice_from), '%Y-%m-%d').strftime('%m/%d/%Y')
+                    a_t_date = datetime.strptime(str(a.invoice_to), '%Y-%m-%d').strftime('%m/%d/%Y')
+                    a_i_date = datetime.strptime(str(a.invoice_date), '%Y-%m-%d').strftime('%m/%d/%Y')
                     strSuccess += '<p>Invoice id: ' + str(
                         a.id) + ' Invoice Date: ' + a_i_date + ' From: ' + a_f_date + ' to: ' + a_t_date + '<\p>'
                     strPost = '<p>Invoice id: ' + str(
@@ -2771,9 +2763,9 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         strExisting = ""
         for l in lease_with_existing_invoice:
-            str_l_i_date = datetime.strptime(l.last_invoice_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-            str_f_date = datetime.strptime(l.invoice_from, '%Y-%m-%d').strftime('%m/%d/%Y')
-            str_t_date = datetime.strptime(l.invoice_to, '%Y-%m-%d').strftime('%m/%d/%Y')
+            str_l_i_date = datetime.strptime(str(l.last_invoice_date), '%Y-%m-%d').strftime('%m/%d/%Y')
+            str_f_date = datetime.strptime(str(l.invoice_from), '%Y-%m-%d').strftime('%m/%d/%Y')
+            str_t_date = datetime.strptime(str(l.invoice_to), '%Y-%m-%d').strftime('%m/%d/%Y')
             strExisting += '<p>' + l.lease_number + ' Target Invoice Date: ' + str_i_date + ' - Last Invoice Date: ' + str_l_i_date + ' for range from ' + str_f_date + ' to ' + str_t_date + '<\p>'
 
         if strSuccess == '':
