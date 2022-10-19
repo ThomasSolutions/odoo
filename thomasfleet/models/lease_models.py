@@ -139,7 +139,7 @@ class ThomasLease(models.Model):
             else:
                 self.invoice_to = tmp_invoice_to
 
-    @api.model
+    #@api.model
     @api.onchange('customer_id')
     def set_contacts(self):
         ap_cons = []
@@ -157,7 +157,7 @@ class ThomasLease(models.Model):
         self.po_contact_ids = [(6, 0, po_cons)]
         self.ops_contact_ids = [(6, 0, ops_cons)]
 
-    @api.model
+    #@api.model
     @api.onchange('customer_id')
     def get_invoice_address(self):
         addr = self.customer_id.address_get(['invoice'])
@@ -166,7 +166,7 @@ class ThomasLease(models.Model):
         else:
             self.partner_invoice_id = addr.get('contact')
 
-    @api.model
+    #@api.model
     @api.onchange('customer_id')
     def get_shipping_address(self):
         addr = self.customer_id.address_get(['delivery'])
@@ -199,7 +199,7 @@ class ThomasLease(models.Model):
     invoice_ids = fields.Many2many('account.move', string='Invoices',
                                    relation='lease_agreement_account_invoice_rel', tracking=True)
     # lease_status = fields.Many2one('thomasfleet.lease_status', string='Lease Status', default=_getLeaseDefault)
-    state = fields.Selection([('draft', 'Draft'), ('active', 'Active'),
+    state = fields.Selection([('draft', 'Pending'), ('active', 'Active'),
                               ('repairs_pending', 'Repairs Pending'),
                               ('invoice_pending', 'Invoice Pending'),
                               ('both', 'Repairs and Invoice Pending'),
@@ -301,7 +301,7 @@ class ThomasLease(models.Model):
                                        relation='lease_agreement_res_partner_ops_rel',
                                        domain="[('parent_id','=',customer_id)]", tracking=True)
 
-    unit_no = fields.Char('Unit #', related="vehicle_id.unit_no", readonly=True, tracking=True)
+    unit_no = fields.Char('Unit  #', related="vehicle_id.unit_no", readonly=True, tracking=True)
     rate_type = fields.Char("Rate Type", compute='_get_rate_type', search='_search_rate_type', change_default=True,
                             tracking=True)
     inclusions = fields.Many2many(related="vehicle_id.inclusions", string="Inclusions", readonly=True,
@@ -330,7 +330,7 @@ class ThomasLease(models.Model):
         return 'Lease Agreement'
 
     def _get_report_rental_agreement(self):
-        return 'Rental Agreement'
+        return f'Rental Agreement/{self.message_attachment_count+1}'
 
 
     @api.depends('lease_lines')
@@ -469,7 +469,7 @@ class ThomasLease(models.Model):
 
 
 
-    @api.model
+    #@api.model
     @api.depends('lease_number')
     def name_get(self):
         res = []
@@ -622,7 +622,6 @@ class ThomasFleetReturnWizard(models.TransientModel):
     repairs_pending = fields.Boolean("Repairs Pending")
     lease_return_date = fields.Date("Return Date", default=_default_return_date)
 
-    @api.model
     def record_return(self):
         for lease in self.lease_ids:
             if self.invoice_pending & self.repairs_pending:
@@ -1629,7 +1628,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             res = self.calculate_line_amount(
                 product, line, line.price, the_lease.id.invoice_from, the_lease.id.invoice_to, the_lease.id)
             line_amount = res['amount']
-            start_date = datetime.strptime(the_lease.id.invoice_from, '%Y-%m-%d').date()
+            start_date = datetime.strptime(str(the_lease.id.invoice_from), '%Y-%m-%d').date()
 
             if the_lease.id.lease_return_date:
                 end_date = datetime.strptime(str(the_lease.id.lease_return_date), '%Y-%m-%d').date()
@@ -1705,20 +1704,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             else:
                 description = line.description
 
-            line_id = invoice_line.create({
-                'product_id': product.id,
-                'lease_line_id': line.id,
-                'vehicle_id': line.vehicle_id.id,
-                'price_unit': line_amount,
-                'quantity': quantity,
-                'name': description,
-                'invoice_line_tax_ids': [(6, 0, line.product_id.taxes_id.ids)],
-                'account_id': line.product_id.property_account_income_id.id
-            })
-            # call set taxes to set them...otherwise the relationships aren't set properly
-            # line_id._set_taxes()
-            line_id.price_unit = line_amount
-            line_ids.append(line_id.id)
+
 
         comment = ''
         if len(the_lease.id.lease_lines) == 1:
@@ -1728,19 +1714,41 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         a_invoice = accounting_invoice.create({
             'partner_id': the_lease.id.customer_id.id,
             'vehicle_id': the_lease.id.vehicle_id.id,
-            'comment': comment,
+            # 'comment': comment,
             'invoice_date': inv_date,  # self.invoice_date,#the_lease.id.invoice_generation_date,
             'invoice_date_due': the_lease.id.invoice_due_date,
             'invoice_from': the_lease.id.invoice_from,
             'invoice_to': the_lease.id.invoice_to,
             'invoice_posting_date': the_lease.id.invoice_posting_date,
             'invoice_generation_date': the_lease.id.invoice_generation_date,
-            'type': 'out_invoice',
+            'move_type': 'out_invoice',
             # 'account_id': product.property_account_income_id.id,
             'state': 'draft',
             'po_number': the_lease.id.po_number,
             'partner_shipping_id': the_lease.id.partner_shipping_id.id,
             'requires_manual_calculations': the_lease.id.requires_manual_calculations,
+            # 'invoice_line_ids': [(6, 0, line_ids)]
+        })
+
+        line_id = invoice_line.with_context(check_move_validity=False).create({
+            'product_id': product.id,
+            'lease_line_id': line.id,
+            'vehicle_id': line.vehicle_id.id,
+            'price_unit': line_amount,
+            'quantity': quantity,
+            'name': description,
+            'tax_ids': [(6, 0, line.product_id.taxes_id.ids)],
+            'account_id': product.property_account_income_id.id,
+            'move_id':a_invoice.id,
+            'invoice_id':a_invoice.id
+        })
+        # call set taxes to set them...otherwise the relationships aren't set properly
+        # line_id._set_taxes()
+        line_id.price_unit = line_amount
+        line_ids.append(line_id.id)
+
+        a_invoice.update({
+            # "comment":comment,
             'invoice_line_ids': [(6, 0, line_ids)]
         })
         lease_invoices.append(a_invoice.id)
@@ -1826,21 +1834,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
                 else:
                     description = next_line.description
 
-                next_month_line_id = invoice_line.create({
-                    'product_id': next_line.product_id.id,
-                    'lease_line_id': next_line.id,
-                    'vehicle_id': next_line.vehicle_id.id,
-                    'price_unit': next_line_amount,
-                    'quantity': quantity,
-                    'name': description,
-                    'invoice_line_tax_ids': [(6, 0, next_line.product_id.taxes_id.ids)],
-                    'account_id': next_line.product_id.property_account_income_id.id
-                })
 
-                # next_month_line_id._set_taxes()
-                next_month_line_id.price_unit = next_line_amount
-
-                next_month_line_ids.append(next_month_line_id.id)
 
             # moved this in the loop...test initial invoicing again
             comment = ''
@@ -1849,24 +1843,46 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
             a_next_invoice = accounting_invoice.create({
                 'partner_id': the_lease.id.customer_id.id,
                 'vehicle_id': the_lease.id.vehicle_id.id,
-                'comment': comment,
+                # 'comment': comment,
                 'invoice_date': self.invoice_date,  # the_lease.id.invoice_generation_date,
                 'invoice_date_due': the_lease.id.invoice_due_date,
                 'invoice_from': prev_month_from,
                 'invoice_to': prev_month_to,
                 'invoice_posting_date': the_lease.id.invoice_generation_date,
                 'invoice_generation_date': the_lease.id.invoice_generation_date,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 # 'account_id': product.property_account_income_id.id,
                 'state': 'draft',
                 'po_number': the_lease.id.po_number,
                 # 'partner_invoice_id': the_lease.id.partner_invoice_id.id,
                 'partner_shipping_id': the_lease.id.partner_shipping_id.id,
                 'requires_manual_calculations': the_lease.id.requires_manual_calculations,
-                'invoice_line_ids': [(6, 0, next_month_line_ids)]
+                # 'invoice_line_ids': [(6, 0, next_month_line_ids)]
 
             })
 
+            next_month_line_id = invoice_line.with_context(check_move_validity=False).create({
+                'product_id': next_line.product_id.id,
+                'lease_line_id': next_line.id,
+                'vehicle_id': next_line.vehicle_id.id,
+                'price_unit': next_line_amount,
+                'quantity': quantity,
+                'name': description,
+                'tax_ids': [(6, 0, next_line.product_id.taxes_id.ids)],
+                'account_id': next_line.product_id.property_account_income_id.id,
+                'move_id':a_next_invoice.id,
+                'invoice_id':a_next_invoice.id
+            })
+
+            # next_month_line_id._set_taxes()
+            next_month_line_id.price_unit = next_line_amount
+
+            next_month_line_ids.append(next_month_line_id.id)
+
+            a_invoice.update({
+                # "comment":comment,
+                'invoice_line_ids': [(6, 0, next_month_line_ids)]
+            })
             lease_invoices.append(a_next_invoice.id)
             new_invoices.append(a_next_invoice)
 
@@ -1878,7 +1894,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
         the_lease.id.last_invoice_to = self.determine_last_invoice_to(the_lease.id)
         return new_invoices
 
-    @api.model
+    #@api.model
     def record_aggregate_invoice_tbd(self, customers, the_wizard):
         new_invoices = []
         for customer in customers:
@@ -2269,7 +2285,7 @@ class ThomasFleetLeaseInvoiceWizard(models.TransientModel):
 
         return new_invoices
 
-    @api.model
+    #@api.model
     def record_aggregate_invoice(self, customers, the_wizard):
         new_invoices = []
         for customer in customers:

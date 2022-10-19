@@ -160,7 +160,7 @@ class ThomasAccountingInvoice(models.Model):
             default_partner_ids=ar,
             message_type='email',
             partner_ids=ar,
-            company=ar
+            # company=ar
 
         )
         return {
@@ -174,6 +174,12 @@ class ThomasAccountingInvoice(models.Model):
             'target': 'new',
             'context': ctx,
         }
+
+
+
+
+
+
 
 
     def action_invoice_sent(self):
@@ -199,6 +205,7 @@ class ThomasAccountInvoiceLine(models.Model):
     need_vehicle = fields.Boolean(compute='_compute_thomas_need_vehicle',
         help="Technical field to decide whether the vehicle_id field is editable")
 
+    @api.depends("need_vehicle")
     def _compute_thomas_need_vehicle(self):
         self.need_vehicle = True
 
@@ -208,6 +215,7 @@ class ThomasAccountInvoiceLine(models.Model):
             if not rec.reference:
                 rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "MISC"
 
+    @api.depends("vehicle_id")
     def _set_reference(self):
         for rec in self:
             if rec.reference:

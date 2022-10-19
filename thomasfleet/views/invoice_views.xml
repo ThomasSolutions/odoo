@@ -28,11 +28,11 @@
                         </tree>
                     </field>
                 </xpath>
-                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='product_id']" position="before">
-                    <field name="need_vehicle" invisible="1"/>
-                    <field name="vehicle_id" context="{'lease':True}"/>
-                    <field name="reference" context="{'lease':True}"/>
-                </xpath>
+<!--                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='product_id']" position="before">-->
+<!--                    <field name="need_vehicle" invisible="1"/>-->
+<!--                    <field name="vehicle_id" context="{'lease':True}"/>-->
+<!--                    <field name="reference" context="{'lease':True}"/>-->
+<!--                </xpath>-->
                 
             </field>
         </record>
@@ -65,6 +65,7 @@
                 <xpath expr="//field[@name='invoice_line_ids']//field[@name='product_id']" position="before">
                     <field name='need_vehicle' invisible='1'/>
                     <field name="vehicle_id" context="{'lease':True}"/>
+                    <field name="reference" context="{'lease':True}"/>
                 </xpath>
             </field>
         </record>
