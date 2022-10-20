@@ -1,13 +1,28 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Thomas Solutions Fleet Management",
-    'summary': """Extend and customize Odoo Fleet module to meet Thomas Solutions requirements""",
-    'description': """Extend and customize Odoo Fleet module to meet Thomas Solutions requirements""",
-    'author': "Andrew Bates[Dev], AZM Ariful Haque Real[Upgrade]",
-    'website': "https://www.syncoria.com",
-    'category': 'Human Resources/Fleet',
-    'version': '15.1.2',
-    'depends': ['base', 'fleet', 'account', 'web', 'hr_fleet', 'account_asset_fleet'],
+    'name': "thomasfleet",
+
+    'summary': """
+        Extend and customize Odoo Fleet module to meet Thomas Solution requirements""",
+
+    'description': """
+        Extend and customize Odoo Fleet module to meet Thomas Solution requirements
+    """,
+
+    'author': "Andrew Bates",
+    'website': "http://www.kadabby.com",
+
+    # Categories can be used to filter modules in modules listing
+    # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
+    # for the full list
+    'category': 'Thomas',
+    'version': '0.257',
+
+
+    # any module necessary for this one to work correctly
+    'depends': ['base','fleet','account'],
+
+    # always loaded
     'data': [
         'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
