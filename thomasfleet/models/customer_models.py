@@ -9,8 +9,6 @@ from odoo.osv import expression
 class ThomasContact(models.Model):
     _inherit = 'res.partner'
 
-
-
     qc_check = fields.Boolean(string='Data Accuracy Validation',tracking=True)
     lease_agreements = fields.One2many('thomaslease.lease', 'customer_id', 'Lease Contracts',tracking=True)
     documents = fields.One2many('thomasfleet.customer_document', 'customer_id', 'Customer Docucments',tracking=True)
