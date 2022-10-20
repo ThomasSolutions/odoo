@@ -6,7 +6,7 @@
     'author': "Andrew Bates[Dev], AZM Ariful Haque Real[Upgrade]",
     'website': "https://www.syncoria.com",
     'category': 'Human Resources/Fleet',
-    'version': '15.1.2',
+    'version': '15.2.0',
     'depends': ['base', 'fleet', 'account', 'web', 'hr_fleet', 'account_asset_fleet'],
     'data': [
         'security/thomasfleet_security.xml',
@@ -23,19 +23,19 @@
         'report/lease_printout.xml',
         'report/invoice_report_template.xml',
         # Data
-        'data/fleet.vehicle.state.csv',
-        'data/thomasfleet.lease_status.csv',
-        'data/thomasfleet.location.csv',
-        'data/thomasfleet.floormaterial.csv',
-        'data/thomasfleet.fueltype.csv',
-        'data/thomasfleet.seatmaterial.csv',
-        'data/thomasfleet.asset_class.csv',
-        'data/thomasfleet.insurance_class.csv',
-        'data/fleet.vehicle.model.brand.csv',
-        'data/fleet.vehicle.model.csv',
-        'data/thomasfleet.trim.csv',
-        'data/thomasfleet.inclusions.csv',
-        'data/thomasfleet.accessory_type.csv'
+        # 'data/fleet.vehicle.state.csv',
+        # 'data/thomasfleet.lease_status.csv',
+        # 'data/thomasfleet.location.csv',
+        # 'data/thomasfleet.floormaterial.csv',
+        # 'data/thomasfleet.fueltype.csv',
+        # 'data/thomasfleet.seatmaterial.csv',
+        # 'data/thomasfleet.asset_class.csv',
+        # 'data/thomasfleet.insurance_class.csv',
+        # 'data/fleet.vehicle.model.brand.csv',
+        # 'data/fleet.vehicle.model.csv',
+        # 'data/thomasfleet.trim.csv',
+        # 'data/thomasfleet.inclusions.csv',
+        # 'data/thomasfleet.accessory_type.csv'
     ],
     'assets': {
         # 'web.assets_backend': [
