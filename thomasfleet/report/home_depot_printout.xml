@@ -10,8 +10,6 @@
             <field name="print_report_name">(object._get_report_lease_agreement())</field>
             <field name="binding_model_id" ref="model_thomaslease_lease"/>
             <field name="binding_type">report</field>
-            <field name="attachment">(object._get_report_lease_agreement())</field>
-            <field name="attachment_use">True</field>
         </record>
 
     </odoo>

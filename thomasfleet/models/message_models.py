@@ -1,4 +1,4 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api
 
 
 class ThomasMessage(models.TransientModel):
@@ -21,15 +21,7 @@ class ThomasMessage(models.TransientModel):
                 res = self.env[self.env.context['active_model']].browse(self.env.context['active_id'])
                 if res:
                     res.ok_pressed()
-            return {
-                'name': _('Rental Agreements'),
-                'type': 'ir.actions.act_window',
-                'view_mode': 'tree,kanban,form',
-                'res_model': 'thomaslease.lease',
-                'context': "{'lease' : True, 'show_internal_division':True}",
-                # 'res_id': self.id,
-                'target': 'main'
-            }
+
 
     def cancel_pressed(self):
         return

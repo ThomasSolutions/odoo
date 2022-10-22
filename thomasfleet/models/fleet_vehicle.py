@@ -38,8 +38,6 @@ class ThomasFleetTest(models.Model):
 
                                              + ' is not valid (it must be an integer)')
 
-    
-
     def default_unit_no(self):
         last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unit_int desc')
         print('Last Unit #' + str(last_vehicle.unit_no))

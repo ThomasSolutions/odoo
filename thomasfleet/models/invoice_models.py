@@ -41,11 +41,10 @@ class ThomasAccountingInvoice(models.Model):
         help="Delivery address for current invoice.")
     customer_name = fields.Char("Customer", related="partner_id.compound_name")
     initial_invoice = fields.Boolean("Initial Invoice", default=False)
-    thomas_invoice_line_ids = fields.One2many('account.move.line', 'invoice_id', string='Invoice Lines',
+    invoice_line_ids = fields.One2many('account.move.line', 'invoice_id', string='Invoice Lines',
         readonly=True, states={'draft': [('readonly', False)]}, copy=True)
     
-    reconciled_payments_count = fields.Integer()
-    # test = fields.Char(string='Test')
+    reconciled_payments_count = fields.Integer()  
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_delivery_address(self):
@@ -119,15 +118,15 @@ class ThomasAccountingInvoice(models.Model):
 
         return res
 
-    # @api.model
+    @api.model
     def unlink(self):
         for invoice in self:
             if invoice.state not in ('draft', 'cancel', 'paid'):
                 raise UserError(_(
                     'You cannot delete an invoice which is not draft or cancelled. You should create a credit note instead.'))
-            # elif invoice.name:
-            #     raise UserError(_(
-            #         'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
+            elif invoice.name:
+                raise UserError(_(
+                    'You cannot delete an invoice after it has been validated (and received a number). You can set it back to "Draft" state and modify its content, then re-confirm it.'))
 
             for lease in invoice.lease_ids:
                 the_invoice = self.env['account.move'].search([('id', 'in', lease.invoice_ids.ids),('state', '!=','cancel'), ('id', '!=', invoice.id)], limit=1,order='invoice_date desc')
@@ -160,7 +159,7 @@ class ThomasAccountingInvoice(models.Model):
             default_partner_ids=ar,
             message_type='email',
             partner_ids=ar,
-            # company=ar
+            company=ar
 
         )
         return {
@@ -182,6 +181,7 @@ class ThomasAccountingInvoice(models.Model):
 
 
 
+    @api.model
     def action_invoice_sent(self):
         """ Open a window to compose an email, with the edi invoice template
             message loaded by default
@@ -192,22 +192,48 @@ class ThomasAccountingInvoice(models.Model):
         res.update(context=dict(ctx,default_partner_ids=self._get_mail_contacts()))
         return res
 
+        '''
+        template = self.env.ref('account.email_template_edi_invoice', False)
+        compose_form = self.env.ref('mail.email_compose_message_wizard_form', False)
+        ctx = dict(
+            default_model='account.move',
+            default_res_id=self.id,
+            default_use_template=bool(template),
+            default_template_id=template and template.id or False,
+            default_composition_mode='comment',
+            default_partner_ids=self._get_mail_contacts(),
+            mark_invoice_as_sent=True,
+            custom_layout="account.mail_template_data_notification_email_account_invoice",
+            force_email=True
+        )
+        return {
+            'name': _('Compose Email'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form.id, 'form')],
+            'view_id': compose_form.id,
+            'target': 'new',
+            'context': ctx,
+        }
+   
+     '''
+
 class ThomasAccountInvoiceLine(models.Model):
     _inherit = "account.move.line"
     _order = 'vehicle_id'
 
     lease_line_id = fields.Many2one('thomaslease.lease_line',string="Lease Line")
+    # unit_no = fields.Char(string="Unit #",related="lease_line_id.vehicle_id.unit_no")
+    #thomas_invoice_type = fields.Char(string="Invoice Type", related="invoice_id.")
     reference = fields.Char(string="Vehicle Reference", compute="_compute_reference", inverse="_set_reference", store=True)
-    invoice_id = fields.Many2one('account.move', 'thomas_invoice_line_ids')
+    vehicle_id = fields.Many2one('fleet.vehicle', string="Unit # ")#, domain="[('id', 'in', invoice_id.vehicle_ids.ids)]")
+    invoice_id = fields.Many2one('account.move', 'invoice_line_ids')
     invoice_date = fields.Date(string="Invoice Date", related='invoice_id.invoice_date' ,store=True)
     thomas_invoice_type = fields.Char(string="Thomas Invoice Type", default="lease")
-    vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle', index=True)
-    need_vehicle = fields.Boolean(compute='_compute_thomas_need_vehicle',
-        help="Technical field to decide whether the vehicle_id field is editable")
 
-    @api.depends("need_vehicle")
-    def _compute_thomas_need_vehicle(self):
-        self.need_vehicle = True
+                                            #related="invoice_id.thomas_invoice_type")
 
     @api.depends("vehicle_id")
     def _compute_reference(self):
@@ -215,7 +241,6 @@ class ThomasAccountInvoiceLine(models.Model):
             if not rec.reference:
                 rec.reference = rec.vehicle_id.unit_no if rec.vehicle_id else "MISC"
 
-    @api.depends("vehicle_id")
     def _set_reference(self):
         for rec in self:
             if rec.reference:
