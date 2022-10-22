@@ -10,6 +10,7 @@
     'version': '15.0.1',
     'depends': ['web', 'bus', 'base_import' ],
     'data': [
+        'security/ir.model.access.csv',
     ],
     'qweb': [
         'static/src/xml/progress_bar.xml',

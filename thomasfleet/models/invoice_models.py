@@ -18,8 +18,6 @@ class ThomasAccountingInvoice(models.Model):
                                             string="Invoice Type", default='rental')
 
     vehicle_id = fields.Many2one("fleet.vehicle", string="Vehicle Unit #")
-
-    # unit_no = fields.Char(related='vehicle_id.unit_no', string="Unit #")
     lease_ids = fields.Many2many('thomaslease.lease',string='Lease Agreements',
                                   relation='lease_agreement_account_invoice_rel')
     vehicle_ids = fields.Many2many('fleet.vehicle',string='Units',
@@ -45,7 +43,6 @@ class ThomasAccountingInvoice(models.Model):
         readonly=True, states={'draft': [('readonly', False)]}, copy=True)
     
     reconciled_payments_count = fields.Integer()
-    # test = fields.Char(string='Test')
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_delivery_address(self):

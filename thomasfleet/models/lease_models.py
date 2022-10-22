@@ -574,7 +574,6 @@ class ThomasFleetLeaseLine(models.Model):
                                  required=True)
     description = fields.Char(string="Description", default=default_description)
     tax_id = fields.Many2one('account.tax', string='Tax')
-    # fields.Many2many('account.tax', string='Taxes', domain=['|', ('active', '=', False), ('active', '=', True)])
     tax_ids = fields.Many2many('account.tax', string='Taxes',
                                domain=['|', ('active', '=', False), ('active', '=', True)])
     price = fields.Float(string="Price", default=default_price)
@@ -610,8 +609,6 @@ class ThomasFleetReturnWizard(models.TransientModel):
     _description = 'Thomas Fleet Return Wizard'
 
     def _default_lease_ids(self):
-        # for the_id in self.env.context.get('active_ids'):
-        #    print(the_id.name)
         return self.env.context.get('active_ids')
 
     def _default_return_date(self):
