@@ -282,84 +282,7 @@ class ThomasFleetJournalItemWizard(models.TransientModel):
 
 
 
-class ThomasFleetJournalItem(models.Model):
-    _name = 'thomasfleet.journal_item'
-    _description = 'Thomas Fleet Journal Item'
 
-    def createJournalItemsForUnit(self,unit_id):
-
-        inv_lines = self.env['account.move.line'].search([('vehicle_id', '=', unit_id),
-                                                             ('invoice_id.state', 'not in',['draft', 'cancel']),
-                                                             ('invoice_id.thomas_invoice_class', 'in', ['rental','repair'])])
-        journal_item = self.env['thomasfleet.journal_item']
-        cu_date = datetime(2021, 1, 1)
-        for inv in inv_lines:
-            woDateS = parser.parse(inv.invoice_date)
-            invDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            if invDate >= cu_date:
-                journal_item.with_context(skip_update=True).create({'transaction_date':inv.invoice_date,
-                 'type':'revenue',
-                 'revenue':inv.price_subtotal,
-                 'invoice_line_id': inv.id,
-                 'vehicle_id': inv.vehicle_id.id,
-                 'product_id' : inv.lease_line_id.product_id.id,
-                 'customer_id': inv.invoice_id.partner_id.id
-                })
-
-        wo_orders = self.env['thomasfleet.workorder'].search([('vehicle_id', '=', unit_id)])
-        for wo in wo_orders:
-            woDateS1 = parser.parse(wo.invoiceDate)
-            woDate = datetime.strptime(woDateS1.strftime('%Y-%m-%d'), '%Y-%m-%d')
-            if woDate >= cu_date:
-                journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
-                 'type': 'expense',
-                 'expense': wo.rnmTotal,
-                 'work_order_id':wo.id,
-                 'vehicle_id': wo.vehicle_id.id,
-                 'product_id': wo.product_id.id,
-                 'customer_id': wo.customer_id.id
-                })
-
-
-    def reload(self):
-        print("RELOAD")
-
-    @api.depends('invoice_line_id','work_order_id', 'type')
-    def default_vehicle_id(self):
-        for rec in self:
-            if rec.type == 'revenue':
-                return self.invoice_line_id.vehicle_id
-            else:
-                return self.work_order_id.vehicle_id
-
-    @api.depends('invoice_line_id', 'work_order_id', 'type')
-    def default_customer_id(self):
-        for rec in self:
-            if rec.type == 'revenue':
-                return self.invoice_line_id.invoice_id.partner_id
-            else:
-                return self.work_order_id.customer_id
-
-    @api.depends('invoice_line_id', 'work_order_id', 'type')
-    def default_product_id(self):
-        for rec in self:
-            if rec.type == 'revenue':
-                return self.invoice_line_id.lease_line_id.product_id
-            else:
-                return self.work_order_id.customer_id
-
-    transaction_date = fields.Datetime("Transaction Date")
-    expense = fields.Float("Expense")
-    revenue = fields.Float("Revenue")
-    type = fields.Selection([('revenue', 'Revenue'), ('expense', 'Expense')])
-    work_order_id = fields.Many2one('thomasfleet.workorder', string='Work Order', help='Work Order For a Vehicle')
-    invoice_line_id = fields.Many2one('account.move.line', string='Invoice Line Item', help='Rental Invoice for the Unit')
-    customer_id = fields.Many2one('res.partner', default=default_customer_id,  string='Customer',
-                                  help='Work Order For a Vehicle', readonly=True)
-    vehicle_id = fields.Many2one('fleet.vehicle',default=default_vehicle_id,  string='Unit',
-                                 help='Work Order For a Vehicle', readonly=True)
-    product_id = fields.Many2one('product.product',default=default_product_id, string='Product',
-                                 help='Product', readonly=True)
 
 
 class ThomasFleetWorkOrder(models.Model):
@@ -808,6 +731,8 @@ class ThomasFleetWorkOrder(models.Model):
         print ("Generating Account Invoices")
 
 
+
+
 class ThomasFleetWorkOrderDetails(models.Model):
     _name = 'thomasfleet.workorder_details'
     _description = 'Thomas Fleet Work Order Details'
@@ -862,6 +787,9 @@ class ThomasFleetWorkOrderDetailsLine(models.Model):
     invoice_number =  fields.Char('Invoice Number')
     work_order_number = fields.Char('Work Order Number')
     invoice_guid = fields.Char('Invoice Guid')
+
+
+
 
 class ThomasFleetAccessoryType(models.Model):
     _name='thomasfleet.accessory_type'
@@ -918,3 +846,83 @@ class ThomasFleetMXInvoiceWizard(models.TransientModel):
                 #determine if an invoice already exists for the lease and don't create again...warn user
                 print("Accounting Invoice Create " +str(wizard.invoice_date) + " : "+ lease.id)
                 #accounting_invoice.create({}) need to match customer to accounting invoice etc
+
+
+class ThomasFleetJournalItem(models.Model):
+    _name = 'thomasfleet.journal_item'
+    _description = 'Thomas Fleet Journal Item'
+
+    def createJournalItemsForUnit(self,unit_id):
+
+        inv_lines = self.env['account.move.line'].search([('vehicle_id', '=', unit_id),
+                                                             ('invoice_id.state', 'not in',['draft', 'cancel']),
+                                                             ('invoice_id.thomas_invoice_class', 'in', ['rental','repair'])])
+        journal_item = self.env['thomasfleet.journal_item']
+        cu_date = datetime(2021, 1, 1)
+        for inv in inv_lines:
+            woDateS = parser.parse(inv.invoice_date)
+            invDate = datetime.strptime(woDateS.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            if invDate >= cu_date:
+                journal_item.with_context(skip_update=True).create({'transaction_date':inv.invoice_date,
+                 'type':'revenue',
+                 'revenue':inv.price_subtotal,
+                 'invoice_line_id': inv.id,
+                 'vehicle_id': inv.vehicle_id.id,
+                 'product_id' : inv.lease_line_id.product_id.id,
+                 'customer_id': inv.invoice_id.partner_id.id
+                })
+
+        wo_orders = self.env['thomasfleet.workorder'].search([('vehicle_id', '=', unit_id)])
+        for wo in wo_orders:
+            woDateS1 = parser.parse(wo.invoiceDate)
+            woDate = datetime.strptime(woDateS1.strftime('%Y-%m-%d'), '%Y-%m-%d')
+            if woDate >= cu_date:
+                journal_item.with_context(skip_update=True).create({'transaction_date':wo.invoiceDate,
+                 'type': 'expense',
+                 'expense': wo.rnmTotal,
+                 'work_order_id':wo.id,
+                 'vehicle_id': wo.vehicle_id.id,
+                 'product_id': wo.product_id.id,
+                 'customer_id': wo.customer_id.id
+                })
+
+
+    def reload(self):
+        print("RELOAD")
+
+    @api.depends('invoice_line_id','work_order_id', 'type')
+    def default_vehicle_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.vehicle_id
+            else:
+                return self.work_order_id.vehicle_id
+
+    @api.depends('invoice_line_id', 'work_order_id', 'type')
+    def default_customer_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.invoice_id.partner_id
+            else:
+                return self.work_order_id.customer_id
+
+    @api.depends('invoice_line_id', 'work_order_id', 'type')
+    def default_product_id(self):
+        for rec in self:
+            if rec.type == 'revenue':
+                return self.invoice_line_id.lease_line_id.product_id
+            else:
+                return self.work_order_id.customer_id
+
+    transaction_date = fields.Datetime("Transaction Date")
+    expense = fields.Float("Expense")
+    revenue = fields.Float("Revenue")
+    type = fields.Selection([('revenue', 'Revenue'), ('expense', 'Expense')])
+    work_order_id = fields.Many2one('thomasfleet.workorder', string='Work Order', help='Work Order For a Vehicle')
+    invoice_line_id = fields.Many2one('account.move.line', string='Invoice Line Item', help='Rental Invoice for the Unit')
+    customer_id = fields.Many2one('res.partner', default=default_customer_id,  string='Customer',
+                                  help='Work Order For a Vehicle', readonly=True)
+    vehicle_id = fields.Many2one('fleet.vehicle',default=default_vehicle_id,  string='Unit',
+                                 help='Work Order For a Vehicle', readonly=True)
+    product_id = fields.Many2one('product.product',default=default_product_id, string='Product',
+                                 help='Product', readonly=True)
