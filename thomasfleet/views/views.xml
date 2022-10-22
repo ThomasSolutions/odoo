@@ -22,11 +22,13 @@
             <field name="arch" type="xml">
                 <xpath expr="//form[1]" position="replace">
                     <form string="Vehicle">
-                        <header>
+                       <header>
                             <button name="check_update_portractor"
-                                    string="Update Protractor" type="object" class="btn-primary"/>
-                            <button name="do_something_else" string="Second action"/>
-                            <field name="lease_status" widget="statusbar"/>
+                                    string="Update Protractor" type="object" class="btn-primary" groups="fleet.fleet_group_manager"/>
+                          <!--  <button name="do_something_else" string="Second action" groups="fleet.fleet_group_manager"/>-->
+                            <!--<field name="state_id" widget="statusbar"/>-->
+
+                          <!-- <field name="lease_status" widget="statusbar"/>-->
                         </header>
                         <sheet>
                             <div class="oe_button_box" name="button_box">
@@ -42,32 +44,31 @@
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-book"
-                                        help="Show all the Lease Agreements for this vehicle"
+                                        help="Show all the Rental Agreements for this vehicle"
                                         groups="fleet.fleet_group_manager">
-                                    <field name="lease_agreements_count" widget="statinfo" string="Lease Agreements"/>
+                                    <field name="lease_agreements_count" widget="statinfo" string="Rental Agreements"/>
                                 </button>
                                 <button name="act_show_vehicle_lease_invoices"
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-book"
-                                        help="Show all the Lease Invoices for this vehicle"
+                                        help="Show all the Rental Invoices for this vehicle"
                                         groups="fleet.fleet_group_manager">
-                                    <field name="lease_invoices_count" widget="statinfo" string="Lease Invoices"/>
+                                    <field name="lease_invoices_count" widget="statinfo" string="Rental Invoices"/>
                                 </button>
-                                <button name="act_get_invoices"
-                                        string="Work Orders"
+                                <button name="act_get_workorders"
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-wrench"
                                         help="Show all the Protractor Service Invoices for this vehicle"
                                         groups="fleet.fleet_group_manager">
+                                     <field name="workorder_invoices_count" widget="statinfo" string="Work Orders"/>
                                 </button>
                                 <button name="act_show_vehicle_photos"
                                         type="object"
                                         class="oe_stat_button"
                                         icon="fa-flask"
                                         help="Show all the Photographs for this vehicle"
-                                        groups="fleet.fleet_group_manager"
                                         string="Vehicle Pictures">
                                 </button>
                                 <button name="return_action_to_open"
@@ -108,10 +109,19 @@
                                 <label for="license_plate"/>
                                 <field name="license_plate"/>
                                 <br/>
-
-                                <label for="lease_status"/>
-                                <field name="lease_status"/>
                             </div>
+                            <group col="3">
+                                <!--<label for="lease_status"/-->
+                                <group>
+                                    <field name="unit_quality"/>
+                                </group>
+                                <group>
+                                    <field name="lease_status"/>
+                                </group>
+                                <group>
+                                    <field name="fleet_status"/>
+                                </group>
+                            </group>
                             <notebook>
                                 <page string="Unit Specs">
                                     <group col="2">
@@ -162,7 +172,7 @@
                                     </group>
                                     <group>
                                         <field name="inclusions" widget="many2many_tags"/>
-                                        <field name="accessories">
+                                        <field name="accessories" context="{'unit':True}" >
                                             <tree>
                                                 <field name="unit_no"/>
                                                 <field name="name"/>
@@ -195,6 +205,15 @@
                                 <page string="Financial History">
                                     <group colspan="4">
                                         <group>
+                                            <field name="historical_revenue"/>
+                                            <field name="revenue_to_date"/>
+                                            <field name="maintenance_cost_to_date"/>
+                                            <field name="insurance_cost_to_date"/>
+                                            <field name="licensing_cost_to_date"/>
+                                            <field name="all_cost"/>
+                                            <field name="reporting_profit"/>
+                                            <field name="lifetime_profit"/>
+                                            <field name="profitability_ratio"/>
                                             <field name="thomas_purchase_price"/>
                                             <field name="betterment_cost"/>
                                             <field name="purchase_date"/>
@@ -212,6 +231,7 @@
                                             <field name="disposal_proceeds"/>
                                             <field name="sold_to"/>
                                         </group>
+                                        <h2>Invoices</h2>
                                         <field name="lease_invoice_ids" options="{'no_create': True}" readonly="1">
                                             <tree decoration-info="state == 'draft'"
                                                   decoration-muted="state == 'cancel'"
@@ -237,6 +257,24 @@
                                             </tree>
                                         </field>
                                     </group>
+                                </page>
+                                <page string="Revenue" groups="thomasfleet.fleet_group_admin">
+                                    <group>
+                                        <field name="historical_revenue"/>
+                                        <field name="revenue_to_date"/>
+                                    </group>
+                                    <h2>Line Item Revenue</h2>
+                                       <field name="line_items" options="{'no_create': True}" readonly="1">
+                                           <tree>
+                                                <field name="date_invoice"/>
+                                                <field name="invoice_id" string="Invoice"/>
+                                                <field name="partner_id" string="Customer"/>
+                                                <field name="name"/>
+                                                <field name="quantity"/>
+                                                <field name="price_unit"/>
+                                                <field name="price_total" sum="Total Revenue"/>
+                                           </tree>
+                                        </field>
                                 </page>
                             </notebook>
 
@@ -363,6 +401,148 @@
                 </xpath>
             </field>
         </record>
+
+         <record id="thomas_vehicle_profit_pivot_view" model="ir.ui.view">
+            <field name="model">fleet.vehicle</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="unit_no" type="row" />
+                    <field name="maintenance_cost_to_date" type="measure"/>
+                    <field name="all_cost" type="measure"/>
+                    <field name="revenue_to_date" type="measure"/>
+                    <field name="reporting_profit" type="measure"/>
+                    <field name="lifetime_profit" type="measure"/>
+                    <field name="profitability_ratio" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+
+        <record id='thomas_vehicle_profit_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Profitability Report</field>
+            <field name="res_model">fleet.vehicle</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_vehicle_profit_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_vehicle_profit_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_profit_pivot_menu"
+                  sequence="8" groups="thomasfleet.fleet_group_admin"/>
+
+        <record id="thomas_vehicle_expense_pivot_view" model="ir.ui.view">
+            <field name="model">thomasfleet.workorder</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="vehicle_id" type="row" />
+                    <field name="invoiceDate" interval="month" type="col" />
+                    <field name="netTotal" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_vehicle_expense_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Expense Report</field>
+            <field name="res_model">thomasfleet.workorder</field>
+            <!--<field name="domain">[('invoiceDate','>','2020/1/1')]</field>-->
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_vehicle_expense_pivot_view"/>
+            <field name="context">{"lease" : True}</field>
+        </record>
+
+        <menuitem action="thomas_vehicle_expense_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_expense_pivot_menu"
+                  sequence="8" groups="thomasfleet.fleet_group_admin"/>
+
+        <record id="thomas_vehicle_revenue_pivot_view" model="ir.ui.view">
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="reference" type="row" />
+                    <field name="date_invoice" interval="month" type="col" />
+                    <field name="price_total" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_vehicle_revenue_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Revenue Report</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+
+            <field name="view_id" ref="thomas_vehicle_revenue_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_vehicle_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_vehicle_revenue_pivot_menu"
+                  sequence="9" groups="thomasfleet.fleet_group_admin"/>
+
+
+          <record id="thomas_product_revenue_pivot_view" model="ir.ui.view">
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="product_id" type="row" />
+                    <field name="date_invoice" interval="month" type="col" />
+                    <field name="price_total" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_product_revenue_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Product Revenue Report</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_product_revenue_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_product_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_product_revenue_pivot_menu"
+                  sequence="10" groups="thomasfleet.fleet_group_admin"/>
+
+         <record id="thomas_account_revenue_pivot_view" model="ir.ui.view">
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="account_id" type="row" />
+                    <field name="partner_id" type="row"/>
+                    <field name="date_invoice" interval="month" type="col" />
+                    <field name="price_total" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_account_revenue_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Account Revenue Report</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_account_revenue_pivot_view"/>
+        </record>
+        <menuitem action="thomas_account_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_account_revenue_pivot_menu"
+                  sequence="11" groups="thomasfleet.fleet_group_admin"/>
+        <record id="thomas_customer_revenue_pivot_view" model="ir.ui.view">
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="partner_id" type="row"/>
+                    <field name="reference" type="row"/>
+                    <field name="date_invoice" interval="month" type="col" />
+                    <field name="price_total" type="measure" />
+                </pivot>
+            </field>
+        </record>
+
+        <record id='thomas_customer_revenue_pivot_action' model='ir.actions.act_window'>
+            <field name="name">Customer Revenue Report</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="thomas_customer_revenue_pivot_view"/>
+        </record>
+
+        <menuitem action="thomas_customer_revenue_pivot_action" parent="fleet.menu_fleet_reporting" id="thomas_customer_revenue_pivot_menu"
+                  sequence="12" groups="thomasfleet.fleet_group_admin"/>
+
         <record id="thomas_vehicle_view_search" model="ir.ui.view">
             <field name="name">thomas.vehicle.search</field>
             <field name="model">fleet.vehicle</field>
@@ -371,6 +551,7 @@
                 <xpath expr="//search[1]" position="replace">
                     <search string="All vehicles">
                         <field name="unit_no"></field>
+                        <field name="vin_id"></field>
                         <field name="brand_id"></field>
                         <field name="model_id"></field>
                         <field name="trim_id"></field>
@@ -558,7 +739,7 @@
         </record>
 
         <record id='thomas_lease_agreements_action' model='ir.actions.act_window'>
-            <field name="name">Vehicle Lease Agreements</field>
+            <field name="name">Vehicle Rental Agreements</field>
             <field name="res_model">thomaslease.lease</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -566,7 +747,7 @@
         </record>
 
         <record id='thomas_lease_invoices_action' model='ir.actions.act_window'>
-            <field name="name">Vehicle Lease Invoices</field>
+            <field name="name">Vehicle Rental Invoices</field>
             <field name="res_model">account.invoice</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -697,7 +878,7 @@
             <field name="name">thomasfleet.lease_status.form</field>
             <field name="model">thomasfleet.lease_status</field>
             <field name="arch" type="xml">
-                <form string="Lease Status">
+                <form string="Rental Status">
                     <sheet>
                         <group>
                             <field name="name"/>
@@ -712,7 +893,7 @@
             <field name="name">thomasfleet.lease_status.tree</field>
             <field name="model">thomasfleet.lease_status</field>
             <field name="arch" type="xml">
-                <tree string="Lease Status" editable="top">
+                <tree string="Rental Status" editable="top">
                     <field name="name"/>
                     <field name="description" invisible="1"/>
                 </tree>
@@ -720,7 +901,7 @@
         </record>
 
         <record id='thomas_lease_status_action' model='ir.actions.act_window'>
-            <field name="name">Lease Status</field>
+            <field name="name">Rental Status</field>
             <field name="res_model">thomasfleet.lease_status</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
@@ -798,27 +979,46 @@
             </field>
         </record>
 
-        <record id='thomas_invoice_view_form' model='ir.ui.view'>
-            <field name="name">Invoice Details</field>
-            <field name="model">thomasfleet.invoice</field>
+        <record id='thomas_workorder_action' model='ir.actions.act_window'>
+            <field name="name">Work Orders</field>
+            <field name="res_model">thomasfleet.workorder</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>
+
+        <record id='thomas_workorder_view_form' model='ir.ui.view'>
+            <field name="name">Work Order</field>
+            <field name="model">thomasfleet.workorder</field>
             <field name="arch" type="xml">
                 <form string="Invoice">
                     <sheet>
                         <group>
                             <field name="vehicle_id"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                            <field name="workOrderDate" widget="date"/>
                             <field name="workOrderNumber"/>
+                            <field name="invoiceDate" widget="date"/>
                             <field name="invoiceNumber"/>
                             <field name="partsTotal"/>
                             <field name="subletTotal"/>
                             <field name="grandTotal"/>
                             <field name="laborTotal"/>
                             <field name="netTotal"/>
-                            <field name="invoice_details" string="Details" nolabel="1" widget="one2many_list"
+                            <field name="workorder_details" string="Details" nolabel="1" widget="one2many_list"
                                    mode="tree">
                                 <tree>
                                     <field name="title"/>
                                     <field name="description"/>
-                                    <field name="line_items" string="Line Items" nolabel="1" widget="one2many_list">
+                                    <field name="workorder_line_items" string="Line Items" nolabel="1" widget="one2many_list">
                                         <tree>
                                             <field name="complete"/>
                                             <field name="rank"/>
@@ -849,30 +1049,200 @@
             </field>
         </record>
 
-        <record id='thomas_invoice_view_tree' model='ir.ui.view'>
-            <field name="name">thomasfleet.invoice.tree</field>
-            <field name="model">thomasfleet.invoice</field>
+        <record id='thomas_workorder_view_tree' model='ir.ui.view'>
+            <field name="name">Work Orders</field>
+            <field name="model">thomasfleet.workorder</field>
             <field name="arch" type="xml">
                 <tree string="Invoice" create="false" edit="false" delete="false">
                     <!--<button name="act_get_invoice_details"
                                 type="object"
                                 class="oe_stat_button" string="View Details">
                     </button>-->
-                    <field name="invoiceDate"/>
+                    <field name="workOrderDate" widget="date"/>
+                    <field name="invoiceDate" widget="date"/>
                     <field name="technichan"/>
                     <field name="serviceAdvisor"/>
                     <field name="lastModifiedBy"/>
                     <field name="workOrderNumber"/>
+                    <field name="workflowStage"/>
                     <field name="invoiceNumber"/>
-                    <!--   <field name="invoice_guid"/>-->
+                    <field name="invoice_guid"/>
                     <field name="partsTotal" sum="Parts Total"/>
                     <field name="laborTotal" sum="Labor Total"/>
                     <field name="subletTotal" sum="Sublet Total"/>
+                    <field name="otherChargeTotal" sum="Other Costs Total"/>
                     <field name="netTotal" sum="Net Total"/>
+                    <field name="rnmTotal" sum="Repair and Maintenance Total"/>
                     <field name="grandTotal" sum="Total Service Cost"/>
                 </tree>
             </field>
         </record>
+
+        <record id='thomas_journal_item_action' model='ir.actions.act_window'>
+            <field name="name">Unit Journal Items</field>
+            <field name="res_model">thomasfleet.journal_item</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,pivot</field>
+            <field name="context">{"lease" : True}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>
+
+          <record id='journal_item_wizard_form' model='ir.ui.view'>
+            <field name='name'>Journal Item Wizard</field>
+            <field name='model'>thomasfleet.journal_item.wizard</field>
+            <field name='arch' type='xml'>
+                <form string="Refresh Journal Items">
+                    <sheet>
+                        <group>
+                           <h2>Reload Journal Items</h2>
+                            <!--<field name="lease_return_date"/>
+                            <field name="invoice_pending"/>
+                            <field name="repairs_pending"/>
+                            <field name='lease_ids'>
+                                <tree>
+                                    <field name="unit_no"/>
+                                    <field name="customer_id"/>
+                                </tree>
+                            </field>-->
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name='refresh_all_items'
+                                string='Refresh All'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='delete_all_journal_items'
+                                string='Delete All Journal Items'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='delete_all_workorders'
+                                string='Delete All Work Orders'
+                                class='btn-primary'
+                                type='object'/>
+                        <button name='reload_work_orders'
+                                string='Reload Work Orders'
+                                class='btn-primary'
+                                type='object'/>
+                          <button name='create_all_journal_items'
+                                string='Create Jounral Items'
+                                class='btn-primary'
+                                type='object'/>
+                        <button string='Cancel'
+                                class='btn-default'
+                                special='cancel'/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="open_journal_item_wizard_action" model="ir.actions.act_window">
+            <field name="name">Journal Item Wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">thomasfleet.journal_item.wizard</field>
+            <field name="view_id" ref="journal_item_wizard_form"></field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+      <!--   <record id='thomas_journal_item_admin_action' model='ir.actions.act_window'>
+            <field name="name">Unit Journal Items Admin</field>
+            <field name="res_model">thomasfleet.journal_item</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="context">{"lease" : True}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    No Work Orders Found
+                </p>
+                <p>
+                    No Work Orders Found
+                </p>
+            </field>
+        </record>-->
+
+
+
+       <!-- <record id='thomas_journal_item_view_form' model='ir.ui.view'>
+            <field name="name">Unit Journal</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <form string="Invoice">
+                    <sheet>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>-->
+
+        <record id='thomas_journal_items_view_form' model='ir.ui.view'>
+            <field name="name">Journal Items Admin</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <form string="Journal Items">
+                    <header>
+                        <button name="reload" class="btn-primary" string="Reload" type="object"/>
+                    </header>
+                    <sheet>
+                        <group>
+                           <tree>
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                           </tree>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id='thomas_journal_item_view_tree' model='ir.ui.view'>
+            <field name="name">Unit Journal</field>
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <tree string="Items" create="false" edit="false" delete="false">
+
+                            <field name="vehicle_id"/>
+                            <field name="transaction_date"/>
+                            <field name="type"/>
+                            <field name="expense"/>
+                            <field name="revenue"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                </tree>
+            </field>
+        </record>
+        <record id="thomas_journal_item_pivot_view" model="ir.ui.view">
+            <field name="model">thomasfleet.journal_item</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="vehicle_id" type="row" />
+                    <field name="expense" type="measure"/>
+                    <field name="revenue" type="measure"/>
+                    <field name="transaction_date" interval="month" type="col" />
+                </pivot>
+            </field>
+        </record>
+         <menuitem action="thomas_journal_item_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_menu"
+                  sequence="13" groups="thomasfleet.fleet_group_admin"/>
+        <menuitem action="open_journal_item_wizard_action" parent="fleet.menu_fleet_reporting" id="thomas_journal_item_admin_menu"
+                  sequence="13" groups="thomasfleet.fleet_group_admin"/>
         <!--    <act_window name="Generate Lease Invoices"
                        res_model="thomasfleet.lease.invoice.wizard"
                        src_model="thomasfleet.invoice"
@@ -952,17 +1322,17 @@
               </field>
           </record>-->
 
-        <record id='thomas_invoice_details_view_form' model='ir.ui.view'>
-            <field name="name">thomasfleet.invoice_details.form</field>
-            <field name="model">thomasfleet.invoice_details</field>
+        <record id='thomas_workorder_details_view_form' model='ir.ui.view'>
+            <field name="name">Work Order Details</field>
+            <field name="model">thomasfleet.workorder_details</field>
             <field name="arch" type="xml">
-                <form string="Invoice Details">
+                <form string="Work Order Details">
                     <sheet>
                         <group>
                             <field name="title"/>
                             <field name="description"/>
-                            <field name="line_items" nolabel="1" widget="one2many_list" mode="tree">
-                                <tree string="Invoice Line Item Details" create="false" edit="false" delete="false">
+                            <field name="workorder_line_items" nolabel="1" widget="one2many_list" mode="tree">
+                                <tree string="Work Order Line Item Details" create="false" edit="false" delete="false">
                                     <field name="complete"/>
                                     <field name="rank"/>
                                     <field name="type"/>
@@ -991,34 +1361,20 @@
         </record>
 
 
-        <record id='thomas_invoice_action' model='ir.actions.act_window'>
-            <field name="name">Invoices</field>
-            <field name="res_model">thomasfleet.invoice</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
 
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                    No Invoices Found
-                </p>
-                <p>
-                    No Invoices Found
-                </p>
-            </field>
-        </record>
 
-        <record id='thomas_invoice_details_action' model='ir.actions.act_window'>
+        <record id='thomas_workorder_details_action' model='ir.actions.act_window'>
             <field name="name">Details</field>
-            <field name="res_model">thomasfleet.invoice_details</field>
+            <field name="res_model">thomasfleet.workorder_details</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">current</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
                 <p>
-                    No Invoices Found
+                    No Work Orders Found
                 </p>
             </field>
         </record>
@@ -1208,7 +1564,7 @@
 
         <menuitem name="Work Orders" id="invoices_main" sequence="2"/>
 
-        <menuitem name="Work Orders" action="thomas_invoice_action" parent="invoices_main"
+        <menuitem name="Work Orders" action="thomas_workorder_action" parent="invoices_main"
                   id="thomasfleet_invoices_menu"/>
 
         <!-- <menuitem action="generate_fleet_invoices_action" parent="thomasfleet_invoices_menu" id="thomas_generate_lease_invoices_menu" sequence="1"/>-->

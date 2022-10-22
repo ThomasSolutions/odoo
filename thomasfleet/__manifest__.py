@@ -16,17 +16,15 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Thomas',
-
-
-    'version': '0.111',
-
+    'version': '0.258',
 
 
     # any module necessary for this one to work correctly
-    'depends': ['base','fleet', 'account' , 'sale'],
+    'depends': ['base','fleet','account'],
 
     # always loaded
     'data': [
+        'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
         'views/message_views.xml',
         'views/views.xml',
@@ -39,7 +37,6 @@
         'report/lease_print_template.xml',
         'report/lease_printout.xml',
         'report/invoice_report_template.xml',
-        'security/thomasfleet_security.xml',
         'data/fleet.vehicle.state.csv',
         'data/thomasfleet.lease_status.csv',
         'data/thomasfleet.location.csv',
@@ -59,9 +56,11 @@
 
 
     ],
+    #'qweb': ['static/src/xml/utility_field_qweb.xml'],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
     ],
+    'installable': True,
+    'auto_install': True,
 }
-
