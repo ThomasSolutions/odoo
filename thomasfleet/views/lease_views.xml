@@ -9,9 +9,6 @@
                         <group>
                             <field name="invoice_date"/>
                             <field name="invoice_due_date"/>
-                           <!-- <field name="invoice_posting_date"/>
-                            <field name="invoice_start_date"/>
-                            <field name="invoice_end_date"/>-->
                             <field name='lease_ids'>
                                 <tree editable="top">
                                     <field name="lease_number"/>
@@ -23,19 +20,21 @@
                                 </tree>
                             </field>
                             </group>
-                    </sheet>
+
                     <footer>
                         <button name='record_lease_invoices'
                                 string='OK'
                                 class='btn-primary'
                                 type='object'/>
                         <button string='Cancel'
-                                class='btn-default'
+                                class='btn-danger'
                                 special='cancel'/>
                     </footer>
+                    </sheet>
                 </form>
             </field>
         </record>
+
         <record id='lease_return_wizard_form' model='ir.ui.view'>
             <field name='name'>Rental Return wizard form view</field>
             <field name='model'>thomaslease.lease.return.wizard</field>
@@ -48,13 +47,12 @@
                             <field name="repairs_pending"/>
                             <field name='lease_ids'>
                                 <tree>
-                                    <!--<field name="lease_number"/>-->
                                     <field name="unit_no"/>
                                     <field name="customer_id"/>
                                 </tree>
                             </field>
                         </group>
-                    </sheet>
+
                     <footer>
                         <button name='record_return'
                                 string='OK'
@@ -64,6 +62,7 @@
                                 class='btn-default'
                                 special='cancel'/>
                     </footer>
+                    </sheet>
                 </form>
             </field>
         </record>
@@ -73,7 +72,6 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.return.wizard</field>
             <field name="view_id" ref="lease_return_wizard_form"></field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -83,9 +81,10 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">thomaslease.lease.invoice.wizard</field>
             <field name="view_id" ref="lease_invoice_wizard_form"></field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
+            <field name="target">new</field>
         </record>
+
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
             <field name="name">thomaslease.lease.form</field>
             <field name="model">thomaslease.lease</field>
@@ -96,13 +95,8 @@
                         <button name="btn_validate" class="oe_highlight" string="Rent" type="object" groups="fleet.fleet_group_manager"/>
                         <button name="%(open_lease_invoice_wizard_action)d" class="btn-primary" string="Invoice"
                                 type="action" groups="account.group_account_invoice"/>
-
                         <button name="%(open_lease_return_wizard_action)d" class="btn-primary" string="Return"
                                 type="action" groups="fleet.fleet_group_manager"/>
-                        <!--<button name="toggle_active" string="Archive" type="object" class="btn_primary">
-                            <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
-                        </button>-->
-
                         <field name="state" clickable="True" widget="statusbar"
                                statusbar_colors="{'draft':'yellow','active':'green', 'closed':'black'}"
                                statusbar_visible="draft,active,closed"/>
@@ -131,27 +125,13 @@
                                 <group string="Unit">
                                     <field name="vehicle_id" context="{'lease':True}"/>
                                     <field name="inclusions" widget="many2many_tags">
-                                        <!-- <tree>
-                                             <field name="name"/>
-                                             -<field name="description"/>
-                                             <field name="inclusion_cost"/>
-                                             <field name="inclusion_charge"/>
-                                         </tree>-->
                                     </field>
                                     <field name="accessories" widget="many2many_tags">
-                                        <!--<tree>
-                                            <field name="unit_no"/>
-                                            <field name="name"/>
-                                            <field name="description"/>
-                                            <field name="type"/>
-                                            <field name="thomas_purchase_price"/>
-                                        </tree>-->
                                     </field>
                                     <field name="transponder_id"
                                            context="{'lease':True ,'default_vehicle_id':vehicle_id, 'default_name':'Transponder', 'default_type':12}"></field>
                                 </group>
                                 <group string="Customer Details">
-                                    <!--<field name="customer_id" domain="[('is_company', '=', True)]"/>-->
                                     <field name="customer_id"  context="{'show_internal_division':True}" options="{'no_create': True,'always_reload': True}" />
                                     <field name="ap_contact_ids" options="{'no_open':True, 'no_create':True}" widget="many2many_tags"/>
                                     <field name="po_contact_ids" options="{'no_open':True, 'no_create':True}"  widget="many2many_tags"/>
@@ -164,7 +144,7 @@
                                 </group>
                             </group>
                         </group>
-                        <notebook col="4">
+                        <notebook>
                             <page string="Rental">
                                 <group col="4">
                                     <group style="margin-bottom:0px"   string="Details">
@@ -209,11 +189,6 @@
                                         <field colspan="3" name="lease_notes"/>
                                     </group>
                                 </group>
-                                       <!-- <field name="invoice_to"/>
-                                        <field name="invoice_from"/>
-                                        <field name="last_invoice_to"/>
-                                        <field name="invoice_posting_date"/>
-                                        <field name="invoice_generation_date"/>-->
 
                                 <field name="lease_lines">
                                     <tree editable="bottom">
@@ -257,35 +232,36 @@
                                 </group>
                             </page>
                             <page string="Invoices" groups="account.group_account_invoice">
-                                <field name="invoice_ids" context="{'type':'out_invoice', 'journal_type': 'sale'}" options="{'no_create': True}" readonly="1">
+                                <field name="invoice_ids" context="{'move_type':'out_invoice', 'journal_type': 'sale'}" options="{'no_create': True}" readonly="1">
                                     <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
                                           string="Invoice">
                                         <field name="partner_id" groups="base.group_user" string="Customer"/>
-                                        <field name="date_invoice"/>
-                                        <field name="number"/>
+                                        <field name="invoice_date"/>
                                         <field name="commercial_partner_id" invisible="1"/>
-                                        <field name="reference" invisible="1"/>
+                                        <field name="ref" invisible="1"/>
                                         <field name="name" invisible="1"/>
                                         <field name="journal_id" invisible="1"/>
                                         <field name="company_id" groups="base.group_multi_company"
                                                options="{'no_create': True}"/>
                                         <field name="user_id"/>
-                                        <field name="date_due"/>
-                                        <field name="origin"/>
+                                        <field name="invoice_date_due"/>
+                                        <field name="invoice_origin"/>
                                         <field name="amount_total_signed" string="Total" sum="Total"/>
-                                        <field name="residual_signed" string="Amount Due" sum="Amount Due"/>
+                                        <field name="amount_residual_signed" string="Amount Due" sum="Amount Due"/>
                                         <field name="currency_id" invisible="1"/>
                                         <field name="company_currency_id" invisible="1"/>
                                         <field name="state"/>
-                                        <field name="type"/>
+                                        <field name="move_type"/>
                                     </tree>
                                 </field>
                             </page>
                         </notebook>
                     </sheet>
+                    <div class="o_attachment_preview" attrs="{'invisible': [('state', '=', 'draft')]}"/>
                     <div class="oe_chatter">
-                        <field name="message_follower_ids" widget="mail_followers"/>
-                        <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                         <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
                     </div>
                 </form>
             </field>
@@ -312,7 +288,6 @@
                     <field name="state"/>
                     <field name="run_initial_invoicing"/>
                     <field name="last_invoice_date"/>
-                    <!-- <field name="lease_number"/>-->
                 </tree>
             </field>
         </record>
@@ -377,7 +352,6 @@
         <record id='thomaslease_lease_action' model='ir.actions.act_window'>
             <field name="name">Rental Agreements</field>
             <field name="res_model">thomaslease.lease</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,kanban,form</field>
             <field name="limit">500</field>
             <field name="context">{'lease' : True, 'show_internal_division':True}</field>
@@ -388,7 +362,7 @@
             </field>
         </record>
 
-        <act_window name="Generate Rental Invoices"
+        <!-- <act_window name="Generate Rental Invoices"
                     res_model="thomaslease.lease.invoice.wizard"
                     src_model="thomaslease.lease"
                     view_mode="form"
@@ -402,18 +376,12 @@
                     target="new"
                     key2="client_action_multi"
                     id="action_open_lease_return"
-        />
+        /> -->
 
 
-
-
-
-        <menuitem name="Rental Agreements" id="lease_agreements_main" sequence="2"/>
-
-        <menuitem name="Rental Agreements" action="thomaslease_lease_action" parent="lease_agreements_main"
-                  id="thomaslease_lease_menu"/>
-         <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu"
-                  id="thomaslease_return_menu"/>
+        <menuitem name="Rental Agreements" id="lease_agreements_main" sequence="6" web_icon="thomasfleet,static/src/img/truck.png"/>
+        <menuitem name="Rental Agreements" action="thomaslease_lease_action" parent="lease_agreements_main" id="thomaslease_lease_menu"/>
+        <menuitem action="open_lease_return_wizard_action" parent="thomaslease_lease_menu" id="thomaslease_return_menu"/>
 
 
     </data>
