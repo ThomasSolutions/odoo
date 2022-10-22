@@ -922,7 +922,7 @@ class ThomasFleetJournalItem(models.Model):
         string='Work Order', 
         comodel_name='thomasfleet.workorder', 
         help='Work Order For a Vehicle',
-        ondelete='restrict',
+        ondelete='set null',
     )
     invoice_line_id = fields.Many2one('account.move.line', string='Invoice Line Item', help='Rental Invoice for the Unit')
     customer_id = fields.Many2one('res.partner', default=default_customer_id,  string='Customer',
