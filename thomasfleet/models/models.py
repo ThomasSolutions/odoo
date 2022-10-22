@@ -110,16 +110,12 @@ class ThomasAssetPhoto(models.Model):
 
 
 class ThomasFleetOdometer(models.Model):
-    _inherit= 'fleet.vehicle.odometer'
+    _inherit= 'fleet.vehicle.odometer' 
 
 
     lease_id = fields.Many2one('thomaslease.lease', 'Rental Agreement')
     customer_id =fields.Many2one(related="lease_id.customer_id", string="Customer", readonly=True)
-    activity = fields.Selection([
-        ('lease_out', 'Rent Start'), ('lease_in', 'Rent Return'),
-        ('service', 'Service'), ('spare_swap', 'Spare Swap'),
-        ('spare_swap_back', 'Spare Swap Back'),
-    ], string="Activity")
+    activity = fields.Selection([('lease_out', 'Rent Start'), ('lease_in', 'Rent Return'),('service', 'Service'),('spare_swap', 'Spare Swap'), ('spare_swap_back','Spare Swap Back')], string="Activity", tracking=True)
 
     def name_get(self):
         if self._context.get('lease'):

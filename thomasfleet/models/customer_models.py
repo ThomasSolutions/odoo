@@ -20,8 +20,7 @@ class ThomasContact(models.Model):
     ops_contact = fields.Boolean(string="Operations Contact",tracking=True)
     work_orders = fields.One2many('thomasfleet.workorder', 'customer_id', 'Work Orders')
     aggregate_invoicing= fields.Boolean(string="Aggregate Invoices", default=True,tracking=True)
-    preferred_invoice_delivery = fields.Selection([('email','email'),
-                                                   ('mail','mail')],
+    preferred_invoice_delivery = fields.Selection([('email','email'),('mail','mail')],
                                                   string='Invoice Delivery',default='email',tracking=True)
     preferred_payment = fields.Selection([('cheque', 'Cheque'),
                                           ('credit card', 'Credit Card'),
@@ -33,7 +32,9 @@ class ThomasContact(models.Model):
                                          )
 
     discount_rate_calc = fields.Boolean("Discount Rate", tracking=True, default=True)
+
     other_payment = fields.Char(string='Other Payment', tracking=True)
+
     lease_agreement_ap_ids = fields.Many2many(
         'thomaslease.lease',
         string='Lease Agreements',

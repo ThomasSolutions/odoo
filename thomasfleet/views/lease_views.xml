@@ -20,17 +20,16 @@
                                 </tree>
                             </field>
                             </group>
-
+                    </sheet>
                     <footer>
                         <button name='record_lease_invoices'
                                 string='OK'
                                 class='btn-primary'
                                 type='object'/>
                         <button string='Cancel'
-                                class='btn-danger'
+                                class='btn-default'
                                 special='cancel'/>
                     </footer>
-                    </sheet>
                 </form>
             </field>
         </record>
@@ -52,7 +51,7 @@
                                 </tree>
                             </field>
                         </group>
-
+                    </sheet>
                     <footer>
                         <button name='record_return'
                                 string='OK'
@@ -62,7 +61,6 @@
                                 class='btn-default'
                                 special='cancel'/>
                     </footer>
-                    </sheet>
                 </form>
             </field>
         </record>
@@ -82,7 +80,6 @@
             <field name="res_model">thomaslease.lease.invoice.wizard</field>
             <field name="view_id" ref="lease_invoice_wizard_form"></field>
             <field name="view_mode">form</field>
-            <field name="target">new</field>
         </record>
 
         <record id='thomaslease_lease_view_form' model='ir.ui.view'>
@@ -237,6 +234,7 @@
                                           string="Invoice">
                                         <field name="partner_id" groups="base.group_user" string="Customer"/>
                                         <field name="invoice_date"/>
+                                        <!-- <field name="number"/> -->
                                         <field name="commercial_partner_id" invisible="1"/>
                                         <field name="ref" invisible="1"/>
                                         <field name="name" invisible="1"/>
@@ -257,11 +255,9 @@
                             </page>
                         </notebook>
                     </sheet>
-                    <div class="o_attachment_preview" attrs="{'invisible': [('state', '=', 'draft')]}"/>
                     <div class="oe_chatter">
-                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
-                        <field name="activity_ids"/>
-                         <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread" options='{"thread_level": 1}'/>
                     </div>
                 </form>
             </field>

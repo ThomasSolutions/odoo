@@ -1,6 +1,6 @@
 //note:  this widget js file and all aspects related to it are not use and were for research only
 //left in the system for future use,
-odoo.define('thomasfleet.utility_field', function(require){
+odoo.define('thomasfleet.utility_field', function(require)
 
 
 "use strict";
@@ -14,7 +14,7 @@ var fieldRegistry = require('web.field_registry');
 var utility_field = AbstractField.extend({
     className: 'oe_utility_field',
     template : 'UtilityField',
-    xmlDependencies:'/thomasfleet/',
+    xmlDependencies:'/thomasfleet/'
 
     init: function() {
         this._super.apply(this, arguments);

@@ -393,6 +393,7 @@
             <field name="model">fleet.vehicle</field>
             <field name="inherit_id" ref="fleet.fleet_vehicle_view_search"></field>
             <field name="arch" type="xml">
+                <!-- <xpath expr="//field[@name='name']" position="before"> -->
                 <xpath expr="//search[1]" position="replace">
                     <search string="All vehicles">
                         <field name="unit_no"></field>
