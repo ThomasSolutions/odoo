@@ -918,7 +918,12 @@ class ThomasFleetJournalItem(models.Model):
     expense = fields.Float("Expense")
     revenue = fields.Float("Revenue")
     type = fields.Selection([('revenue', 'Revenue'), ('expense', 'Expense')])
-    work_order_id = fields.Many2one('thomasfleet.workorder', string='Work Order', help='Work Order For a Vehicle')
+    work_order_id = fields.Many2one(
+        string='Work Order', 
+        comodel_name='thomasfleet.workorder', 
+        help='Work Order For a Vehicle',
+        ondelete='restrict',
+    )
     invoice_line_id = fields.Many2one('account.move.line', string='Invoice Line Item', help='Rental Invoice for the Unit')
     customer_id = fields.Many2one('res.partner', default=default_customer_id,  string='Customer',
                                   help='Work Order For a Vehicle', readonly=True)
