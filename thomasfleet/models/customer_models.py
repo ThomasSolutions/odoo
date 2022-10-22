@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 from odoo import models, fields, api
 import requests, json, uuid
 from urllib import parse
