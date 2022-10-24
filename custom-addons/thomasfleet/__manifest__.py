@@ -6,7 +6,7 @@
     'author': "Andrew Bates[Dev], AZM Ariful Haque Real[Upgrade]",
     'website': "https://www.syncoria.com",
     'category': 'Human Resources/Fleet',
-    'version': '15.3.2',
+    'version': '15.4.0',
     'depends': ['base','web', 'fleet', 'account'],
     'data': [
         'security/thomasfleet_security.xml',
