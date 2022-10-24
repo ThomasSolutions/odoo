@@ -7,7 +7,7 @@
     'website': "https://www.syncoria.com",
     'category': 'Human Resources/Fleet',
     'version': '15.3.2',
-    'depends': ['base', 'fleet', 'account', 'web', 'account_fleet', 'hr_fleet'],
+    'depends': ['base','web', 'fleet', 'account'],
     'data': [
         'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
