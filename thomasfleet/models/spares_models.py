@@ -6,7 +6,7 @@ class ThomasSwapRecord(models.Model):
     _name = 'thomaslease.swap'
     _description = 'Unit Swap for Thomas Leasing Operations'
 
-    #invoice_ids = fields.One2many('account.move', 'message_id', string='Invoices')
+    #invoice_ids = fields.One2many('account.invoice', 'message_id', string='Invoices')
     #lease_ids = fields.One2many('thomaslease.lease', string='Lease Agreements')
     swap_date = fields.Date('Swap Date')
     swap_return_date = fields.Date('Swap Return Date')
@@ -40,7 +40,7 @@ class ThomasFleetSwapWizard(models.TransientModel):
                                                     domain="[('vehicle_id','=',vehicle_id), ('activity','=','spare_swap')]")
 
 
-    @api.model
+    @api.one
     def record_swap(self):
         self.ensure_one()
 
@@ -59,6 +59,6 @@ class ThomasFleetSwapReturnWizard(models.TransientModel):
 
     lease_id = fields.Many2one('thomaslease.lease', string="Lease", default=_default_lease_id)
 
-    @api.model
+    @api.one
     def record_swap_return(self):
        self.ensure_one()

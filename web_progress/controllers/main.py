@@ -5,7 +5,7 @@ from odoo.addons.web.controllers.main import ReportController, request
 class WPReportController(ReportController):
 
     @http.route(['/report/download'], type='http', auth="user")
-    def report_download(self, data, context=None):
+    def report_download(self, data, token):
         """
         Pass web progress code from request content to the context
         """
@@ -19,6 +19,6 @@ class WPReportController(ReportController):
                 request._context = context
         web_progress_obj = request.env['web.progress']
         web_progress_obj.web_progress_percent(0, 'Report')
-        ret = super(WPReportController, self).report_download(data)
+        ret = super(WPReportController, self).report_download(data, token)
         web_progress_obj.web_progress_percent(100, 'Report done')
         return ret

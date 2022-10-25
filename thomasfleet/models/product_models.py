@@ -21,7 +21,7 @@ class ThomasProduct(models.Model):
                                   ('stelco_monthly','Stelco Monthly')
                                   ],
                                  'Rate Type', default='monthly',
-                                 tracking=True)
+                                 track_visibility='onchange')
 
     gp_tax_schedule_id = fields.Char(compute="_compute_tax_schedule_id")
     gp_uom = fields.Char(compute="_compute_uom")

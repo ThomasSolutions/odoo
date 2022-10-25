@@ -6,5 +6,3 @@ from . import lease_models
 from . import customer_models
 from . import invoice_models
 from . import product_models
-from . import fleet_vehicle
-from . import res_company
