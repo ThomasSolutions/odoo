@@ -75,7 +75,8 @@ class ThomasFleetVehicle(models.Model):
         print('Last Unit #' + str(last_vehicle.unit_no))
         return str(int(last_vehicle.unit_no) + 1)
 
-    unit_no = fields.Char("Unit #", default=default_unit_no, required=True, tracking=True)
+    #unit_no = fields.Char("Unit #", default=default_unit_no, required=True, tracking=True)
+    unit_no = fields.Char("Unit #", required=True, tracking=True)
     
     
     ################
