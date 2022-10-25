@@ -22,6 +22,7 @@
     # any module necessary for this one to work correctly
     'depends': ['base','fleet','account'],
 
+
     # always loaded
     'data': [
         'security/thomasfleet_security.xml',
