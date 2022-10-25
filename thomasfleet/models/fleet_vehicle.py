@@ -22,29 +22,29 @@ MODEL_FIELDS_TO_VEHICLE = {
 }
 
 
-# class ThomasFleetTest(models.Model):
-#     _inherit = 'fleet.vehicle'
+class ThomasFleetTest(models.Model):
+    _inherit = 'fleet.vehicle'
 
-#     unit_int = fields.Integer(compute='_getInteger', store=True)
+    unit_int = fields.Integer(compute='_getInteger', store=True)
 
-#     @api.depends('unit_no')
-#     def _getInteger(self):
-#         for rec in self:
-#             try:
-#                 rec.unit_int = int(rec.unit_no)
-#             except ValueError:
-#                 rec.unit_int = 0
-#                 raise models.ValidationError('Protractor Unit # ' + rec.unit_no
+    @api.depends('unit_no')
+    def _getInteger(self):
+        for rec in self:
+            try:
+                rec.unit_int = int(rec.unit_no)
+            except ValueError:
+                rec.unit_int = 0
+                raise models.ValidationError('Protractor Unit # ' + rec.unit_no
 
-#                                              + ' is not valid (it must be an integer)')
+                                             + ' is not valid (it must be an integer)')
 
-#     def default_unit_no(self):
-#         last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unit_int desc')
-#         print('Last Unit #' + str(last_vehicle.unit_no))
-#         return str(int(last_vehicle.unit_no) + 1)
+    def default_unit_no(self):
+        last_vehicle = self.env['fleet.vehicle'].search([], limit=1, order='unit_int desc')
+        print('Last Unit #' + str(last_vehicle.unit_no))
+        return str(int(last_vehicle.unit_no) + 1)
 
 
-#     unit_no = fields.Char("Unit #", default=default_unit_no, required=True, tracking=True)
+    unit_no = fields.Char("Unit #", default=default_unit_no, required=True, tracking=True)
 
 
 class ThomasFleetVehicle(models.Model):
