@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
 {
-<<<<<<< HEAD
-    'name': "Thomas Solutions Fleet Management",
-    'summary': """Extend and customize Odoo Fleet module to meet Thomas Solutions requirements""",
-    'description': """Extend and customize Odoo Fleet module to meet Thomas Solutions requirements""",
-    'author': "Andrew Bates[Dev], AZM Ariful Haque Real[Upgrade]",
-    'website': "https://www.syncoria.com",
-    'category': 'Human Resources/Fleet',
-    'version': '15.4.5',
-    'depends': ['base','web', 'fleet', 'account'],
-=======
     'name': "thomasfleet",
 
     'summary': """
@@ -34,7 +24,6 @@
 
 
     # always loaded
->>>>>>> staging
     'data': [
         'security/thomasfleet_security.xml',
         'security/ir.model.access.csv',
